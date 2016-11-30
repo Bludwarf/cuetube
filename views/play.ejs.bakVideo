@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en" ng-app>
+
+<head>
+    <title>Playlist m3u YouTube</title>
+    <link rel="icon" type="image/png" href="img/favicon_16-vfl8NGn4k-m3u.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+
+    <style>
+    
+        body {
+            background: #292929;
+            color: #CCC;
+        }
+        
+        #playlist {
+            column-count: 3;
+        }
+        
+        #player-wrap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 388px; /* = #player-infos.top */
+        }
+        
+        #player-infos {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 388px; /* = #player-wrap.height */
+        }
+        
+        .video {
+            display: inline-block; /* empêche la coupure de colonne */
+            break-inside: avoid-column; /* empêche la coupure de colonne, TODO : nécessaire ? */
+        }
+    
+        .video-name {
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .video-name.active {
+            font-weight: bold;
+            color: #DB992C;
+        }
+        .video-name:hover {
+            color: #FFF;
+        }
+        .video-name:hover a,
+        .video-name:hover a:hover{
+            text-decoration: inherit;
+            color: #09F;
+        }
+        .cue {
+            cursor: pointer;
+        }
+        .cue:hover {
+            color: #FFF;
+        }
+        .cue:hover a {
+            color: #09F;
+        }
+        .cue.active {
+            font-weight: bold;
+            color: #DB992C;
+        }
+        
+        #player-div {
+            position: absolute /*fixed*/;
+            top: 0;
+            left: 0;
+            width: 668px;
+            bottom: 0;
+        }
+        
+        #player-div > div {
+            margin: 14px;
+        }
+        
+        #remain-div {
+            position: absolute;
+            left: 668px;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            padding: 1em;
+            padding-left: 0;
+        }
+        
+    </style>
+
+
+    <script>
+        // exemple : https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fsoundsgood.co&amp;feature=player_embedded&amp;html5=true&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1&amp;showinfo=0&amp;rel=0&amp;autoplay=0&amp;disablekb=1&amp;playsinline=1&amp;widgetid=2
+
+        /* global $ */
+        /* global yth */
+
+        // YouTube Helper
+        yth = (function() {
+            var yth = {};
+
+            /**
+             * @param options cf options Youtube
+             */
+            yth.getSrc = function(vid, origin, options) {
+                origin = origin || (location.protocol + '//' + location.host + location.pathname);
+                var params = $.extend({
+                    origin: origin, // origin toujours en premier car tout est placé dans ce paramètre
+                    feature: 'player_embedded',
+                    html5: true,
+                    enablejsapi: 1,
+                    controls: 0,
+                    modestbranding: 1,
+                    showinfo: 0,
+                    rel: 0,
+                    autoplay: 0,
+                    disablekb: 1,
+                    playsinline: 1,
+                    widgetid: 2
+                }, options);
+                return "https://www.youtube.com/embed/" + vid + "?" + $.param(params).replace(/&/g, '&amp;');
+            };
+
+            return yth;
+        })();
+
+        function Controller($scope, $http) {
+
+            //var socket = io.connect();
+            //socket.emit('getVideo', $scope.text);
+
+
+
+            /*fetch("/minecraft.json").then((res) => {
+               return res.blob(); 
+            })*/
+
+            var videosIds = [
+                "Dg0IjOzopYU",
+                "WGmHaMRAXuI",
+                "jadxTFqyhRM",
+                "TGXwvLupP5A"
+                //"0WGKC2J3g_Y" // Age menu seul : vidéo avec 1 seul track
+            ];
+            var remainingVideosNumber = videosIds.length;
+            var videos = new Array(remainingVideosNumber);
+            var disabledVideos = new Array(remainingVideosNumber);
+            
+            for (var videoIndex = 0; videoIndex < videosIds.length; ++videoIndex) {
+                
+                // videoIndex mutable
+                ((videoIndex) => {
+                    
+                    var videoId = videosIds[videoIndex];
+                    
+                    // Infos youtube
+                    $http.get("/youtube/"+videoId+".json").then(res => {
+                        var meta = res.data;
+                        
+                        var videoUrl = "/"+videoId+".json";
+                        $http.get(videoUrl + "?" + $.param({
+                            title: meta.snippet.title, // "Minecraft FULL SOUNDTRACK (2016)"
+                            author: meta.snippet.channelTitle, // "Luigi"
+                            duration: moment.duration(meta.contentDetails.duration).asSeconds() // || 2*3600 + 6*60 + 53
+                        })).then(res => {
+                            if (res.status != 200) return console.error("Error GET $http");
+            
+                            var video = res.data;
+                            video.index = videoIndex; // pour la gestion d'évènements JS
+                            video.enabled = true; // pour choisir les vidéos à lire
+                            videos[videoIndex] = video;
+                            
+                            // INIT si dernière vidéo
+                            if (--remainingVideosNumber == 0)
+                                initYT();
+                        });
+                    }, resKO => {
+                        // INIT si dernière vidéo
+                        if (--remainingVideosNumber == 0)
+                            initYT();
+                        prompt('Veuillez ajouter les informations sur la vidéo '+videoId+' dans le fichier /client/youtube/'+videoId+'.json', videoId)
+                            
+                        console.error("Error GET video "+videoId+" infos $http");
+                    });
+                    
+                })(videoIndex);
+            }
+            
+            $scope.videos = videos;
+            $scope.history = [];
+            
+            $scope.currentVideoIndex = 0;
+            $scope.currentCueIndex = 0;
+            
+            $scope.setVideoIndex = function(videoIndex) {
+                $scope.$apply(() => {
+                    $scope.currentVideoIndex = videoIndex;
+                    currentVideoIndex = videoIndex;
+                });
+            }
+            
+            $scope.setCueIndex = function(cueIndex) {
+                $scope.$apply(() => {
+                  $scope.currentCueIndex = cueIndex;
+                  currentCueIndex = cueIndex;
+                });
+            }
+            
+            $scope.loadVideoIndex = function(videoIndex) {
+                $scope.currentVideoIndex = videoIndex;
+                currentVideoIndex = videoIndex;
+                var video = $scope.videos[videoIndex];
+                
+                // Next cue
+                var cueIndex = shuffle ? Math.floor(Math.random() * video.cues.length) : 0;
+                
+                $scope.currentCueIndex = cueIndex;
+                currentCueIndex = cueIndex;
+                
+                $scope.loadCueIndex(cueIndex);
+            };
+            
+            /**
+             * @param [videoIndex]
+             */
+            $scope.loadCueIndex = function(cueIndex, videoIndex) {
+                
+                // Changement de vidéo ?
+                $scope.currentVideoIndex = videoIndex;
+                currentVideoIndex = videoIndex;
+                
+                $scope.currentCueIndex = cueIndex;
+                currentCueIndex = cueIndex;
+                loadCurrentCue(player);
+            };
+            
+            $scope.next = function() {
+                $scope.$apply(() => {
+                    
+                    var videoIndex, video;
+                    
+                    // TODO : maintenir plutôt une liste des candidats pour aller plus vite
+                    while (!video || !video.enabled) {
+                        videoIndex = shuffle ? Math.floor(Math.random() * this.videos.length) : 0;
+                        video = videos[videoIndex];
+                    }
+                    
+                    this.currentVideoIndex = videoIndex;
+                    currentVideoIndex = videoIndex;
+                    
+                    // Next cue
+                    var cueIndex = shuffle ? Math.floor(Math.random() * video.cues.length) : 0;
+                    this.currentCueIndex = cueIndex;
+                    currentCueIndex = cueIndex;
+                    
+                    loadCurrentCue(player);
+                });
+            }
+            
+            $scope.previous = function() {
+                
+                var previousEntry = this.history.length && this.history[this.history.length - 2];
+                if (!previousEntry) return;
+                
+                this.setVideoIndex(previousEntry.videoIndex);
+                this.setCueIndex(previousEntry.cueIndex);
+                
+                this.history.pop(); // suppression du previous
+                loadCurrentCue(player);
+                this.history.pop(); // suppression du previous (ajouté par loadCurrentCue)
+            }
+            
+            $scope.showOnlyPlaylist = function(videoIndex) {
+                var videos = $("#playlist .video");
+                videos.each(function() {
+                    var list = $(".video-list", this);
+                    if (this.dataset.index == videoIndex)
+                        list.show();
+                    else
+                        list.hide();
+                });
+            }
+        
+            /** Ajout d'une nouvelle vidéo */
+            $scope.addVideo = function() {
+                var videoId = prompt("videoId de la nouvelle vidéo ?");
+                if (!videoId) return;
+                
+                // Structure YouTube
+                // FIXME : remplacer les prompt en cascade par un form
+                var video = {
+                    snippet: {
+                        title: prompt("Titre"),
+                        channelTitle: prompt("Nom de la chaîne")
+                    },
+                    contentDetails: {
+                        duration: prompt("Durée (exemple : \"PT2H6M53S\" = 2h 6m 53s)")
+                    }
+                };
+                
+                // Annulé ?
+                if (!video.snippet.title || !video.snippet.channelTitle || !video.contentDetails.duration) return;
+                
+                $http.post("/"+videoId+".json", video).then(() => {
+                    // POST OK
+                    alert('POST OK');
+                }, () => {
+                    // POST KO
+                    alert('POST KO');
+                });
+            }
+
+        }
+    </script>
+</head>
+
+<body>
+
+    <div id="ctrl" ng-controller="Controller">
+
+        <!-- Exemple : https://developers.google.com/youtube/iframe_api_reference?hl=fr#Events -->
+        <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+        <div id="player-div">
+            <div id="player-wrap">
+                <div id="player"></div>
+            </div>
+            
+            <div id="player-infos">
+                <h2 id="player-video-name"></h2>
+                <h3 id="player-cue-name"></h3>
+            </div>
+        </div>
+
+        <div id="remain-div">
+            
+            <ul id="playlist">
+                <li class="video" ng-repeat="video in videos" data-index="{{$index}}" data-videoId="{{video.videoId}}">
+                    <input type="checkbox" ng-model="video.enabled" CHECKED />
+                    <span class="video-name" ng-class="{active: video.videoId == videos[currentVideoIndex].videoId}" onclick="toggleVideoList(this.parentElement.getElementsByClassName('video-list')[0])">{{video.name}}</span>
+                    <ol class="video-list">
+                        <li ng-repeat="cue in video.cues" class="cue" ng-class="{active: cue == videos[currentVideoIndex].cues[currentCueIndex]}" ng-click="loadCueIndex($index, video.index)">
+                            <a href="#" ng-click="loadCueIndex($index)">{{cue.timeCode}}</a> - {{cue.name}}
+                        </li>
+                    </ol>
+                </li>
+                <li><a href="#" ng-click="addVideo()">Ajouter une vidéo</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+    
+        /* global $ */
+        var videos;
+
+        var loadingVideoIndex = null;
+        var loadingCueIndex = null;
+        var currentVideoIndex = -1;
+        var currentCueIndex = -1;
+        
+        var player;
+        
+        function initYT() {
+            
+            videos = getCtrl().videos;
+            
+            // TODO : éviter l'erreur : Uncaught ReferenceError: ytcfg is not defined
+
+            // 2. This code loads the IFrame Player API code asynchronously.
+            var tag = document.createElement('script');
+    
+            tag.src = "https://www.youtube.com/iframe_api";
+            var firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    
+        }
+
+        // 3. This function creates an <iframe> (and YouTube player)
+        //    after the API code downloads.
+        function onYouTubeIframeAPIReady() {
+
+            setVideoIndex(shuffle ? Math.floor(Math.random() * videos.length) : 0);
+            var video = videos[currentVideoIndex];
+            setCueIndex(shuffle ? Math.floor(Math.random() * video.cues.length) : 0);
+            var cue = video.cues[currentCueIndex];
+            /* global YT */
+            player = loadCurrentCue(player);
+            loadingVideoIndex = currentVideoIndex;
+            loadingCueIndex = currentCueIndex;
+        }
+
+        // 4. The API will call this function when the video player is ready.
+        function onPlayerReady(event) {
+            event.target.playVideo();
+            changeVideoIHM();
+        }
+
+        // 5. The API calls this function when the player's state changes.
+        //    The function indicates that when playing a video (state=1),
+        //    the player should play for six seconds and then stop.
+        var done = false;
+        var shuffle = true;
+        var lastState = null;
+        // liste des codes : http://stackoverflow.com/a/8204143/1655155
+        /**
+         * -1 (unstarted)
+         * 0  YT.PlayerState.ENDED
+         * 1  YT.PlayerState.PLAYING
+         * 2  YT.PlayerState.PAUSED
+         * 3  YT.PlayerState.BUFFERING
+         * 5  YT.PlayerState.CUED
+         */
+        function onPlayerStateChange(event) {
+            var player = event.target;
+
+            // Fin de la vidéo
+            // on vérifie lastPlayedVideoIndex car cet évènement est souvent appelé deux fois
+            // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
+            // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
+            if (event.data == YT.PlayerState.ENDED && loadingVideoIndex != currentVideoIndex && loadingCueIndex != currentCueIndex) {
+                getCtrl().next();
+            }
+
+            // Vidéo démarrée
+            // vérification pour ne pas appeler deux fois l'évènement "Fin de la vidéo"
+            else if (event.data == YT.PlayerState.PLAYING) {
+                loadingVideoIndex = null;
+                loadingCueIndex = null;
+            }
+
+            // Vidéo démarrée
+            // vérification pour ne pas appeler deux fois l'évènement "Fin de la vidéo"
+            else if (event.data == YT.PlayerState.PLAYING) {
+                console.log("else playing");
+            }
+
+            // FIXME : détection changement manuel de cue
+            /*else if (event.data = YT.PlayerState.PAUSED && loadingVideoIndex == null && loadingCueIndex == null) {
+              console.log("Pause at : "+player.getCurrentTime());
+              var cueIndex = getCueIndexAt(videos[currentVideoIndex], player.getCurrentTime());
+              console.log("Pause at cue :", cueIndex);
+              
+              if (cueIndex != -1 && cueIndex != currentCueIndex) {
+                console.log("Changement de cue manuel");
+                var video = videos[currentVideoIndex];
+                player.loadVideoById({
+                  videoId: video.videoId,
+                  startSeconds: video.cues[cueIndex].startSeconds,
+                  endSeconds: (cueIndex + 1 < video.cues.length ? video.cues[cueIndex+1].startSeconds : video.endSeconds)
+                });
+                loadingVideoIndex = currentVideoIndex;
+                loadingCueIndex = cueIndex;
+              }
+            }*/
+
+            else {
+                console.log("else state : " + event.data);
+            }
+        }
+
+        function getCueIndexAt(video, time) {
+            var first = video.cues[0];
+            if (time < first.startSeconds) return -1;
+
+            var last = video.cues[video.cues.length - 1];
+            if (time >= last.endSeconds) return -1;
+
+            for (var i = 0; i < video.cues.length; ++i) {
+                var cue = video.cues[i];
+                if (time <= cue.endSeconds) return i;
+            }
+            return -1;
+        }
+
+        function changeVideoIHM() {
+            var video = videos[currentVideoIndex];
+            $("#player-video-name").html(video.title);
+            var cue = video.cues[currentCueIndex];
+            $("#player-cue-name").html(cue.name);
+            document.title = video.title + " - m3u-YouTube"; // comme Youtube
+        }
+        
+        function setVideoIndex(index) {
+            currentVideoIndex = index;
+            getCtrl().setVideoIndex(index);
+        }
+        
+        function setCueIndex(index) {
+            currentCueIndex = index;
+            getCtrl().setCueIndex(index);
+        }
+        
+        function loadCueIndex(index) {
+            setCueIndex(index);
+            return loadCurrentCue(player);
+        }
+        
+        /**
+         * Appelé par loadCurrentCue lors de la 1ère création du player
+         */
+        function onFirstPlayerLoad() {
+           /*var lists = $("#playlist .video-list");
+           lists.each(function()  {
+               toggleVideoList(this);
+           });*/
+        }
+        
+        function loadCurrentCue(player) {
+            var video = videos[currentVideoIndex];
+            var cue = video.cues[currentCueIndex];
+            getCtrl().showOnlyPlaylist(currentVideoIndex);
+            if (!player) {
+                // On peut récupérer cette variable a posteriori avec : YT.get("player")
+                player = new YT.Player('player', {
+                    height: '360',
+                    width: '640',
+                    videoId: video.videoId,
+                    playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
+                        autoplay: 1,
+                        start: cue.startSeconds,
+                        end: cue.endSeconds
+                    },
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
+                    }
+                });
+                
+                // Premier chargement on en profite
+                onFirstPlayerLoad();
+            }
+            // else {
+            //     player = new YT.Player('player', {
+            //         height: '90',
+            //         width: '160',
+            //         videoId: video.videoId,
+            //         playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
+            //             autoplay: 1,
+            //             start: cue.startSeconds,
+            //             end: cue.endSeconds
+            //         },
+            //         events: {
+            //             'onReady': onPlayerReady,
+            //             'onStateChange': onPlayerStateChange
+            //         }
+            //     });
+            // }
+            else {
+                // FIXME : graphiquement on ne voit plus les bornes start et end
+                player.loadVideoById({
+                    videoId: video.videoId,
+                    startSeconds: cue.startSeconds,
+                    endSeconds: cue.endSeconds,
+                    playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
+                        autoplay: 1,
+                        start: cue.startSeconds,
+                        end: cue.endSeconds
+                    }
+                });
+            }
+            
+            // Changement IHM
+            changeVideoIHM();
+            
+            // Notif
+            notify(cue.name + " - " + video.title, {
+                tag: 'loadCurrentCue'
+            });
+            
+            // Historique
+            getCtrl().history.push({
+                videoId: video.videoId,
+                videoIndex: currentVideoIndex,
+                cueIndex: currentCueIndex,
+                date: new Date()
+            });
+            
+            return player;
+        }
+        
+        /**
+         * @author http://stackoverflow.com/a/16737459/1655155
+         */
+        function getCtrl() {
+            if (typeof(angular) === undefined) document.location.reload(); // FIXME
+            return angular.element(document.getElementById('ctrl')).scope();
+        }
+        
+        
+        /**
+         * @author
+         */
+        function notify(message, options) {
+            
+            /**
+             * dir : Le sens du texte de la notification ; Ce peut être auto, ltr, or rtl.
+             * lang : Spécifie la langue utilisée dans la notification. Cette chaîne doit être un BCP 47 language tag.
+             * body : Une chaîne représentant un contenu supplémentaire à afficher dans la notification.
+             * tag : Un identifiant pour une notification donnée qui permet de la récupérer, la remplacer ou la supprimer si besoin.
+             * icon : l'URL d'une image à utiliser comme icône par la notification
+             */
+            var options = {
+                lang: options.lang || 'fr-FR',
+                tag: options.tag || 'm3u-player',
+                icon: options.icon || "https://img.youtube.com/vi/"+videos[currentVideoIndex].videoId+"/default.jpg" //'/img/M3U.png'
+            };
+            
+          // Voyons si le navigateur supporte les notifications
+          if (!("Notification" in window)) {
+            alert("Ce navigateur ne supporte pas les notifications desktop");
+          }
+        
+          // Voyons si l'utilisateur est OK pour recevoir des notifications
+          else if (Notification.permission === "granted") {
+            // Si c'est ok, créons une notification
+            var notification = new Notification(message, options);
+          }
+        
+          // Sinon, nous avons besoin de la permission de l'utilisateur
+          // Note : Chrome n'implémente pas la propriété statique permission
+          // Donc, nous devons vérifier s'il n'y a pas 'denied' à la place de 'default'
+          else if (Notification.permission !== 'denied') {
+            Notification.requestPermission(function (permission) {
+        
+              // Quelque soit la réponse de l'utilisateur, nous nous assurons de stocker cette information
+              if(!('permission' in Notification)) {
+                Notification.permission = permission;
+              }
+        
+              // Si l'utilisateur est OK, on crée une notification
+              if (permission === "granted") {
+                var notification = new Notification(message, options);
+              }
+            });
+          }
+        
+          // Comme ça, si l'utlisateur a refusé toute notification, et que vous respectez ce choix,
+          // il n'y a pas besoin de l'ennuyer à nouveau.
+        }
+        
+        // Raccourcis clavier
+        window.onkeypress = function(event) {
+            var code = event.code;
+            switch (code) {
+                case 'Space':
+                    playPause();
+                    event.stopPropagation();
+                    event.preventDefault();
+                    break;
+            }
+        }
+        
+        window.onkeydown = function(event) {
+          var code = event.code;
+          switch(code) {
+            case 'ArrowUp':
+                  getCtrl().previous();
+                  break;
+            case 'ArrowDown':
+                  getCtrl().next();
+                  break;
+            case 'ArrowLeft':
+                  // ...
+                  break;
+            case 'ArrowRight':
+                  // ...
+                  break;
+            default: 
+                return;
+          }
+          event.stopPropagation();
+          event.preventDefault();
+        }
+        
+        function playPause() {
+            if (!player) return;
+            var state = player.getPlayerState();
+            if (state == YT.PlayerState.PLAYING)
+                player.pauseVideo();
+            else
+                player.playVideo();
+        }
+        
+        function toggleVideoList(videoListElement) {
+            $(videoListElement).toggle();
+        }
+        
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/angular.min.js"></script>
+    <script src="/js/moment.min.js"></script>
+</body>
+
+</html>

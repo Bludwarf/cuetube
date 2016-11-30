@@ -1,0 +1,604 @@
+{
+    "catalog": null,
+    "cdTextFile": null,
+    "files": [
+        {
+            "name": "https://www.youtube.com/watch?v=Dg0IjOzopYU",
+            "type": "MP3",
+            "tracks": [
+                {
+                    "number": 1,
+                    "type": "AUDIO",
+                    "title": "Key",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 0,
+                                "sec": 0,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 2,
+                    "type": "AUDIO",
+                    "title": "Subwoofer Lullaby",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 1,
+                                "sec": 4,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 3,
+                    "type": "AUDIO",
+                    "title": "Living Mice",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 4,
+                                "sec": 40,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 4,
+                    "type": "AUDIO",
+                    "title": "Haggstrom",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 7,
+                                "sec": 30,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 5,
+                    "type": "AUDIO",
+                    "title": "Minecraft",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 10,
+                                "sec": 53,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 6,
+                    "type": "AUDIO",
+                    "title": "Oxygene",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 15,
+                                "sec": 8,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 7,
+                    "type": "AUDIO",
+                    "title": "Mice on Venus",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 16,
+                                "sec": 14,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 8,
+                    "type": "AUDIO",
+                    "title": "Dry Hands",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 21,
+                                "sec": 8,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 9,
+                    "type": "AUDIO",
+                    "title": "Wet Hands",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 22,
+                                "sec": 4,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 10,
+                    "type": "AUDIO",
+                    "title": "Clark",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 23,
+                                "sec": 34,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 11,
+                    "type": "AUDIO",
+                    "title": "Sweden",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 26,
+                                "sec": 46,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 12,
+                    "type": "AUDIO",
+                    "title": "Danny",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 30,
+                                "sec": 21,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 13,
+                    "type": "AUDIO",
+                    "title": "Biome Fest",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 34,
+                                "sec": 38,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 14,
+                    "type": "AUDIO",
+                    "title": "Blind Spots",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 40,
+                                "sec": 58,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 15,
+                    "type": "AUDIO",
+                    "title": "Haunt Muskie",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 46,
+                                "sec": 34,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 16,
+                    "type": "AUDIO",
+                    "title": "Aria Math",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 52,
+                                "sec": 32,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 17,
+                    "type": "AUDIO",
+                    "title": "Dreiton",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 57,
+                                "sec": 54,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 18,
+                    "type": "AUDIO",
+                    "title": "Taswell",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 66,
+                                "sec": 5,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 19,
+                    "type": "AUDIO",
+                    "title": "Mutation",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 74,
+                                "sec": 32,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 20,
+                    "type": "AUDIO",
+                    "title": "Moog City 2",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 77,
+                                "sec": 46,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 21,
+                    "type": "AUDIO",
+                    "title": "Beginning 2",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 80,
+                                "sec": 52,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 22,
+                    "type": "AUDIO",
+                    "title": "Floating Trees",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 83,
+                                "sec": 56,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 23,
+                    "type": "AUDIO",
+                    "title": "Concrete Halls",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 88,
+                                "sec": 1,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 24,
+                    "type": "AUDIO",
+                    "title": "Dead Voxel",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 92,
+                                "sec": 22,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 25,
+                    "type": "AUDIO",
+                    "title": "Warmth",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 97,
+                                "sec": 24,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 26,
+                    "type": "AUDIO",
+                    "title": "Ballad of the Cats",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 101,
+                                "sec": 28,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 27,
+                    "type": "AUDIO",
+                    "title": "Boss",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 106,
+                                "sec": 3,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "number": 28,
+                    "type": "AUDIO",
+                    "title": "End",
+                    "flags": null,
+                    "isrc": null,
+                    "performer": null,
+                    "songWriter": null,
+                    "pregap": null,
+                    "postgap": null,
+                    "indexes": [
+                        {
+                            "number": 1,
+                            "time": {
+                                "min": 111,
+                                "sec": 48,
+                                "frame": 0
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "performer": "Luigi",
+    "songWriter": null,
+    "title": "Minecraft FULL SOUNDTRACK (2016)",
+    "rems": null
+}

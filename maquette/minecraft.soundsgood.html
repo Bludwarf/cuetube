@@ -1,0 +1,120 @@
+<html>
+    
+    <head>
+        <script type="text/javascript" src="/bower_components/jquery/dist/jquery.js"></script>
+        
+    
+        <script>
+            
+            // exemple : https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fsoundsgood.co&amp;feature=player_embedded&amp;html5=true&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1&amp;showinfo=0&amp;rel=0&amp;autoplay=0&amp;disablekb=1&amp;playsinline=1&amp;widgetid=2
+            
+            /* global $ */
+            /* global yth */
+            
+            // YouTube Helper
+            yth = (function() {
+                var yth = {};
+            
+                /**
+                 * @param options cf options Youtube
+                 */
+                yth.getSrc = function(vid, origin, options) {
+                    origin = origin || (location.protocol + '//' + location.host + location.pathname);
+                    var params = $.extend({
+                        origin: origin, // origin toujours en premier car tout est placé dans ce paramètre
+                        feature: 'player_embedded',
+                        html5: true,
+                        enablejsapi: 1,
+                        controls: 0,
+                        modestbranding: 1,
+                        showinfo: 0,
+                        rel: 0,
+                        autoplay: 0,
+                        disablekb: 1,
+                        playsinline: 1,
+                        widgetid: 2
+                    }, options);
+                    return "https://www.youtube.com/embed/" + vid + "?" + $.param(params).replace(/&/g, '&amp;');
+                };
+                
+                return yth;
+            })();
+        </script>
+    </head>
+
+<body>
+    <div class="big-player-youtube sg-player-youtube-container" ng-show="player.videoVisible &amp;&amp; player.playlist.track.data.platform === 'youtube'" player-video-resizer="" src="sections/player/views/youtube_video.html">
+        <iframe id="player-youtube" frameborder="0" allowfullscreen="1" title="YouTube video player" width="355" height="200" src="https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fm3u-youtube-bludwarf.c9users.io"></iframe>
+        <i class="icon icon-resize-normal player-video-resizer"></i>
+        <div class="overlay" ng-class="{iphone: client.isIphone();}"></div>
+    </div>
+    
+    <script>
+        
+        // exemple : https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fsoundsgood.co&amp;feature=player_embedded&amp;html5=true&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1&amp;showinfo=0&amp;rel=0&amp;autoplay=0&amp;disablekb=1&amp;playsinline=1&amp;widgetid=2
+        
+        /* global $ */
+        
+        var $player = $("#player-youtube");
+        $player.attr('src', yth.getSrc("Dg0IjOzopYU", null, {
+            controls: 1
+        }));
+        
+        
+    </script>
+    
+    <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+    <div id="player"></div>
+
+    <script>
+      // 2. This code loads the IFrame Player API code asynchronously.
+      var tag = document.createElement('script');
+
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      // 3. This function creates an <iframe> (and YouTube player)
+      //    after the API code downloads.
+      var player;
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+          height: '360',
+          width: '640',
+          videoId: 'M7lc1UVf-VE',
+          events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+          }
+        });
+      }
+
+      // 4. The API will call this function when the video player is ready.
+      function onPlayerReady(event) {
+        event.target.playVideo();
+      }
+
+      // 5. The API calls this function when the player's state changes.
+      //    The function indicates that when playing a video (state=1),
+      //    the player should play for six seconds and then stop.
+      var done = false;
+      function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.PLAYING && !done) {
+          setTimeout(stopVideo, 6000);
+          done = true;
+        }
+      }
+      function stopVideo() {
+        player.stopVideo();
+        
+        player.loadVideoByUrl({
+            mediaContentUrl: 'Dg0IjOzopYU',
+            startSeconds: 1 * 60 + 4,
+            endSeconds: 1 * 60 + 4 + 4,
+        
+        });
+      }
+    </script>
+</body>
+
+</html>
