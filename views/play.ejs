@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en" ng-app>
+
+<head>
+    <title>Playlist m3u YouTube</title>
+    <link rel="icon" type="image/png" href="img/favicon_16-vfl8NGn4k-m3u.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+
+    <style>
+    
+        body {
+            background: #292929;
+            color: #CCC;
+        }
+        
+        #playlist {
+            column-count: 3;
+        }
+        
+        #player-wrap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 388px; /* = #player-infos.top */
+        }
+        
+        #player-controls-form input[type=range] {
+            width: 100%;
+        }
+        
+        #player-infos {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 388px; /* = #player-wrap.height */
+        }
+        
+        .disc {
+            display: inline-block; /* empêche la coupure de colonne */
+            break-inside: avoid-column; /* empêche la coupure de colonne, TODO : nécessaire ? */
+        }
+    
+        .disc-name {
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .disc-name.active {
+            font-weight: bold;
+            color: #DB992C;
+        }
+        .disc-name:hover {
+            color: #FFF;
+        }
+        .disc-name:hover a,
+        .disc-name:hover a:hover{
+            text-decoration: inherit;
+            color: #09F;
+        }
+        .track {
+            cursor: pointer;
+        }
+        .track:hover {
+            color: #FFF;
+        }
+        .track:hover a {
+            color: #09F;
+        }
+        .track.active {
+            font-weight: bold;
+            color: #DB992C;
+        }
+        
+        #player-div {
+            position: absolute /*fixed*/;
+            top: 0;
+            left: 0;
+            width: 668px;
+            bottom: 0;
+        }
+        
+        #player-div > div {
+            margin: 14px;
+        }
+        
+        #remain-div {
+            position: absolute;
+            left: 668px;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            padding: 1em;
+            padding-left: 0;
+        }
+        
+    </style>
+
+    <script>
+        // exemple : https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fsoundsgood.co&amp;feature=player_embedded&amp;html5=true&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1&amp;showinfo=0&amp;rel=0&amp;autoplay=0&amp;disablekb=1&amp;playsinline=1&amp;widgetid=2
+
+        /* global $, location, yth, YT, angular */
+
+        // YouTube Helper
+        var yth = (function() {
+            var yth = {};
+
+            /**
+             * @param options cf options Youtube
+             */
+            yth.getSrc = function(vid, origin, options) {
+                origin = origin || (location.protocol + '//' + location.host + location.pathname);
+                var params = $.extend({
+                    origin: origin, // origin toujours en premier car tout est placé dans ce paramètre
+                    feature: 'player_embedded',
+                    html5: true,
+                    enablejsapi: 1,
+                    controls: 0,
+                    modestbranding: 1,
+                    showinfo: 0,
+                    rel: 0,
+                    autoplay: 0,
+                    disablekb: 1,
+                    playsinline: 1,
+                    widgetid: 2
+                }, options);
+                return "https://www.youtube.com/embed/" + vid + "?" + $.param(params).replace(/&/g, '&amp;');
+            };
+
+            return yth;
+        })();
+
+        
+    </script>
+
+    <script type="text/javascript" src="/js/controllers/Controller.js"></script>
+</head>
+
+<body>
+
+    <div id="ctrl" ng-controller="Controller">
+
+        <!-- Exemple : https://developers.google.com/youtube/iframe_api_reference?hl=fr#Events -->
+        <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+        <div id="player-div">
+            <div id="player-wrap">
+                <div id="player"></div>
+            </div>
+            
+            <div id="player-infos">
+                
+                <div id="player-controls">
+                    <form id="player-controls-form">
+                        <input name="fileSlider" ng-model="fileSlider.value" type="range" min="{{fileSlider.min}}" max="{{fileSlider.max}}" readonly/>
+                        <!-- TODO : à mettre à disabled tant que la vidéo n'est pas chargée -->
+                        <input name="trackPosition" ng-model="slider.value" type="range" min="{{slider.min}}" max="{{slider.max}}" ng-change="seekTo(slider.value)" ng-readonly="loadingTrackIndex != null" />
+                    </form>
+                </div>
+                
+                <h2 id="player-disc-name"></h2>
+                <h3 id="player-track-name"></h3>
+                
+                <!-- TODO : tracklist courante -->
+                <div ng-model="currentFile">
+                    
+                </div>
+            </div>
+        </div>
+
+        <div id="remain-div">
+            
+            <!-- TODO : mettre plutôt une liste de thumbnails des vidéos -->
+            <ul id="playlist">
+                <li class="disc" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}">
+                    <input type="checkbox" ng-model="disc.enabled" CHECKED />
+                    <span class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" onclick="toggleDiscList(this.parentElement.getElementsByClassName('disc-list')[0])">{{disc.title}}</span>
+                    <ol class="disc-list">
+                        <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
+                        <div ng-repeat="file in disc.files">
+                            <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
+                                {{track.title}}
+                            </li>
+                        </div>
+                    </ol>
+                </li>
+                <li><a href="#" ng-click="addVideo()">Ajouter une vidéo (TODO : addDisc)</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        /* global $, location, yth, YT, angular */
+        
+        /**
+         * @author http://stackoverflow.com/a/16737459/1655155
+         */
+        function getCtrl() {
+            if (typeof(angular) === undefined) document.location.reload(); // FIXME
+            return angular.element(document.getElementById('ctrl')).scope();
+        }
+    
+        // 3. This function creates an <iframe> (and YouTube player)
+        //    after the API code downloads.
+        // Appelé automatiquement par l'IFRAME YouTube
+        function onYouTubeIframeAPIReady() {
+            getCtrl().next();
+        }
+        
+        /* global Notification */
+        /**
+         * @author
+         */
+        // TODO : doc pour Chrome : https://developer.chrome.com/apps/richNotifications
+        function notify(message, options) {
+            
+            /**
+             * dir : Le sens du texte de la notification ; Ce peut être auto, ltr, or rtl.
+             * lang : Spécifie la langue utilisée dans la notification. Cette chaîne doit être un BCP 47 language tag.
+             * body : Une chaîne représentant un contenu supplémentaire à afficher dans la notification.
+             * tag : Un identifiant pour une notification donnée qui permet de la récupérer, la remplacer ou la supprimer si besoin.
+             * icon : l'URL d'une image à utiliser comme icône par la notification
+             */
+            options = {
+                lang: options.lang || 'fr-FR',
+                tag: options.tag || 'm3u-player',
+                icon: options.icon || "https://img.youtube.com/vi/"+getCtrl().getVideoId()+"/default.jpg" //'/img/M3U.png'
+            };
+            
+          // Voyons si le navigateur supporte les notifications
+          if (!("Notification" in window)) {
+            alert("Ce navigateur ne supporte pas les notifications desktop");
+          }
+        
+          // Voyons si l'utilisateur est OK pour recevoir des notifications
+          else if (Notification.permission === "granted") {
+            // Si c'est ok, créons une notification
+            var notification = new Notification(message, options);
+          }
+        
+          // Sinon, nous avons besoin de la permission de l'utilisateur
+          // Note : Chrome n'implémente pas la propriété statique permission
+          // Donc, nous devons vérifier s'il n'y a pas 'denied' à la place de 'default'
+          else if (Notification.permission !== 'denied') {
+            Notification.requestPermission(function (permission) {
+        
+              // Quelque soit la réponse de l'utilisateur, nous nous assurons de stocker cette information
+              if(!('permission' in Notification)) {
+                Notification.permission = permission;
+              }
+        
+              // Si l'utilisateur est OK, on crée une notification
+              if (permission === "granted") {
+                var notification = new Notification(message, options);
+              }
+            });
+          }
+        
+          // Comme ça, si l'utlisateur a refusé toute notification, et que vous respectez ce choix,
+          // il n'y a pas besoin de l'ennuyer à nouveau.
+          
+          // TODO : notification.onclick = ...
+        }
+        
+        // Raccourcis clavier
+        window.onkeypress = function(event) {
+            var code = event.code;
+            switch (code) {
+                case 'Space':
+                    getCtrl().playPause();
+                    event.stopPropagation();
+                    event.preventDefault();
+                    break;
+            }
+        };
+        
+        window.onkeydown = function(event) {
+          var code = event.code;
+          switch(code) {
+            case 'ArrowUp':
+                  getCtrl().previous();
+                  break;
+            case 'ArrowDown':
+                  getCtrl().next();
+                  break;
+            case 'ArrowLeft':
+                  // ...
+                  break;
+            case 'ArrowRight':
+                  // ...
+                  break;
+            default: 
+                return;
+          }
+          event.stopPropagation();
+          event.preventDefault();
+        };
+        
+        function toggleDiscList(discListElement) {
+            $(discListElement).toggle();
+        };
+        
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/angular.min.js"></script>
+    <script src="/js/moment.min.js"></script>
+</body>
+
+</html>

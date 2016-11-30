@@ -1,0 +1,87 @@
+TITLE "Minecraft FULL SOUNDTRACK (2016)"
+PERFORMER "Luigi"
+FILE "https://www.youtube.com/watch?v=Dg0IjOzopYU" MP3
+TRACK 01 AUDIO
+    TITLE "Key"
+    INDEX 01 00:00:00
+TRACK 02 AUDIO
+    TITLE "Subwoofer Lullaby"
+    INDEX 01 01:04:00
+TRACK 03 AUDIO
+    TITLE "Living Mice"
+    INDEX 01 04:40:00
+TRACK 04 AUDIO
+    TITLE "Haggstrom"
+    INDEX 01 07:30:00
+TRACK 05 AUDIO
+    TITLE "Minecraft"
+    INDEX 01 10:53:00
+TRACK 06 AUDIO
+    TITLE "Oxygene"
+    INDEX 01 15:08:00
+TRACK 07 AUDIO
+    TITLE "Mice on Venus"
+    INDEX 01 16:14:00
+TRACK 08 AUDIO
+    TITLE "Dry Hands"
+    INDEX 01 21:08:00
+TRACK 09 AUDIO
+    TITLE "Wet Hands"
+    INDEX 01 22:04:00
+TRACK 010 AUDIO
+    TITLE "Clark"
+    INDEX 01 23:34:00
+TRACK 11 AUDIO
+    TITLE "Sweden"
+    INDEX 01 26:46:00
+TRACK 12 AUDIO
+    TITLE "Danny"
+    INDEX 01 30:21:00
+TRACK 13 AUDIO
+    TITLE "Biome Fest"
+    INDEX 01 34:38:00
+TRACK 14 AUDIO
+    TITLE "Blind Spots"
+    INDEX 01 40:58:00
+TRACK 15 AUDIO
+    TITLE "Haunt Muskie"
+    INDEX 01 46:34:00
+TRACK 16 AUDIO
+    TITLE "Aria Math"
+    INDEX 01 52:32:00
+TRACK 17 AUDIO
+    TITLE "Dreiton"
+    INDEX 01 57:54:00
+TRACK 18 AUDIO
+    TITLE "Taswell"
+    INDEX 01 66:05:00
+TRACK 19 AUDIO
+    TITLE "Mutation"
+    INDEX 01 74:32:00
+TRACK 20 AUDIO
+    TITLE "Moog City 2"
+    INDEX 01 77:46:00
+TRACK 21 AUDIO
+    TITLE "Beginning 2"
+    INDEX 01 80:52:00
+TRACK 22 AUDIO
+    TITLE "Floating Trees"
+    INDEX 01 83:56:00
+TRACK 23 AUDIO
+    TITLE "Concrete Halls"
+    INDEX 01 88:01:00
+TRACK 24 AUDIO
+    TITLE "Dead Voxel"
+    INDEX 01 92:22:00
+TRACK 25 AUDIO
+    TITLE "Warmth"
+    INDEX 01 97:24:00
+TRACK 26 AUDIO
+    TITLE "Ballad of the Cats"
+    INDEX 01 101:28:00
+TRACK 27 AUDIO
+    TITLE "Boss"
+    INDEX 01 106:03:00
+TRACK 28 AUDIO
+    TITLE "End"
+    INDEX 01 111:48:00

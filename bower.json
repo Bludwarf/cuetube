@@ -1,0 +1,21 @@
+{
+  "name": "m3u-youtube",
+  "description": "Read m3u from Youtube",
+  "main": "server.js",
+  "authors": [
+    "bludwarf@gmail.com"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "m3u",
+    "Youtube"
+  ],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
