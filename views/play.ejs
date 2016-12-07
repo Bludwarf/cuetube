@@ -242,7 +242,7 @@
             
                 <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex]}">
                     <div class="disc-thumb" ng-click="disc.clickThumb($event)" title="{{disc.title}}">
-                        <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="stopPropagation($event)" />
+                        <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" />
                         <div class="disabled-video-cache" ng-hide="disc.enabled"></div>
                         <img class="" ng-src="https://img.youtube.com/vi/{{disc.videoId}}/default.jpg" />
                     </div>
