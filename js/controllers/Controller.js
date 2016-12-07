@@ -21,6 +21,22 @@ function Controller($scope, $http) {
     ];
     var remainingDiscNumber = discIds.length;
     var discs = new Array(remainingDiscNumber);
+    
+    // Tracklist togglée
+    $scope.lastToggledTracklist = null;
+    function toggleTracklist(tracklist) {
+        var lastToggledTracklist = $scope.lastToggledTracklist;
+        if (lastToggledTracklist != null && lastToggledTracklist != tracklist) $(lastToggledTracklist).hide();
+        
+        $(tracklist).toggle();
+        
+        $scope.lastToggledTracklist = tracklist;
+    }
+    
+    $scope.stopPropagation = function(e) {
+        e.stopPropagation(); // pour ne pas appeler document.onclick
+    };
+    
     // TODO : discsById
     for (var discIndex = 0; discIndex < discIds.length; ++discIndex) {
         
@@ -35,12 +51,70 @@ function Controller($scope, $http) {
                 disc.enabled = true; // pour choisir les vidéos à lire
                 discs[discIndex] = disc;
                 
+                // Getters pour Disc
+                Object.defineProperties(disc, {
+                    videoId: {
+                        get: function() {
+                            if (!this.files || !this.files.length) return undefined;
+                            return this.files[0].videoId;
+                        }
+                    }
+                });
+                
+                disc.clickThumb = function(e) {
+                    // Ctrl + Click => activer/désactiver disque
+                    if (e.ctrlKey) {
+                        return this.enabled = !this.enabled;
+                    }
+                    
+                    // Sinon => ouvrir la tracklist
+                    else {
+                        return this.openTracklist(e);
+                    }
+                };
+                
+                disc.openTracklist = function(e) {
+                    var discThumb = e.currentTarget;
+                    toggleTracklist(discThumb.nextElementSibling);
+                    e.stopPropagation(); // pour ne pas appeler document.onclick
+                }
+                
+                disc.load = function() {
+                    $scope.currentDiscIndex  = discIndex;
+                    this.nextTrack();
+                    $scope.loadCurrentTrack($scope.player);
+                };
+                
+                disc.nextTrack = function() {
+                    var disc = this;
+                    
+                    // Next file
+                    var fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
+                    var file = disc.files[fileIndex];
+                    $scope.currentFileIndex = fileIndex;
+                    $scope.currentFile = file;
+                    
+                    // Next track
+                    var trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
+                    $scope.currentTrackIndex = trackIndex;
+                }
+                
                 for (var fileIndex = 0; fileIndex < disc.files.length; ++fileIndex) {
                     
                     // fileIndex mutable
                     ((fileIndex) => {
                         
                         var file = disc.files[fileIndex];
+                        
+                        // Getters pour File
+                        Object.defineProperties(file, {
+                            videoId: {
+                                get: function() {
+                                    return getParameterByName("v", this.name);
+                                }
+                            }
+                        });
+                        
                         for (var trackIndex = 0; trackIndex < file.tracks.length; ++trackIndex) {
                             
                             // trackIndex mutable
@@ -101,6 +175,7 @@ function Controller($scope, $http) {
     $scope.history = [];
     
     $scope.currentDiscIndex = 0;
+    $scope.currentDisc = null;
     $scope.currentFileIndex = 0;
     $scope.currentFile = null;
     $scope.currentTrackIndex = 0;
@@ -143,6 +218,7 @@ function Controller($scope, $http) {
     $scope.loadDiscIndex = function(discIndex) {
         this.currentDiscIndex = discIndex;
         var disc = $scope.discs[discIndex];
+        $scope.currentDisc = disc;
         
         // Next file
         var fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
@@ -176,6 +252,7 @@ function Controller($scope, $http) {
         $scope.currentDiscIndex  = discIndex;
         
         var disc = $scope.discs[discIndex];
+        $scope.currentDisc = disc;
         var file = disc.files[fileIndex];
         $scope.currentFile = file;
         
@@ -193,15 +270,7 @@ function Controller($scope, $http) {
             }
             $scope.currentDiscIndex = discIndex;
             
-            // Next file
-            var fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
-            var file = disc.files[fileIndex];
-            $scope.currentFileIndex = fileIndex;
-            $scope.currentFile = file;
-            
-            // Next track
-            var trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
-            $scope.currentTrackIndex = trackIndex;
+            disc.nextTrack();
         });
         
         // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
@@ -221,6 +290,7 @@ function Controller($scope, $http) {
         this.currentTrackIndex = previousEntry.trackIndex;
         
         var disc = $scope.discs[this.currentDiscIndex];
+        $scope.currentDisc = disc;
         var file = disc.files[this.currentFileIndex];
         $scope.currentFile = file;
         
@@ -274,7 +344,8 @@ function Controller($scope, $http) {
         var disc = this.discs[this.currentDiscIndex];
         var file = disc.files[this.currentFileIndex];
         //return getVideoIdFromUrl(file.name);
-        return getParameterByName("v", file.name);
+        //return getParameterByName("v", file.name);
+        return file.videoId;
     };
     
     
