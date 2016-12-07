@@ -224,7 +224,7 @@
                 <h3 id="player-track-name"></h3>
                 
                 <!-- TODO : tracklist courante -->
-                <div ng-model="currentDisc">
+                <div ng-model="currentDisc" class="columns">
                     <ol class="disc-list">
                         <div ng-repeat="file in currentDisc.files">
                             <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index, $parent.$index)">
