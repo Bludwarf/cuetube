@@ -97,6 +97,66 @@
             padding-left: 0;
         }
         
+        /** ajouts thumb disc */
+                
+        .disc-wrapper  {
+            float: left;
+            border: solid 3px #292929; /* = body */
+        }
+                
+        .disc-wrapper.active  {
+            border: solid 3px #DB992C; /* = .track.active.color */
+        }
+        
+        .disabled-video-cache {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #292929; /* = body */
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        
+        .disc-wrapper:hover .disabled-video-cache {
+            opacity: 0.4;
+        }
+        
+        .disc-thumb {
+            position: relative;
+        }
+        
+        .disc-thumb input {
+            position: absolute;
+            z-index: 1;
+        }
+        
+        .disc-thumb img {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+        }
+        /* mq : 320x180 */
+        .disc-thumb img.mq {
+            width: 320px;
+            height: 180px;
+        }
+        
+        .disc-wrapper .tracklist {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            background: black;
+            z-index: 1;
+            padding: 1em;
+        }
+        
+        .columns {
+            column-width: 18em;
+        }
+        
     </style>
 
     <script>
@@ -164,11 +224,13 @@
                 <h3 id="player-track-name"></h3>
                 
                 <!-- TODO : tracklist courante -->
-                <div ng-model="currentFile">
-                    <ol class="file-list">
-                        <li ng-repeat="track in currentFile.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index)">
-                            {{track.title}}
-                        </li>
+                <div ng-model="currentDisc">
+                    <ol class="disc-list">
+                        <div ng-repeat="file in currentDisc.files">
+                            <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index, $parent.$index)">
+                                {{track.title}}
+                            </li>
+                        </div>
                     </ol>
                 </div>
             </div>
@@ -176,22 +238,30 @@
 
         <div id="remain-div">
             
-            <!-- TODO : mettre plutôt une liste de thumbnails des vidéos -->
-            <ul id="playlist">
-                <li class="disc" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}">
-                    <input type="checkbox" ng-model="disc.enabled" CHECKED />
-                    <span class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" onclick="toggleDiscList(this.parentElement.getElementsByClassName('disc-list')[0])">{{disc.title}}</span>
-                    <ol class="disc-list">
-                        <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
-                        <div ng-repeat="file in disc.files">
-                            <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
-                                {{track.title}}
-                            </li>
+            <div class="discs">
+            
+                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex]}">
+                    <div class="disc-thumb" ng-click="disc.clickThumb($event)" title="{{disc.title}}">
+                        <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="stopPropagation($event)" />
+                        <div class="disabled-video-cache" ng-hide="disc.enabled"></div>
+                        <img class="" ng-src="https://img.youtube.com/vi/{{disc.videoId}}/default.jpg" />
+                    </div>
+                    <div class="tracklist" ng-click="stopPropagation($event)">
+                        <h2 class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" ng-click="disc.load()">{{disc.title}}</h2>
+                        <div class="columns">
+                            <ol class="disc-list">
+                                <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
+                                <div ng-repeat="file in disc.files">
+                                    <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
+                                        {{track.title}}
+                                    </li>
+                                </div>
+                            </ol>
                         </div>
-                    </ol>
-                </li>
-                <li><a href="#" ng-click="addVideo()">Ajouter une vidéo (TODO : addDisc)</a></li>
-            </ul>
+                    </div>
+                </div>
+                
+            </div>
         </div>
     </div>
 
@@ -230,7 +300,7 @@
             options = {
                 lang: options.lang || 'fr-FR',
                 tag: options.tag || 'm3u-player',
-                icon: options.icon || "https://img.youtube.com/vi/"+getCtrl().getVideoId()+"/default.jpg" //'/img/M3U.png'
+                icon: options.icon || "https://img.youtube.com/vi/"+getCtrl().getVideoId()+"/default.jpg" //'/img/M3U.png' // http://stackoverflow.com/a/2068371/1655155
             };
             
           // Voyons si le navigateur supporte les notifications
@@ -312,6 +382,17 @@
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/angular.min.js"></script>
     <script src="/js/moment.min.js"></script>
+    
+    <!-- Gestion des thumbs des disques -->
+    <script>
+            
+        // Fermeture de la tracklist ouverte si click ailleurs
+        document.addEventListener('click', function(e) {
+            var lastToggled = getCtrl().lastToggledTracklist;
+            if (lastToggled != null) $(lastToggled).hide();
+        });
+        
+    </script>
 </body>
 
 </html>
