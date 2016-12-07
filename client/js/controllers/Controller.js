@@ -98,7 +98,8 @@ function Controller($scope, $http) {
                 }
                 
                 disc.load = function() {
-                    $scope.currentDiscIndex  = discIndex;
+                    $scope.currentDiscIndex = discIndex;
+                    $scope.currentDisc = this;
                     this.nextTrack();
                     $scope.loadCurrentTrack($scope.player);
                 };
@@ -505,7 +506,7 @@ function Controller($scope, $http) {
         scope.loadingTrackIndex = null;
             
         // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
-        var file = scope.getCurrentFile();
+        var file = scope.currentFile;
         if (!file.duration) file.duration = player.getDuration();
         // TODO : on pourrait stocker cette information sur le serveur
         
@@ -653,20 +654,8 @@ function Controller($scope, $http) {
             player.playVideo();
     };
     
-    $scope.getCurrentDisc = function() {
-        var disc = this.discs[this.currentDiscIndex];
-        return disc;
-    };
-    
-    $scope.getCurrentFile = function() {
-        var disc = $scope.getCurrentDisc();
-        var file = disc.files[this.currentFileIndex];
-        return file;
-    };
-    
     $scope.getCurrentTrack = function() {
-        var file = $scope.getCurrentFile();
-        var track = file.tracks[this.currentTrackIndex];
+        var track = $scope.currentFile.tracks[this.currentTrackIndex];
         return track;
     };
     
