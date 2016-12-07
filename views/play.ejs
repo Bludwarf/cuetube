@@ -165,7 +165,11 @@
                 
                 <!-- TODO : tracklist courante -->
                 <div ng-model="currentFile">
-                    
+                    <ol class="file-list">
+                        <li ng-repeat="track in currentFile.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index)">
+                            {{track.title}}
+                        </li>
+                    </ol>
                 </div>
             </div>
         </div>

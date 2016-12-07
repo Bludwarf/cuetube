@@ -102,6 +102,7 @@ function Controller($scope, $http) {
     
     $scope.currentDiscIndex = 0;
     $scope.currentFileIndex = 0;
+    $scope.currentFile = null;
     $scope.currentTrackIndex = 0;
     
     $scope.loadingDiscIndex = null;
@@ -147,6 +148,7 @@ function Controller($scope, $http) {
         var fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
         var file = disc.files[fileIndex];
         this.currentFileIndex = fileIndex;
+        $scope.currentFile = file;
         
         // Next track
         var trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
@@ -155,14 +157,27 @@ function Controller($scope, $http) {
         this.loadTrackIndex(trackIndex);
     };
     
+    function defaults(value, defaultValue) {
+        if (typeof(value) === 'undefined') return defaultValue;
+        else return value;
+    }
+    
     /**
      * @param [videoIndex]
      */
     $scope.loadTrackIndex = function(trackIndex, fileIndex, discIndex) {
         
+        trackIndex = defaults(trackIndex, $scope.currentTrackIndex);
+        fileIndex  = defaults(fileIndex, $scope.currentFileIndex);
+        discIndex  = defaults(discIndex, $scope.currentDiscIndex);
+        
         $scope.currentTrackIndex = trackIndex;
-        $scope.currentFileIndex = fileIndex;
-        $scope.currentDiscIndex = discIndex;
+        $scope.currentFileIndex  = fileIndex;
+        $scope.currentDiscIndex  = discIndex;
+        
+        var disc = $scope.discs[discIndex];
+        var file = disc.files[fileIndex];
+        $scope.currentFile = file;
         
         $scope.loadCurrentTrack($scope.player);
     };
@@ -182,6 +197,7 @@ function Controller($scope, $http) {
             var fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
             var file = disc.files[fileIndex];
             $scope.currentFileIndex = fileIndex;
+            $scope.currentFile = file;
             
             // Next track
             var trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
@@ -203,6 +219,10 @@ function Controller($scope, $http) {
         this.currentDiscIndex = previousEntry.discIndex;
         this.currentFileIndex = previousEntry.fileIndex;
         this.currentTrackIndex = previousEntry.trackIndex;
+        
+        var disc = $scope.discs[this.currentDiscIndex];
+        var file = disc.files[this.currentFileIndex];
+        $scope.currentFile = file;
         
         this.history.pop(); // suppression du previous
         this.loadCurrentTrack($scope.player);
