@@ -48,6 +48,7 @@ function Controller($scope, $http) {
                 if (res.status != 200) return console.error("Error GET cuesheet "+discId+" $http");
     
                 var disc = res.data;
+                disc.index = discIndex;
                 disc.enabled = true; // pour choisir les vidéos à lire
                 discs[discIndex] = disc;
                 
@@ -71,6 +72,23 @@ function Controller($scope, $http) {
                     else {
                         return this.openTracklist(e);
                     }
+                };
+                
+                disc.afterClickThumbCheckbox = function(e) {
+                    // Alt + Click => activer/désactiver tous les autres
+                    if (e.altKey) {
+                        var input = e.currentTarget;
+                        // Cochage => on décoche tous les autres
+                        // et vice-versa
+                        var discs = $scope.discs;
+                        for (var i = 0; i < discs.length; ++i) {
+                            var disc = discs[i];
+                            if (!disc || disc === this) continue;
+                            disc.enabled = !input.checked;
+                        }
+                    }
+                    
+                    e.stopPropagation();
                 };
                 
                 disc.openTracklist = function(e) {
@@ -261,16 +279,33 @@ function Controller($scope, $http) {
     
     $scope.next = function() {
         $scope.$apply(() => {
+            var discs = $scope.discs;
             
-            var discIndex, disc;
-            // TODO : maintenir plutôt une liste des candidats pour aller plus vite
-            while (!disc || !disc.enabled) {
-                discIndex = $scope.shuffle ? Math.floor(Math.random() * this.discs.length) : 0;
-                disc = this.discs[discIndex];
+            // Aléatoire ?
+            if ($scope.shuffle) {
+                var possibleDiscs = [];
+                for (var i = 0; i < discs.length; ++i) {
+                    var disc = discs[i];
+                    if (disc.enabled) possibleDiscs.push(disc);
+                }
+                
+                // Aucun disque activé ?
+                if (!possibleDiscs.length) {
+                    console.error("Aucun disque activé");
+                    return;
+                }
+                
+                $scope.currentDisc = possibleDiscs[Math.floor(Math.random() * possibleDiscs.length)];
+                $scope.currentDiscIndex = $scope.currentDisc.index;
             }
-            $scope.currentDiscIndex = discIndex;
             
-            disc.nextTrack();
+            // Non aléatoire
+            else {
+                $scope.currentDiscIndex = $scope.currentDiscIndex + 1;
+                $scope.currentDisc = discs[$scope.currentDiscIndex];
+            }
+            
+            $scope.currentDisc.nextTrack();
         });
         
         // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
