@@ -17,7 +17,8 @@ function Controller($scope, $http) {
         "TGXwvLupP5A",
         "WGmHaMRAXuI",
         "GRWpooKRLwg",
-        "8OS4A2a-Fxg" // sushi
+        "8OS4A2a-Fxg", // sushi
+        "zvHQELG1QHE", // démons et manants
     ];
     var remainingDiscNumber = discIds.length;
     var discs = new Array(remainingDiscNumber);
@@ -473,7 +474,7 @@ function Controller($scope, $http) {
         $scope.loadingTrackIndex = $scope.currentTrackIndex;
         
         // Notif
-        notify(track.title + " - " + disc.title, {
+        notify((track.title || "Track "+track.number) + " - " + disc.title, {
             tag: 'loadCurrentTrack'
         });
         
@@ -620,7 +621,7 @@ function Controller($scope, $http) {
         $("#player-disc-name").html(disc.title);
         var file = disc.files[this.currentFileIndex];
         var track = file.tracks[this.currentTrackIndex];
-        $("#player-track-name").html(track.title);
+        $("#player-track-name").html(track.title || "Track "+track.number);
         document.title = disc.title + " - m3u-YouTube"; // comme Youtube
         
         // Slider
