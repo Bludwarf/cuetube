@@ -13,7 +13,22 @@
     
         body {
             background: #292929;
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* à cause de center center */
             color: #CCC;
+        }
+        
+        /* Affichage de l'image "fanart" en fond (src: https://css-tricks.com/snippets/css/transparent-background-images/) */
+        .background-overlay {
+            background: #292929;
+            opacity: 0.8;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            position: fixed;
         }
         
         #playlist {
@@ -205,6 +220,8 @@
 </head>
 
 <body>
+    
+    <div class="background-overlay"></div>
 
     <div id="ctrl" ng-controller="Controller">
 
