@@ -1,7 +1,7 @@
 REM COMMENT "Playlist YouTube : https://www.youtube.com/watch?v=0WGKC2J3g_Y&list=PL1800E1EFCA1EABE3"
 TITLE "Age of Empires 2: The Conquerors"
 PERFORMER "Gamegroove"
-FILE "https://www.youtube.com/watch?v=0WGKC2J3g_Y&list=PL1800E1EFCA1EABE3&index=1" MP3
+FILE "https://www.youtube.com/watch?v=_VlTKjkDdbs" MP3
   TRACK 01 AUDIO
     TITLE "Main Theme"
     INDEX 01 00:00:00
