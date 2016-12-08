@@ -428,6 +428,7 @@ function Controller($scope, $http) {
         var disc = this.discs[this.currentDiscIndex];
         var file = disc.files[this.currentFileIndex];
         var track = file.tracks[this.currentTrackIndex];
+        var multiTrack = file.tracks.length > 1;
         this.showOnlyPlaylist(this.currentDiscIndex);
         
         if (!$scope.player) {
@@ -438,8 +439,8 @@ function Controller($scope, $http) {
                 videoId: this.getVideoId(),
                 playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
                     autoplay: 1,
-                    start: track.startSeconds,
-                    end: track.endSeconds
+                    start: multiTrack ? track.startSeconds : undefined,
+                    end: multiTrack ? track.endSeconds : undefined
                 },
                 events: {
                     // 4. The API will call this function when the video player is ready.
