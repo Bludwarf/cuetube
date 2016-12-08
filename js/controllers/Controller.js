@@ -813,5 +813,11 @@ function Controller($scope, $http) {
             });
         });
     };
+    
+    $scope.$watch('currentDisc', function(newDisc, oldDisc) {
+        if (newDisc != oldDisc) {
+            document.body.style.backgroundImage = 'url(https://img.youtube.com/vi/'+newDisc.videoId+'/hqdefault.jpg)'
+        }
+    });
 
 } // Controller
