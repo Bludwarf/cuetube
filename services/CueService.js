@@ -169,8 +169,42 @@ module.exports = {
     },
     
     writeCueFile: function(cueFile, cue, cb) {
-        // TODO
-        console.warn("CueService#writeCueFile not implemented");
+        if (!cue.title) return cb(new Error("Impossible de créer une cuesheet sans title"));
+        console.info("CueService#writeCueFile : création de la cuesheet "+cue.title);
+        var PAD = "  ";
+        var EOL = "\n";
+        
+        var data = "";
+        data += "TITLE \""+cue.title+"\""+EOL;
+        if (cue.performer) data += "PERFORMER \""+cue.performer+"\""+EOL;
+        
+        // files
+        for (var f = 0; f < cue.files.length; ++f) {
+            var file = cue.files[f];
+            
+            data += "FILE \""+file.name+"\" "+file.type+EOL;
+            
+            for (var t = 0; t < file.tracks.length; ++t) {
+                var track = file.tracks[t];
+                data += PAD+"TRACK "+pad2(track.number)+" "+track.type+EOL;
+                if (track.title) data += PAD+PAD+"TITLE \""+track.title+"\""+EOL;
+                
+                for (var i = 0; i < track.indexes.length; ++i) {
+                    var index = track.indexes[i];
+                    var time = index.time;
+                    var timecode = pad2(time.min) + ":" + pad2(time.sec) + ":" + pad2(time.frame);
+                    data += PAD+PAD+"INDEX "+pad2(index.number)+" "+timecode+EOL;
+                }
+            }
+        }
+        
+        fs.writeFile(cueFile, data, 'utf-8', (err) => {
+            if (err)
+                console.error("CueService#writeCueFile : KO");
+            else
+                console.info("CueService#writeCueFile : OK");
+            return cb(err);
+        });
     },
     
     /**

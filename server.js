@@ -87,6 +87,17 @@ router
 
 })
 
+// Création d'un disque (à partir d'un objet CueSheet de cue-parser)
+.post("/:id.cue.json", function(req, res) {
+    var id = req.params.id;
+    var disc = req.body;
+    var cueFile = path.resolve(__dirname, 'client/cues/'+id+'.cue');
+    CueService.writeCueFile(cueFile, disc, (err) => {
+        if (err) return res.status(500).send(err.message);
+        return res.end();
+    });
+})
+
 // Création d'une vidéo
 .post("/:id.json", function(req, res) {
     var videoId = req.params.id;
