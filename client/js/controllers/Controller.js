@@ -11,14 +11,18 @@ function Controller($scope, $http) {
        return res.blob(); 
     })*/
     
-    var discIds = [
+    var discsParam = getParameterByName("discs", document.location.search);
+    
+    // Playlist jeux vidéos : discs=Dg0IjOzopYU,0WGKC2J3g_Y,TGXwvLupP5A,WGmHaMRAXuI,GRWpooKRLwg,zvHQELG1QHE
+    
+    var discIds = discsParam && discsParam.split(",") || [
         "Dg0IjOzopYU",
         "0WGKC2J3g_Y",
         "TGXwvLupP5A",
         "WGmHaMRAXuI",
         "GRWpooKRLwg",
-        "8OS4A2a-Fxg", // sushi
-        "zvHQELG1QHE", // démons et manants
+        //"8OS4A2a-Fxg", // sushi
+        //"zvHQELG1QHE" // démons et manants
     ];
     var remainingDiscNumber = discIds.length;
     var discs = new Array(remainingDiscNumber);
