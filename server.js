@@ -102,6 +102,10 @@ router
     res.redirect("/");
 })
 
+/**
+ * Paramètres :
+ *   - discs : liste des id des disques à charger séparés par ",". Exemple pour les jeux vidéos : Dg0IjOzopYU,0WGKC2J3g_Y,TGXwvLupP5A,WGmHaMRAXuI,GRWpooKRLwg,zvHQELG1QHE
+ */
 .get("/", function(req, res) {
     res.render("play.ejs");
 });
