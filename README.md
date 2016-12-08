@@ -44,3 +44,9 @@ Stockée dans `/client/youtube/*.json`.
 # DEV
 
 Version NodeJS : [4.6.1](https://nodejs.org/en/blog/release/v4.6.1/)
+
+## Browserify
+
+Lancer la commande :
+
+    browserify node_modules/cue-parser/lib/cuesheet.js --standalone cuesheet -o client/js/cuesheet.js

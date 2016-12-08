@@ -1,0 +1,640 @@
+{
+ "kind": "youtube#playlistItemListResponse",
+ "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/my4F1wjrXlk6tv_oDDC6HQiRj1U\"",
+ "pageInfo": {
+  "totalResults": 18,
+  "resultsPerPage": 50
+ },
+ "items": [
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/zOyGPeJB20mP2kujwhhiI_KdqjE\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjZEOTEwMjEyM0FCM0ZFNDI=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:52.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Building Mode 1",
+    "description": "The first of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/Bs5QGN-zhwM/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/Bs5QGN-zhwM/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/Bs5QGN-zhwM/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 0,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "Bs5QGN-zhwM"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/oc4pPptolanpRC99Iu9V25bSbRA\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjc3OUI4QkY5ODY5MDJDNjU=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:52.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Building Mode 2",
+    "description": "The second of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/Mke9z4qfTFU/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/Mke9z4qfTFU/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/Mke9z4qfTFU/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 1,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "Mke9z4qfTFU"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/4Lxxs4q6zQgYNztD2_xVDNxcNxA\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLkNEQjcwQTM2RTZDRjM5MkI=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:52.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Building Mode 3",
+    "description": "The third of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/8gGHQicQUw4/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/8gGHQicQUw4/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/8gGHQicQUw4/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 2,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "8gGHQicQUw4"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/uhVyzDlUWAsL7bKxYKpdKZatp3Q\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjNBNkE2NDkyNTJFMEYyMjM=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:52.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Building Mode 4",
+    "description": "The fourth of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/UbA58yOhPH4/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/UbA58yOhPH4/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/UbA58yOhPH4/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 3,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "UbA58yOhPH4"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/GYmQBCZ_bB4L7A6zkYFxne4lr1U\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjM5RkEyNkEzMzg3ODQwQjM=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:52.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Building Mode 5",
+    "description": "The fifth of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/F2MFv2xe8yQ/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/F2MFv2xe8yQ/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/F2MFv2xe8yQ/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 4,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "F2MFv2xe8yQ"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/5d-tyWuBUH8bdVg38dDBbxIEI0Q\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLkMzNDNGNDQ4N0JCQjFCMkM=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:52.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Building Mode 6",
+    "description": "The sixth of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/YNizVO8WBYw/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/YNizVO8WBYw/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/YNizVO8WBYw/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 5,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "YNizVO8WBYw"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/QxsZa83JV68Wn6ryFrq3Fh3BAxU\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjVEQzE3NjlBNUJGNzYzMkY=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:07.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Buy Mode 1",
+    "description": "The seventh of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/399YneFTwh0/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/399YneFTwh0/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/399YneFTwh0/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 6,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "399YneFTwh0"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/AVyu0xnnAW_MYsN-h9-SuoKIEEQ\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjEzMUY1MkZENEI2RTQzQ0Q=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:07.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Buy Mode 2",
+    "description": "The eight of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/ObCgwGR__wE/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/ObCgwGR__wE/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/ObCgwGR__wE/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 7,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "ObCgwGR__wE"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/CF0G_q4qd8JZEYs6Y5MbNMV13YI\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjEyRTA1MjUxN0Q4NDUwRDM=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:07.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Buy Mode 3",
+    "description": "The ninth of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/SP4_Oz1U-NI/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/SP4_Oz1U-NI/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/SP4_Oz1U-NI/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 8,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "SP4_Oz1U-NI"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/wV7rMYxqN0kJGzyjLbtHjQPPRFk\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLkQwNkE5NkVFNTYwNzIwNzk=",
+   "snippet": {
+    "publishedAt": "2009-06-24T17:26:07.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Buy Mode 4",
+    "description": "Special thanks to suchda for pointing this out to me! It appears I missed one of the Buy Modes (and in fact one of the best).\r\nThe thirteenth (??) of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/CnKUyE2peDw/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/CnKUyE2peDw/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/CnKUyE2peDw/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 9,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "CnKUyE2peDw"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/MPwmn8OytbJ8qHzY4BsQTmQDyIc\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLkNDQkJGNzA3QzZEOEUwQkQ=",
+   "snippet": {
+    "publishedAt": "2009-06-23T00:34:22.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Neighborhood 1",
+    "description": "The tenth of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/a_j2PpZKIJw/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/a_j2PpZKIJw/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/a_j2PpZKIJw/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 10,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "a_j2PpZKIJw"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/Fa0HWnmtQS9GPjjfkNXWs_rRZn8\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjgyMDNGMjg2OENDNTREMEQ=",
+   "snippet": {
+    "publishedAt": "2009-06-23T00:34:22.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Neighborhood 2",
+    "description": "The eleventh of twelve music pieces that come from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/1nVAg8VujGA/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/1nVAg8VujGA/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/1nVAg8VujGA/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 11,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "1nVAg8VujGA"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/tHxqbAZsFRMBnQwLOpWuc4ayRyo\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjBDOURBMDE0RTc0NzFENEI=",
+   "snippet": {
+    "publishedAt": "2009-06-23T00:34:22.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Neighborhood 3",
+    "description": "The twelfth and final music piece that comes from the PC game \"The Sims.\" The music was written by Jerry Martin and Marc Russo. Since it never got released, it can be downloaded here:\r\nhttp://gh.ffshrine.org/soundtracks/2179",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/rsW1LL2j7Lc/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/rsW1LL2j7Lc/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/rsW1LL2j7Lc/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 12,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "rsW1LL2j7Lc"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/3tWysguwyoNvdfQwiZsm-0GM2h0\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjgzODM1NkNBMkE5REFBMzI=",
+   "snippet": {
+    "publishedAt": "2009-06-23T00:34:22.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Neighborhood 4",
+    "description": "Well, it turns out there are extra neighborhood tracks that were not found on Galbadia Hotel. The only way to aquire this music is as follows (only for PC):\r\n1. Buy the Sims Deluxe edition for PC (you won't regret it - just try eBay!)\r\n2. Install it.\r\n3. Go to Start - My computer - Local \r\nDisk (C:) - Program Files - Maxis - The Sims - Music.\r\n4. There are two folders - Modes and Stations. Stations feature the music that is played when you turn on the radio (classic, rock, country, etc). Modes feature all the building, buy, and neighborhood modes. The only new ones are contained in the folders \"Load\" and \"Nhood\". \r\n\r\nIf you want to be able to change the information of these tracks on iTunes, simply:\r\n1. Drag it to the desktop.\r\n2. Right click - Convert Audio Format\r\n3. Make sure the file format is Windows Media Audio.\r\n4. Click next - Start Conversion\r\n5. Import the file to iTunes. Now you can edit it!",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/sWAE2X8Jq60/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/sWAE2X8Jq60/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/sWAE2X8Jq60/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 13,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "sWAE2X8Jq60"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/Yy6VlAnxgA6mm7apbD5XBC_3aVY\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjJDREQ1MEQ3RUE1QkMzRDE=",
+   "snippet": {
+    "publishedAt": "2009-06-23T00:34:22.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Neighborhood 5",
+    "description": "Well, it turns out there are extra neighborhood tracks that were not found on Galbadia Hotel. The only way to aquire this music is as follows (only for PC):\r\n1. Buy the Sims Deluxe edition for PC (you won't regret it - just try eBay!)\r\n2. Install it.\r\n3. Go to Start - My computer - Local \r\nDisk (C:) - Program Files - Maxis - The Sims - Music.\r\n4. There are two folders - Modes and Stations. Stations feature the music that is played when you turn on the radio (classic, rock, country, etc). Modes feature all the building, buy, and neighborhood modes. The only new ones are contained in the folders \"Load\" and \"Nhood\". \r\n\r\nIf you want to be able to change the information of these tracks on iTunes, simply:\r\n1. Drag it to the desktop.\r\n2. Right click - Convert Audio Format\r\n3. Make sure the file format is Windows Media Audio.\r\n4. Click next - Start Conversion\r\n5. Import the file to iTunes. Now you can edit it!",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/Y6_Aij3n8hk/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/Y6_Aij3n8hk/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/Y6_Aij3n8hk/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 14,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "Y6_Aij3n8hk"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/yf9hcX9un_36i5w3OSnJhnCCYbc\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjk4MUFFMzFFREVEOTZDQjc=",
+   "snippet": {
+    "publishedAt": "2009-06-23T00:34:22.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Neighborhood 6",
+    "description": "Well, it turns out there are extra neighborhood tracks (and this one) that were not found on Galbadia Hotel. The only way to aquire this music is as follows (only for PC):\r\n1. Buy the Sims Deluxe edition for PC (you won't regret it - just try eBay!)\r\n2. Install it.\r\n3. Go to Start - My computer - Local\r\nDisk (C:) - Program Files - Maxis - The Sims - Music.\r\n4. There are two folders - Modes and Stations. Stations feature the music that is played when you turn on the radio (classic, rock, country, etc). Modes feature all the building, buy, and neighborhood modes. The only new ones are contained in the folders \"Load\" and \"Nhood\".\r\n\r\nIf you want to be able to change the information of these tracks on iTunes, simply:\r\n1. Drag it to the desktop.\r\n2. Right click - Convert Audio Format\r\n3. Make sure the file format is Windows Media Audio.\r\n4. Click next - Start Conversion\r\n5. Import the file to iTunes. Now you can edit it!",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/YVWdQGuE0-E/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/YVWdQGuE0-E/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/YVWdQGuE0-E/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 15,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "YVWdQGuE0-E"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/Z97iVA2A8APa99cy9S9FGraqswE\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLkM2RDI1Njc3NUYyQzUyOUY=",
+   "snippet": {
+    "publishedAt": "2009-06-23T00:34:22.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Neighborhood 7",
+    "description": "Well, it turns out there are extra neighborhood tracks (and this one) that were not found on Galbadia Hotel. The only way to aquire this music is as follows (only for PC):\r\n1. Buy the Sims Deluxe edition for PC (you won't regret it - just try eBay!)\r\n2. Install it.\r\n3. Go to Start - My computer - Local\r\nDisk (C:) - Program Files - Maxis - The Sims - Music.\r\n4. There are two folders - Modes and Stations. Stations feature the music that is played when you turn on the radio (classic, rock, country, etc). Modes feature all the building, buy, and neighborhood modes. The only new ones are contained in the folders \"Load\" and \"Nhood\".\r\n\r\nIf you want to be able to change the information of these tracks on iTunes, simply:\r\n1. Drag it to the desktop.\r\n2. Right click - Convert Audio Format\r\n3. Make sure the file format is Windows Media Audio.\r\n4. Click next - Start Conversion\r\n5. Import the file to iTunes. Now you can edit it!",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/G4mshu6BUio/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/G4mshu6BUio/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/G4mshu6BUio/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 16,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "G4mshu6BUio"
+    }
+   }
+  },
+  {
+   "kind": "youtube#playlistItem",
+   "etag": "\"gMxXHe-zinKdE9lTnzKu8vjcmDI/PJFifQcN1jINeLUEtd69yE4qVWA\"",
+   "id": "UEw1MzhCOEFENDNGMDc4QkZBLjRERkQxREUwQkU5REVDQzc=",
+   "snippet": {
+    "publishedAt": "2011-01-06T04:07:00.000Z",
+    "channelId": "UCgkd0QV-8Vs72PXtgW7CkcQ",
+    "title": "The Sims Soundtrack: Loading Loop",
+    "description": "Well, it turns out there are extra neighborhood tracks (and this one) that were not found on Galbadia Hotel. The only way to aquire this music is as follows (only for PC):\r\n1. Buy the Sims Deluxe edition for PC (you won't regret it - just try eBay!)\r\n2. Install it.\r\n3. Go to Start - My computer - Local \r\nDisk (C:) - Program Files - Maxis - The Sims - Music.\r\n4. There are two folders - Modes and Stations. Stations feature the music that is played when you turn on the radio (classic, rock, country, etc). Modes feature all the building, buy, and neighborhood modes. The only new ones are contained in the folders \"Load\" and \"Nhood\". \r\n\r\nIf you want to be able to change the information of these tracks on iTunes, simply:\r\n1. Drag it to the desktop.\r\n2. Right click - Convert Audio Format\r\n3. Make sure the file format is Windows Media Audio.\r\n4. Click next - Start Conversion\r\n5. Import the file to iTunes. Now you can edit it!",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/wZ54X-xBKrY/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/wZ54X-xBKrY/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/wZ54X-xBKrY/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Bob Saget",
+    "playlistId": "PL538B8AD43F078BFA",
+    "position": 17,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "wZ54X-xBKrY"
+    }
+   }
+  }
+ ]
+}

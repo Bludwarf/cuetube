@@ -157,6 +157,11 @@
             column-width: 18em;
         }
         
+        .buttons {
+            margin-bottom: 1em;
+            text-align: right;
+        }
+        
     </style>
 
     <script>
@@ -237,6 +242,10 @@
         </div>
 
         <div id="remain-div">
+            
+            <div class="buttons">
+                <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button>
+            </div>
             
             <div class="discs">
             
@@ -379,9 +388,12 @@
     </script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/jquery.min.js"></script>
+    <script src="/js/underscore-min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/angular.min.js"></script>
     <script src="/js/moment.min.js"></script>
+    
+    <script src="/js/cuesheet.js"></script>
     
     <!-- Gestion des thumbs des disques -->
     <script>

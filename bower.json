@@ -10,12 +10,15 @@
     "m3u",
     "Youtube"
   ],
-  "homepage": "",
+  "homepage": "https://github.com/Bludwarf/cuetube",
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
 }
