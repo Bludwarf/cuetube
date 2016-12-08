@@ -1,11 +1,12 @@
-/* global $, YT */
+/* global $, _, YT, cuesheet */
+/* require ../cuesheet.js */
 
 function Controller($scope, $http) {
+    
+    var GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
 
     //var socket = io.connect();
     //socket.emit('getVideo', $scope.text);
-
-
 
     /*fetch("/minecraft.json").then((res) => {
        return res.blob(); 
@@ -42,6 +43,139 @@ function Controller($scope, $http) {
         e.stopPropagation(); // pour ne pas appeler document.onclick
     };
     
+    function enrichDisc(disc, discIndex) {
+        disc.index = discIndex;
+        disc.enabled = true; // pour choisir les vidéos à lire
+        
+        // Getters pour Disc
+        Object.defineProperties(disc, {
+            id: {
+                get: function() {
+                    return this.videoId;
+                }
+            },
+            videoId: {
+                get: function() {
+                    if (!this.files || !this.files.length) return undefined;
+                    return this.files[0].videoId;
+                }
+            }
+        });
+        
+        disc.clickThumb = function(e) {
+            // Ctrl + Click => activer/désactiver disque
+            if (e.ctrlKey) {
+                return this.enabled = !this.enabled;
+            }
+            
+            // Sinon => ouvrir la tracklist
+            else {
+                return this.openTracklist(e);
+            }
+        };
+        
+        disc.afterClickThumbCheckbox = function(e) {
+            // Alt + Click => activer/désactiver tous les autres
+            if (e.altKey) {
+                var input = e.currentTarget;
+                // Cochage => on décoche tous les autres
+                // et vice-versa
+                var discs = $scope.discs;
+                for (var i = 0; i < discs.length; ++i) {
+                    var disc = discs[i];
+                    if (!disc || disc === this) continue;
+                    disc.enabled = !input.checked;
+                }
+            }
+            
+            e.stopPropagation();
+        };
+                
+        disc.openTracklist = function(e) {
+            var discThumb = e.currentTarget;
+            toggleTracklist(discThumb.nextElementSibling);
+            e.stopPropagation(); // pour ne pas appeler document.onclick
+        }
+        
+        disc.load = function() {
+            $scope.currentDiscIndex = discIndex;
+            $scope.currentDisc = this;
+            this.nextTrack();
+            $scope.loadCurrentTrack($scope.player);
+        };
+        
+        disc.nextTrack = function() {
+            var disc = this;
+            
+            // Next file
+            var fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
+            var file = disc.files[fileIndex];
+            $scope.currentFileIndex = fileIndex;
+            $scope.currentFile = file;
+            
+            // Next track
+            var trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
+            $scope.currentTrackIndex = trackIndex;
+        }
+        
+        for (var fileIndex = 0; fileIndex < disc.files.length; ++fileIndex) {
+            
+            // fileIndex mutable
+            ((fileIndex) => {
+                
+                var file = disc.files[fileIndex];
+                
+                // Getters pour File
+                Object.defineProperties(file, {
+                    videoId: {
+                        get: function() {
+                            return getParameterByName("v", this.name);
+                        }
+                    }
+                });
+                
+                for (var trackIndex = 0; trackIndex < file.tracks.length; ++trackIndex) {
+                    
+                    // trackIndex mutable
+                    ((trackIndex) => {
+                        
+                        var track = file.tracks[trackIndex];
+                        Object.defineProperties(track, {
+                            index: {
+                                get: function() {
+                                    return this.number - 1;
+                                }
+                            },
+                            startSeconds: {
+                                get: function() {
+                                    var time = this.indexes[this.indexes.length - 1].time;
+                                    return time.min * 60 + time.sec + time.frame * .75;
+                                }
+                            },
+                            endSeconds: {
+                                get: function() {
+                                    if (this.index+1 < file.tracks.length)
+                                        return file.tracks[this.index+1].startSeconds;
+                                    // auto apprentissage de la durée du fichier par : $scope.$on("video started")...
+                                    else if (file.duration)
+                                        return file.duration;
+                                    // impossible à appeler avant de charger la vidéo car duration inconnu => toujours undefined
+                                    // cf check
+                                    else if ($scope.player && $scope.player.getDuration)
+                                        return $scope.player.getDuration();
+                                    else
+                                        return undefined;
+                                }
+                            }
+                        });
+                        
+                    })(trackIndex);
+                }
+                
+            })(fileIndex);
+        }
+    }
+    
     // TODO : discsById
     for (var discIndex = 0; discIndex < discIds.length; ++discIndex) {
         
@@ -53,132 +187,8 @@ function Controller($scope, $http) {
                 if (res.status != 200) return console.error("Error GET cuesheet "+discId+" $http");
     
                 var disc = res.data;
-                disc.index = discIndex;
-                disc.enabled = true; // pour choisir les vidéos à lire
                 discs[discIndex] = disc;
-                
-                // Getters pour Disc
-                Object.defineProperties(disc, {
-                    videoId: {
-                        get: function() {
-                            if (!this.files || !this.files.length) return undefined;
-                            return this.files[0].videoId;
-                        }
-                    }
-                });
-                
-                disc.clickThumb = function(e) {
-                    // Ctrl + Click => activer/désactiver disque
-                    if (e.ctrlKey) {
-                        return this.enabled = !this.enabled;
-                    }
-                    
-                    // Sinon => ouvrir la tracklist
-                    else {
-                        return this.openTracklist(e);
-                    }
-                };
-                
-                disc.afterClickThumbCheckbox = function(e) {
-                    // Alt + Click => activer/désactiver tous les autres
-                    if (e.altKey) {
-                        var input = e.currentTarget;
-                        // Cochage => on décoche tous les autres
-                        // et vice-versa
-                        var discs = $scope.discs;
-                        for (var i = 0; i < discs.length; ++i) {
-                            var disc = discs[i];
-                            if (!disc || disc === this) continue;
-                            disc.enabled = !input.checked;
-                        }
-                    }
-                    
-                    e.stopPropagation();
-                };
-                
-                disc.openTracklist = function(e) {
-                    var discThumb = e.currentTarget;
-                    toggleTracklist(discThumb.nextElementSibling);
-                    e.stopPropagation(); // pour ne pas appeler document.onclick
-                }
-                
-                disc.load = function() {
-                    $scope.currentDiscIndex = discIndex;
-                    $scope.currentDisc = this;
-                    this.nextTrack();
-                    $scope.loadCurrentTrack($scope.player);
-                };
-                
-                disc.nextTrack = function() {
-                    var disc = this;
-                    
-                    // Next file
-                    var fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
-                    var file = disc.files[fileIndex];
-                    $scope.currentFileIndex = fileIndex;
-                    $scope.currentFile = file;
-                    
-                    // Next track
-                    var trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
-                    $scope.currentTrackIndex = trackIndex;
-                }
-                
-                for (var fileIndex = 0; fileIndex < disc.files.length; ++fileIndex) {
-                    
-                    // fileIndex mutable
-                    ((fileIndex) => {
-                        
-                        var file = disc.files[fileIndex];
-                        
-                        // Getters pour File
-                        Object.defineProperties(file, {
-                            videoId: {
-                                get: function() {
-                                    return getParameterByName("v", this.name);
-                                }
-                            }
-                        });
-                        
-                        for (var trackIndex = 0; trackIndex < file.tracks.length; ++trackIndex) {
-                            
-                            // trackIndex mutable
-                            ((trackIndex) => {
-                                
-                                var track = file.tracks[trackIndex];
-                                Object.defineProperties(track, {
-                                    index: {
-                                        get: function() {
-                                            return this.number - 1;
-                                        }
-                                    },
-                                    startSeconds: {
-                                        get: function() {
-                                            var time = this.indexes[this.indexes.length - 1].time;
-                                            return time.min * 60 + time.sec + time.frame * .75;
-                                        }
-                                    },
-                                    endSeconds: {
-                                        get: function() {
-                                            if (this.index+1 < file.tracks.length)
-                                                return file.tracks[this.index+1].startSeconds;
-                                            // auto apprentissage de la durée du fichier par : $scope.$on("video started")...
-                                            else if (file.duration)
-                                                return file.duration;
-                                            // impossible à appeler avant de charger la vidéo car duration inconnu => toujours undefined
-                                            // cf check
-                                            else if ($scope.player && $scope.player.getDuration)
-                                                return $scope.player.getDuration();
-                                            else
-                                                return undefined;
-                                        }
-                                    }
-                                });
-                                
-                            })(trackIndex);
-                        }
-                        
-                    })(fileIndex);
-                }
+                enrichDisc(disc, discIndex);
                 
                 // INIT si dernier disque
                 if (--remainingDiscNumber == 0)
@@ -388,6 +398,10 @@ function Controller($scope, $http) {
         //return getParameterByName("v", file.name);
         return file.videoId;
     };
+    
+    $scope.getVideoUrlFromId = function(id) {
+        return "https://www.youtube.com/watch?v="+id;
+    }
     
     
     /*function getVideoIdFromUrl(url) {
@@ -705,6 +719,99 @@ function Controller($scope, $http) {
       } else {
         this.$apply(fn);
       }
+    };
+    
+    /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
+    $scope.getPlaylistItems = function(playlistId, cb) {
+        $http.get('https://www.googleapis.com/youtube/v3/playlistItems', {
+                params: {
+                    key: GOOGLE_KEY,
+                    part: 'snippet',//'contentDetails',
+                    playlistId: playlistId,
+                    maxResults: 50 // TODO : YouTube n'autorise pas plus que 50
+                }
+            })
+            .success(function(data) {
+                if (data.pageInfo && data.pageInfo.totalResults > data.pageInfo.resultsPerPage) return cb(new Error("Too much results (> 50)"));
+                cb(null, data);
+            })
+            .error(function(data) {
+                cb(data);
+            })
+    };
+    
+    /**
+     * Crée un disque à partir d'une playlist contenant uniquement des vidéos avec une seule piste
+     */
+    $scope.newDiscFromPlaylistItems = function(playlistItems) {
+        playlistItems = playlistItems.items || playlistItems;
+        
+        var disc = new cuesheet.CueSheet();
+        _.extend(disc, {
+            title: prompt("Nom du disque"),
+            performer: playlistItems[0].snippet.channelTitle
+            /*rems: [
+                "COMMENT \"Playlist YouTube : https://www.youtube.com/watch?v=0WGKC2J3g_Y&list=PL1800E1EFCA1EABE3\""
+            ]*/
+        });
+        
+        for (var i = 0; i < playlistItems.length; ++i) {
+            var item = playlistItems[i];
+            var file = disc.newFile().getCurrentFile();
+            _.extend(file, {
+                name: $scope.getVideoUrlFromId(item.snippet.resourceId.videoId),
+                type: "MP3"
+            });
+            
+            var track = disc.newTrack().getCurrentTrack();
+            _.extend(track, {
+                number: i + 1,
+                title: item.snippet.title,
+                type: "AUDIO",
+                indexes: [
+                    {
+                        "number": 1,
+                        "time": {
+                            "min": 0,
+                            "sec": 0,
+                            "frame": 0
+                        }
+                    }
+                ]
+            });
+        }
+        
+        enrichDisc(disc);
+        
+        return disc;
+    };
+    
+    $scope.createNewDiscFromPlaylist = function(playlistId) {
+        playlistId = playlistId || prompt('Id de la playlist YouTube');
+        
+        $scope.getPlaylistItems(playlistId, (err, playlistItems) => {
+            if (err) {
+                alert('Erreur createNewDiscFromPlaylist : '+err.message);
+                return;
+            }
+            
+            var disc = $scope.newDiscFromPlaylistItems(playlistItems);
+            $http.post("/"+disc.id+".cue.json", disc).then(res => {
+                if (res.status != 200) return alert("POST createNewDiscFromPlaylist $http != 200");
+                
+                console.log("Disque créé");
+                //var disc = res.data; // TODO : doit-on refaire un parsing pour être sûr ?
+                disc.index = $scope.discs.length;
+                $scope.discs.push(disc);
+                
+                // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
+                prompt("Disque créé avec l'id suivant", disc.id);
+                
+            }, resKO => {
+                alert('Erreur POST createNewDiscFromPlaylist : '+resKO.data);
+                return;
+            });
+        });
     };
 
 } // Controller
