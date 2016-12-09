@@ -310,5 +310,24 @@ module.exports = {
     reload: function() {
         cueSheets = {};
         console.log("CueService rechargé");
+    },
+    
+    /**
+     * Cherche tous les id de disques en listant tous les fichiers /client/cues/*.cue
+     */
+    getDiscsIds: function(cb) {
+        fs.readdir(dir, (err, files) => {
+            if (err) return cb(err);
+            
+            var discsIds = [];
+            for (var i = 0; i < files.length; ++i) {
+                var file = files[i];
+                if (file.match(/\.cue$/i)) {
+                    discsIds.push(file.slice(0, -4));
+                }
+            }
+            
+            cb(null, discsIds);
+        });
     }
 }
