@@ -9,7 +9,7 @@ module.exports = {
         var collectionFile = path.resolve(dir, collectionId + '.cues');
         fs.readFile(collectionFile, 'utf-8', (err, collectionContent) => {
             if (err) return cb(err);
-            cb(null, collectionContent.split(/\r?\n/));
+            cb(null, collectionContent.split(/\r?\n/)); // FIXME : ignorer les lignes vides
         })
     },
     
