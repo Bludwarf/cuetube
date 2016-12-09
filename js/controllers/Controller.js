@@ -13,20 +13,45 @@ function Controller($scope, $http) {
     })*/
     
     var discsParam = getParameterByName("discs", document.location.search);
+    var collectionParam = getParameterByName("collection", document.location.search);
     
-    // Playlist jeux vidéos : discs=Dg0IjOzopYU,0WGKC2J3g_Y,TGXwvLupP5A,WGmHaMRAXuI,GRWpooKRLwg,zvHQELG1QHE
+    // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
     
-    var discIds = discsParam && discsParam.split(",") || [
-        "Dg0IjOzopYU",
-        "0WGKC2J3g_Y",
-        "TGXwvLupP5A",
-        "WGmHaMRAXuI",
-        "GRWpooKRLwg",
-        //"8OS4A2a-Fxg", // sushi
-        //"zvHQELG1QHE" // démons et manants
-    ];
-    var remainingDiscNumber = discIds.length;
-    var discs = new Array(remainingDiscNumber);
+    var discIds;
+    var remainingDiscNumber;
+    var discs;
+    
+    // Liste des disque en paramètre ?
+    if (discsParam) {
+        discIds = discsParam.split(",");
+        loadDiscs(discIds);
+    }
+    
+    // Collection de disques en paramètre ?
+    else if (collectionParam) {
+        $http.get("/collection/"+collectionParam+"/discs").then(res => {
+            if (res.status != 200) return console.error("Error GET collection != 200");
+        
+            discIds = res.data;
+            loadDiscs(discIds);
+            
+        }, resKO => {    
+            console.error("Error GET collection : "+resKO.data);
+        });
+    }
+    
+    // Pas de demande de playlist => "Démo"
+    else {
+        discIds = [
+            "Dg0IjOzopYU",
+            "0WGKC2J3g_Y",
+            "TGXwvLupP5A",
+            "WGmHaMRAXuI",
+            "GRWpooKRLwg",
+            //"8OS4A2a-Fxg", // sushi
+            //"zvHQELG1QHE" // démons et manants
+        ];
+    }
     
     // Tracklist togglée
     $scope.lastToggledTracklist = null;
@@ -177,34 +202,39 @@ function Controller($scope, $http) {
     }
     
     // TODO : discsById
-    for (var discIndex = 0; discIndex < discIds.length; ++discIndex) {
-        
-        // discIndex mutable
-        ((discIndex) => {
-            
-            var discId = discIds[discIndex];
-            $http.get("/"+discId+".cue.json").then(res => {
-                if (res.status != 200) return console.error("Error GET cuesheet "+discId+" $http");
+    function loadDiscs(discsIds) {
+        remainingDiscNumber = discIds.length;
+        discs = new Array(remainingDiscNumber);
+        $scope.discs = discs;
     
-                var disc = res.data;
-                discs[discIndex] = disc;
-                enrichDisc(disc, discIndex);
-                
-                // INIT si dernier disque
-                if (--remainingDiscNumber == 0)
-                    initYT();
-            }, resKO => {
-                // INIT si dernier disque
-                if (--remainingDiscNumber == 0)
-                    initYT();
-                prompt('Veuillez ajouter la cuesheet '+discId, discId);
-                    
-                console.error("Error GET cuesheet "+discId+" via $http");
-            });
+        for (var discIndex = 0; discIndex < discIds.length; ++discIndex) {
             
-        })(discIndex);
+            // discIndex mutable
+            ((discIndex) => {
+                
+                var discId = discIds[discIndex];
+                $http.get("/"+discId+".cue.json").then(res => {
+                    if (res.status != 200) return console.error("Error GET cuesheet "+discId+" $http");
+        
+                    var disc = res.data;
+                    discs[discIndex] = disc;
+                    enrichDisc(disc, discIndex);
+                    
+                    // INIT si dernier disque
+                    if (--remainingDiscNumber == 0)
+                        initYT();
+                }, resKO => {
+                    // INIT si dernier disque
+                    if (--remainingDiscNumber == 0)
+                        initYT();
+                    console.error("Error GET cuesheet "+discId+" via $http : "+resKO.data);
+                    prompt('Veuillez ajouter la cuesheet '+discId, discId);
+                });
+                
+            })(discIndex);
+        }
     }
-    $scope.discs = discs;
+    
     $scope.shuffle = true;
     $scope.history = [];
     
