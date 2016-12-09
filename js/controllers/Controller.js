@@ -431,6 +431,10 @@ function Controller($scope, $http) {
         var multiTrack = file.tracks.length > 1;
         this.showOnlyPlaylist(this.currentDiscIndex);
         
+        var start = multiTrack ? track.startSeconds : undefined;
+        var end = multiTrack ? track.endSeconds : undefined;
+        if (start || end) console.log("Track from "+start+" to "+end);
+        
         if (!$scope.player) {
             // On peut récupérer cette variable a posteriori avec : YT.get("player")
             $scope.player = new YT.Player('player', {
@@ -439,8 +443,8 @@ function Controller($scope, $http) {
                 videoId: this.getVideoId(),
                 playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
                     autoplay: 1,
-                    start: multiTrack ? track.startSeconds : undefined,
-                    end: multiTrack ? track.endSeconds : undefined
+                    start: start,
+                    end: end
                 },
                 events: {
                     // 4. The API will call this function when the video player is ready.
@@ -475,12 +479,12 @@ function Controller($scope, $http) {
             // FIXME : graphiquement on ne voit plus les bornes start et end
             $scope.player.loadVideoById({
                 videoId: this.getVideoId(),
-                startSeconds: track.startSeconds,
-                endSeconds: track.endSeconds,
+                startSeconds: start,
+                endSeconds: end,
                 playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
                     autoplay: 1,
-                    start: track.startSeconds,
-                    end: track.endSeconds
+                    start: start,
+                    end: end
                 }
             });
         
