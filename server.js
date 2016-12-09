@@ -9,6 +9,7 @@ var fs = require('fs');
 
 var CueService = require("./services/CueService");
 var VideoService = require("./services/VideoService");
+var CollectionService = require("./services/CollectionService");
 
 var async = require('async');
 //var socketio = require('socket.io');
@@ -116,10 +117,34 @@ router
 /**
  * Paramètres :
  *   - discs : liste des id des disques à charger séparés par ",". Exemple pour les jeux vidéos : Dg0IjOzopYU,0WGKC2J3g_Y,TGXwvLupP5A,WGmHaMRAXuI,GRWpooKRLwg,zvHQELG1QHE
+ *   - collection : id d'un fichier /client/collections/*.cues contenant une liste d'ids de disques
  */
 .get("/", function(req, res) {
     res.render("play.ejs");
-});
+})
+
+.get("/discs", function(req, res) {
+    CueService.getDiscsIds((err, discs) => {
+        if (err) return res.status(500).send(err.message);
+        res.json(discs);
+    })
+})
+
+.get("/collection/:id/discs", function(req, res) {
+    CollectionService.getDiscsIds(req.params.id, (err, discs) => {
+        if (err) return res.status(500).send(err.message);
+        res.json(discs);
+    })
+})
+
+.get("/collections", function(req, res) {
+    CollectionService.getCollectionsIds((err, ids) => {
+        if (err) return res.status(500).send(err.message);
+        res.json(ids);
+    })
+})
+
+;
 
 
 function getOptions(req) {
