@@ -6,6 +6,7 @@ var dir = root + "/client/collections/";
 
 module.exports = {
     getDiscsIds: function(collectionId, cb) {
+        collectionId = collectionId.toLowerCase();
         var collectionFile = path.resolve(dir, collectionId + '.cues');
         fs.readFile(collectionFile, 'utf-8', (err, collectionContent) => {
             if (err) return cb(err);
