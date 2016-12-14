@@ -821,8 +821,15 @@ function Controller($scope, $http) {
         return disc;
     };
     
-    $scope.createNewDiscFromPlaylist = function(playlistId) {
-        playlistId = playlistId || prompt('Id de la playlist YouTube');
+    $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl) {
+        playlistIdOrUrl = playlistIdOrUrl || prompt('Id ou URL de la playlist YouTube');
+        var playlistId;
+        if (playlistIdOrUrl.match(/:\/\//)) { // URL ?
+            playlistId = getParameterByName('list', playlistIdOrUrl);
+        }
+        else {
+            playlistId = playlistIdOrUrl;
+        }
         
         $scope.getPlaylistItems(playlistId, (err, playlistItems) => {
             if (err) {
