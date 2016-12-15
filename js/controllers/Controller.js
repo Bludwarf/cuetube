@@ -1,5 +1,6 @@
 /* global $, _, YT, cuesheet */
 /* require ../cuesheet.js */
+/* require ../cue.js */
 
 function Controller($scope, $http) {
     
@@ -431,7 +432,28 @@ function Controller($scope, $http) {
     
     $scope.getVideoUrlFromId = function(id) {
         return "https://www.youtube.com/watch?v="+id;
-    }
+    };
+    
+    
+    /** @return https://developers.google.com/youtube/v3/docs/videos#resource */
+    $scope.getVideoSnippet = function(videoId, cb) {
+        $http.get('https://www.googleapis.com/youtube/v3/videos', {
+            params: {
+                key: GOOGLE_KEY,
+                part: 'snippet',//'contentDetails',
+                id: videoId,
+                maxResults: 1
+            }
+        })
+        .success(function(data) {
+            if (!data.items || data.items.length != 1) return cb(new Error("Items not found for videoId "+videoId));
+            cb(null, data.items[0].snippet);
+        })
+        .error(function(data) {
+            cb(data);
+        })
+    };
+
     
     
     /*function getVideoIdFromUrl(url) {
@@ -821,15 +843,23 @@ function Controller($scope, $http) {
         return disc;
     };
     
-    $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl) {
-        playlistIdOrUrl = playlistIdOrUrl || prompt('Id ou URL de la playlist YouTube');
-        var playlistId;
-        if (playlistIdOrUrl.match(/:\/\//)) { // URL ?
-            playlistId = getParameterByName('list', playlistIdOrUrl);
+    /**
+     * @param promptMessage message à afficher si on doit demander d'entrer une valeur pour idOrUrl
+     * @param urlParam nom du paramètre contenant l'id à récupérer dans le cas d'une URL passée en argument
+     * @return l'id à partir d'un ID ou d'une URL
+     */
+    function getIdOrUrl(idOrUrl, promptMessage, urlParam) {
+        idOrUrl = idOrUrl || prompt(promptMessage);
+        if (idOrUrl.match(/:\/\//)) { // URL ?
+            return getParameterByName(urlParam, idOrUrl);
         }
         else {
-            playlistId = playlistIdOrUrl;
+            return idOrUrl;
         }
+    }
+    
+    $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl) { 
+        var playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
         
         $scope.getPlaylistItems(playlistId, (err, playlistItems) => {
             if (err) {
@@ -861,5 +891,137 @@ function Controller($scope, $http) {
             document.body.style.backgroundImage = 'url(https://img.youtube.com/vi/'+newDisc.videoId+'/hqdefault.jpg)'
         }
     });
+    
+    // fonction extraite de cue-parser/lib/cue.js
+    /**
+     * Accepte : H:M:S ou M:S
+     * @return {cuesheet.Time}
+     */
+    function parseTime(timeSting) {
+        var timePattern = /^(?:(\d+):)?(\d+):(\d+)$/,
+        parts = timeSting.match(timePattern),
+        time = new cuesheet.Time();
+    
+        if (!parts) {
+            throw new Error('Invalid time format:' + timeSting);
+        }
+    
+        time.min = (parts[1] ? parts[1]*60 : 0) + parseInt(parts[2], 10);
+        time.sec = parseInt(parts[3], 10);
+        time.frame = 0;
+    
+        return time;
+    }
+    
+    $scope.createNewDiscFromVideo = function(videoIdOrUrl, cb) {
+        var videoId = getIdOrUrl(videoIdOrUrl, 'Id ou URL de la vidéo YouTube (multipiste)', 'v');
+        cb = cb || function(err, disc) {
+        };
+        
+        $scope.getVideoSnippet(videoId, (err, snippet) => {
+            if (err) return cb(err);
+            
+            var description = snippet.localized.description;
+            
+            // Recherche des lignes contenant des timecodes
+            var lines = description.split(/\n/);
+            
+            // Création de la cuesheet
+            var disc = new cuesheet.CueSheet();
+            _.extend(disc, {
+                title: snippet.title,
+                performer: snippet.channelTitle
+            });
+            
+            // Un seul fichier puisqu'une seule vidéo
+            var file = disc.newFile().getCurrentFile();
+            _.extend(file, {
+                name: $scope.getVideoUrlFromId(videoId),
+                type: "MP3"
+            });
+            
+            // Parsing de la description
+            var rx = /(.+[^\d:])?(\d+(?::\d+)+)([^\d:].+)?/i; // 1:avant time code, 2:timecode, 3:après timecode
+            var sepRxAfter = /^([^\w]+)(\w.+)$/;
+            var sepRxBefore = /^(\w.+)([^\w]+)$/;
+            var artistBeforeTitle; // comme dans le m3u ?
+            for (var i = 0; i < lines.length; ++i) {
+                var line = lines[i];
+                var parts = rx.exec(line);
+                if (parts) {
+                    console.log("createNewDiscFromVideo : "+line);
+                    var time = parseTime(parts[2]);
+                    var textAfterTime = !!parts[3];
+                    var text = textAfterTime ? parts[3] : parts[1];
+                    
+                    // On cherche le séparateur
+                    var sepRx = textAfterTime ? sepRxAfter : sepRxBefore;
+                    var sepParts = sepRx.exec(text);
+                    var sep = sepParts[1];
+                    text = sepParts[2];
+                    
+                    // Séparation du texte
+                    var title, artist;
+                    if (sep.trim()) {
+                        var texts = text.split(sep);
+                        
+                        // Deux parties (artiste - title ou title - artiste) ?
+                        if (sep.trim() && texts.length > 1) {
+                            if (typeof(artistBeforeTitle) === 'undefined') {
+                                artistBeforeTitle = confirm("Le nom de l'artiste est bien avant le titre dans le texte suivant ?\n"+text);
+                            }
+                            
+                            if (artistBeforeTitle) {
+                                artist = texts[0];
+                                title = texts[1];
+                            }
+                            else {
+                                title = texts[0];
+                                artist = texts[1];
+                            }
+                        }
+                        else {
+                            title = text;
+                        }
+                    }
+                    else {
+                        // sep vide
+                        title = text;
+                    }
+                    
+                    var track = disc.newTrack(file.tracks ? file.tracks.length : 0, "AUDIO").getCurrentTrack();
+                    _.extend(track, {
+                        title: title,
+                        performer: artist,
+                        indexes: [
+                            new cuesheet.Index(1, time)
+                        ]
+                    });
+                }
+            }//for
+            
+            enrichDisc(disc);
+            
+            $http.post("/"+videoId+".cue.json", disc).then(res => {
+                if (res.status != 200) return alert("POST createNewDiscFromVideo $http != 200");
+                
+                console.log("Disque créé");
+                //var disc = res.data; // TODO : doit-on refaire un parsing pour être sûr ?
+                disc.index = $scope.discs.length;
+                $scope.discs.push(disc);
+                
+                // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
+                prompt("Disque créé avec l'id suivant", disc.id);
+                
+                cb(null, disc);
+                
+            }, resKO => {
+                alert('Erreur POST createNewDiscFromVideo : '+resKO.data);
+                return cb(resKO.data);
+            });
+        });
+
+    };
+
 
 } // Controller
