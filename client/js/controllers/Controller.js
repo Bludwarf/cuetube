@@ -943,7 +943,7 @@ function Controller($scope, $http) {
             // Parsing de la description
             var rx = /(.+[^\d:])?(\d+(?::\d+)+)([^\d:].+)?/i; // 1:avant time code, 2:timecode, 3:après timecode
             var sepRxAfter = /^([^\w]+)(\w.+)$/;
-            var sepRxBefore = /^(\w.+)([^\w]+)$/;
+            var sepRxBefore = /^[^\w]*(\w.+)([^\w]+)$/;
             var artistBeforeTitle; // comme dans le m3u ?
             for (var i = 0; i < lines.length; ++i) {
                 var line = lines[i];
@@ -957,12 +957,12 @@ function Controller($scope, $http) {
                     // On cherche le séparateur
                     var sepRx = textAfterTime ? sepRxAfter : sepRxBefore;
                     var sepParts = sepRx.exec(text);
-                    var sep = sepParts[1];
-                    text = sepParts[2];
+                    var sep = sepParts ? sepParts[1] : null;
+                    text = sepParts ? sepParts[2] : text;
                     
                     // Séparation du texte
                     var title, artist;
-                    if (sep.trim()) {
+                    if (sep && sep.trim()) {
                         var texts = text.split(sep);
                         
                         // Deux parties (artiste - title ou title - artiste) ?
