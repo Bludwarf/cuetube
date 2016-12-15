@@ -94,6 +94,19 @@ function Controller($scope, $http) {
                 return this.enabled = !this.enabled;
             }
             
+            // Alt + Click => activer/désactiver tous les autres
+            else if (e.altKey) {
+                this.enabled = !this.enabled;
+                // Cochage => on décoche tous les autres
+                // et vice-versa
+                var discs = $scope.discs;
+                for (var i = 0; i < discs.length; ++i) {
+                    var disc = discs[i];
+                    if (!disc || disc === this) continue;
+                    disc.enabled = !this.enabled;
+                }
+            }
+            
             // Sinon => ouvrir la tracklist
             else {
                 return this.openTracklist(e);
