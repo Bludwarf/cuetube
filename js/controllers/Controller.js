@@ -989,7 +989,7 @@ function Controller($scope, $http) {
                         title = text;
                     }
                     
-                    var track = disc.newTrack(file.tracks ? file.tracks.length : 0, "AUDIO").getCurrentTrack();
+                    var track = disc.newTrack(file.tracks ? (file.tracks.length + 1) : 1, "AUDIO").getCurrentTrack();
                     _.extend(track, {
                         title: title,
                         performer: artist,
