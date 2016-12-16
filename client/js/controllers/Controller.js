@@ -2,6 +2,9 @@
 /* require ../cuesheet.js */
 /* require ../cue.js */
 
+/**
+ * @property track.played : nombre de fois joué
+ */
 function Controller($scope, $http) {
     
     var GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
@@ -609,6 +612,10 @@ function Controller($scope, $http) {
         scope.fileSlider.max = file.duration;
         
         scope.changeVideoIHM(); // au cas ou on a déplacé le curseur
+        
+        // Incrémentation du nombre de lectures de la piste courante
+        var track = $scope.getCurrentTrack();
+        ++track.played;
     });
     
     $scope.$on("video ended", (event) => {
