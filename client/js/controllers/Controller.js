@@ -349,7 +349,7 @@ function Controller($scope, $http) {
                 var possibleDiscs = [];
                 for (var i = 0; i < discs.length; ++i) {
                     var disc = discs[i];
-                    if (disc.enabled) possibleDiscs.push(disc);
+                    if (disc && disc.enabled) possibleDiscs.push(disc);
                 }
                 
                 // Aucun disque activé ?
