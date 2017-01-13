@@ -115,13 +115,17 @@ router
     res.redirect("/");
 })
 
+.get("/", function(req, res) {
+    res.render("index.ejs");
+})
+
 /**
  * Paramètres :
  *   - discs : liste des id des disques à charger séparés par ",". Exemple pour les jeux vidéos : Dg0IjOzopYU,0WGKC2J3g_Y,TGXwvLupP5A,WGmHaMRAXuI,GRWpooKRLwg,zvHQELG1QHE
  *   - collection : id d'un fichier /client/collections/*.cues contenant une liste d'ids de disques
  */
-.get("/", function(req, res) {
-    res.render("play.ejs");
+.get("/player", function(req, res) {
+    res.render("player.ejs");
 })
 
 .get("/discs", function(req, res) {
