@@ -28,6 +28,7 @@ var server = http.createServer(router);
 
 router
     .use(express.static(path.resolve(__dirname, 'client')))
+    .use('/socket.io/socket.io.js', express.static(__dirname+'/node_modules/socket.io/node_modules/socket.io-client/dist/socket.io.min.js'))
     .use(bodyParser.json()) // for parsing application/json
     .use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
     .set('view engine', 'ejs')
