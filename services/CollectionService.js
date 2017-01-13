@@ -10,7 +10,12 @@ module.exports = {
         var collectionFile = path.resolve(dir, collectionId + '.cues');
         fs.readFile(collectionFile, 'utf-8', (err, collectionContent) => {
             if (err) return cb(err);
-            cb(null, collectionContent.split(/\r?\n/)); // FIXME : ignorer les lignes vides
+            var lines = collectionContent.split(/\r?\n/);
+            var nonEmptyLines = [];
+            lines.forEach(function(line) {
+                if (line.trim()) nonEmptyLines.push(line);
+            });
+            cb(null, nonEmptyLines);
         })
     },
     
