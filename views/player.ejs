@@ -250,7 +250,7 @@
                     <ol class="disc-list">
                         <div ng-repeat="file in currentDisc.files">
                             <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index, $parent.$index)">
-                                {{track.title}}
+                                {{track.title || "Track "+track.number}}
                             </li>
                         </div>
                     </ol>
@@ -280,7 +280,7 @@
                                 <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
                                 <div ng-repeat="file in disc.files">
                                     <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
-                                        {{track.title}}
+                                        {{track.title || "Track "+track.number}}
                                     </li>
                                 </div>
                             </ol>
