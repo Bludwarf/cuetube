@@ -90,6 +90,10 @@
             color: #DB992C;
         }
         
+        .track input {
+            cursor: default;
+        }
+        
         #player-div {
             position: absolute /*fixed*/;
             top: 0;
@@ -249,8 +253,9 @@
                 <div ng-model="currentDisc" class="columns">
                     <ol class="disc-list">
                         <div ng-repeat="file in currentDisc.files">
-                            <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index, $parent.$index)">
-                                {{track.title || "Track "+track.number}}
+                            <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}">
+                                <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
+                                <span  ng-click="loadTrackIndex($index, $parent.$index)">{{track.title || "Track "+track.number}}</span>
                             </li>
                         </div>
                     </ol>
@@ -280,7 +285,8 @@
                                 <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
                                 <div ng-repeat="file in disc.files">
                                     <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex]}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
-                                        {{track.title || "Track "+track.number}}
+                                        <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
+                                        <span>{{track.title || "Track "+track.number}}</span>
                                     </li>
                                 </div>
                             </ol>
