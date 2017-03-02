@@ -78,15 +78,41 @@ function Controller($scope, $http) {
         
         // Getters pour Disc
         Object.defineProperties(disc, {
+            
             id: {
                 get: function() {
                     return this.videoId;
                 }
             },
+            
             videoId: {
                 get: function() {
                     if (!this.files || !this.files.length) return undefined;
                     return this.files[0].videoId;
+                }
+            },
+            
+            /** @type [Track] */
+            tracks: {
+                get: function() {
+                    var tracks = [];
+                    if (this.files) {
+                        this.files.forEach(function(file) {
+                            tracks = tracks.concat(file.tracks);
+                        });
+                    }
+                    return tracks;
+                }
+            },
+            
+            /** @type boolean */
+            playable: {
+                get: function() {
+                    if (!this.enabled) return false;
+                    // au moins un track.enabled
+                    return _.some(this.tracks, function(track) {
+                        return track.enabled;
+                    });
                 }
             }
         });
@@ -149,15 +175,44 @@ function Controller($scope, $http) {
         disc.nextTrack = function() {
             var disc = this;
             
-            // Next file
-            var fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
-            var file = disc.files[fileIndex];
-            $scope.currentFileIndex = fileIndex;
-            $scope.currentFile = file;
+            var possibleTracks = [];
+            var nextIsNextInOrder = false; // pour recherche du prochain dans l'ordre
+            var nextInOrder = null; // prochain dans l'ordre
+            for (var i = 0; i < disc.tracks.length; ++i) {
+                var track = disc.tracks[i];
+                if (track) {
+                    if (!$scope.shuffle && !nextIsNextInOrder && track.isCurrent) {
+                        nextIsNextInOrder = true;
+                        continue;
+                    }
+                    if (track.enabled && !track.isCurrent) {
+                        possibleTracks.push(track);
+                        if (nextIsNextInOrder) {
+                            nextInOrder = track;
+                            nextIsNextInOrder = false;
+                        }
+                    }
+                }
+            }
             
-            // Next track
-            var trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
-            $scope.currentTrackIndex = trackIndex;
+            var track;
+            if ($scope.shuffle && possibleTracks.length) {
+                track = possibleTracks[Math.floor(Math.random() * possibleTracks.length)];
+            }
+            else {
+                track = nextInOrder;
+            }
+            
+            if (!track) {
+                console.log("Plus aucune piste à lire");
+                return false;
+            }
+            
+            $scope.currentTrackIndex = track.index;
+            $scope.currentFileIndex = track.file.index;
+            $scope.currentFile = track.file;
+            
+            return track;
         }
         
         for (var fileIndex = 0; fileIndex < disc.files.length; ++fileIndex) {
@@ -169,9 +224,19 @@ function Controller($scope, $http) {
                 
                 // Getters pour File
                 Object.defineProperties(file, {
+                    index: {
+                        get: function() {
+                            return fileIndex;
+                        }
+                    },
                     videoId: {
                         get: function() {
                             return getParameterByName("v", this.name);
+                        }
+                    },
+                    disc: {
+                        get: function() {
+                            return disc;
                         }
                     }
                 });
@@ -182,10 +247,21 @@ function Controller($scope, $http) {
                     ((trackIndex) => {
                         
                         var track = file.tracks[trackIndex];
+                        track.enabled = disc.enabled; // pour choisir les pistes à lire
                         Object.defineProperties(track, {
                             index: {
                                 get: function() {
                                     return this.number - 1;
+                                }
+                            },
+                            file: {
+                                get: function() {
+                                    return file;
+                                }
+                            },
+                            disc: {
+                                get: function() {
+                                    return this.file.disc;
                                 }
                             },
                             startSeconds: {
@@ -208,8 +284,52 @@ function Controller($scope, $http) {
                                     else
                                         return undefined;
                                 }
+                            },
+                            next: {
+                                get: function() {
+                                    // Même fichier ?
+                                    if (this.index < this.file.tracks.length) {
+                                        return this.file.tracks[this.index+1];
+                                    }
+                                    // Même disque ?
+                                    if (this.file.index < this.file.disc.files.length) {
+                                        var nextFile = this.file.disc.files[this.file.index+1];
+                                        if (nextFile.tracks && nextFile.tracks.length) {
+                                            return nextFile.tracks[0];
+                                        }
+                                    }
+                                    return null;
+                                }
+                            },
+                            isCurrent: {
+                                get: function() {
+                                    return $scope.currentTrackIndex == this.index
+                                        && $scope.currentFileIndex  == this.file.index
+                                        && $scope.currentDiscIndex  == this.file.disc.index;
+                                }
                             }
                         });
+                        
+                        /**
+                         * Quand coché + click =>   coche tous
+                         *  si décoché + click => décoche tous
+                         */
+                        track.afterClickCheckbox = function(e) {
+                            // Alt + Click => activer/désactiver tous les autres
+                            if (e.altKey) {
+                                var input = e.currentTarget;
+                                // Cochage => on décoche tous les autres
+                                // et vice-versa
+                                var tracks = this.disc.tracks;
+                                for (var i = 0; i < tracks.length; ++i) {
+                                    var track = tracks[i];
+                                    if (!track || track === this) continue;
+                                    track.enabled = !input.checked;
+                                }
+                            }
+                            
+                            e.stopPropagation();
+                        };
                         
                     })(trackIndex);
                 }
@@ -349,12 +469,12 @@ function Controller($scope, $http) {
                 var possibleDiscs = [];
                 for (var i = 0; i < discs.length; ++i) {
                     var disc = discs[i];
-                    if (disc && disc.enabled) possibleDiscs.push(disc);
+                    if (disc && disc.playable) possibleDiscs.push(disc);
                 }
                 
-                // Aucun disque activé ?
+                // Aucun disque jouable ?
                 if (!possibleDiscs.length) {
-                    console.error("Aucun disque activé");
+                    console.error("Aucun disque activé (ou sans piste activées)");
                     return;
                 }
                 
@@ -368,7 +488,7 @@ function Controller($scope, $http) {
                 $scope.currentDisc = discs[$scope.currentDiscIndex];
             }
             
-            $scope.currentDisc.nextTrack();
+            $scope.currentDisc.nextTrack(); // FIXME : arrêter la lecture si plus aucune piste
         });
         
         // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
