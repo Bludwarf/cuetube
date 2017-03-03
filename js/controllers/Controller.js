@@ -208,7 +208,7 @@ function Controller($scope, $http) {
                 return false;
             }
             
-            $scope.currentTrackIndex = track.index;
+            $scope.currentTrackIndex = track.indexInFile;
             $scope.currentFileIndex = track.file.index;
             $scope.currentFile = track.file;
             
@@ -252,6 +252,11 @@ function Controller($scope, $http) {
                             index: {
                                 get: function() {
                                     return this.number - 1;
+                                }
+                            },
+                            indexInFile: {
+                                get: function() {
+                                    return trackIndex;
                                 }
                             },
                             file: {
