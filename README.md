@@ -1,6 +1,8 @@
 # Utilisation
 
   - Décocher une vidéo pour ne plus la lire automatiquement
+  - Charger une collection de disques : `/player?collection=jeux%20vidéos`
+  - Charger un ou plusieurs disque : `/player?discs=Dg0IjOzopYU,0WGKC2J3g_Y`
 
 # Routes
 
