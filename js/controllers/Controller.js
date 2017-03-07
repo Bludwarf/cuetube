@@ -316,13 +316,14 @@ function Controller($scope, $http) {
                         });
                         
                         /**
-                         * Quand coché + click =>   coche tous
-                         *  si décoché + click => décoche tous
+                         * Quand coché + alt click =>   coche tous
+                         *  si décoché + alt click => décoche tous
                          */
                         track.afterClickCheckbox = function(e) {
+                            let input = e.currentTarget;
+
                             // Alt + Click => activer/désactiver tous les autres
                             if (e.altKey) {
-                                var input = e.currentTarget;
                                 // Cochage => on décoche tous les autres
                                 // et vice-versa
                                 var tracks = this.disc.tracks;
@@ -332,7 +333,24 @@ function Controller($scope, $http) {
                                     track.enabled = !input.checked;
                                 }
                             }
-                            
+
+                            // Maj + click => activer/désactiver tous entre les deux
+                            if (e.shiftKey) {
+                                let last = $scope.lastCheckedTrack;
+                                let startIndex = Math.min(last.index, this.index);
+                                let endIndex   = Math.max(last.index, this.index);
+                                let tracks = this.disc.tracks.slice(startIndex, endIndex + 1);
+                                tracks.forEach(function(track) {
+                                    if (!track || track === this) return;
+                                    track.enabled = input.checked;
+                                });
+                            }
+
+                            // Sauvegarde du dernier click (sans Maj)
+                            if (!e.shiftKey) {
+                                $scope.lastCheckedTrack = this;
+                            }
+
                             e.stopPropagation();
                         };
                         
