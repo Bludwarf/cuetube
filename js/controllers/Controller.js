@@ -43,15 +43,22 @@ function Controller($scope, $http) {
             console.error("Error GET collection : "+resKO.data);
         });
     }
+
+    // Pas de demande, on reprend la sauvegarde
+    else if (localStorage.getItem('discIds')) {
+        console.log("On charge les disques enregistrés dans le localStorage");
+        discIds = localStorage.getItem('discIds').split(',');
+        loadDiscs(discIds);
+    }
     
     // Pas de demande de playlist => "Démo"
     else {
         discIds = [
             "Dg0IjOzopYU",
-            "0WGKC2J3g_Y",
+            "RRtlWfi6jiM",
             "TGXwvLupP5A",
             "WGmHaMRAXuI",
-            "GRWpooKRLwg",
+            "_VlTKjkDdbs",
             //"8OS4A2a-Fxg", // sushi
             //"zvHQELG1QHE" // démons et manants
         ];
@@ -78,7 +85,8 @@ function Controller($scope, $http) {
         
         // Getters pour Disc
         Object.defineProperties(disc, {
-            
+
+            /** l'id du disque correspond à l'id de la première vidéo YouTube */
             id: {
                 get: function() {
                     return this.videoId;
@@ -362,7 +370,7 @@ function Controller($scope, $http) {
     }
     
     // TODO : discsById
-    function loadDiscs(discsIds) {
+    function loadDiscs(discIds) {
         remainingDiscNumber = discIds.length;
         discs = new Array(remainingDiscNumber);
         $scope.discs = discs;
@@ -971,7 +979,7 @@ function Controller($scope, $http) {
             title: prompt("Nom du disque"),
             performer: playlistItems[0].snippet.channelTitle
             /*rems: [
-                "COMMENT \"Playlist YouTube : https://www.youtube.com/watch?v=0WGKC2J3g_Y&list=PL1800E1EFCA1EABE3\""
+                "COMMENT \"Playlist YouTube : https://www.youtube.com/watch?v=RRtlWfi6jiM&list=PL1800E1EFCA1EABE3\""
             ]*/
         });
         
@@ -1184,6 +1192,14 @@ function Controller($scope, $http) {
             });
         });
 
+    };
+
+    /**
+     * Sauvegarde l'état actuel dans le localStorage
+     */
+    $scope.save = function() {
+        localStorage.setItem('discIds', _.pluck($scope.discs, 'id'));
+        console.log("Sauvegarde terminée");
     };
 
 
