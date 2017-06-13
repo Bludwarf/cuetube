@@ -28,8 +28,8 @@
       <file leaf-file-name="Controller.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/js/controllers/Controller.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.12222222">
-              <caret line="462" column="44" selection-start-line="462" selection-start-column="44" selection-end-line="462" selection-end-column="44" />
+            <state vertical-scroll-proportion="-0.014925373">
+              <caret line="618" column="26" selection-start-line="618" selection-start-column="26" selection-end-line="618" selection-end-column="26" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -388,7 +388,13 @@
       <option name="project" value="LOCAL" />
       <updated>1497386066256</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Ne pas jouer les disques disabled">
+      <created>1497386087962</created>
+      <option name="number" value="00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1497386087962</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -445,9 +451,9 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="Sauvegarde des discIds dans le localStorage" />
-    <MESSAGE value="Ne pas jouer les disques disabled" />
     <MESSAGE value="Modèle des objets Disc" />
-    <option name="LAST_COMMIT_MESSAGE" value="Modèle des objets Disc" />
+    <MESSAGE value="Ne pas jouer les disques disabled" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ne pas jouer les disques disabled" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -972,8 +978,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/js/controllers/Controller.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.12222222">
-          <caret line="462" column="44" selection-start-line="462" selection-start-column="44" selection-end-line="462" selection-end-column="44" />
+        <state vertical-scroll-proportion="-0.014925373">
+          <caret line="618" column="26" selection-start-line="618" selection-start-column="26" selection-end-line="618" selection-end-column="26" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
