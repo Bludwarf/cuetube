@@ -613,6 +613,11 @@ function Controller($scope, $http) {
         var start = multiTrack ? track.startSeconds : undefined;
         var end = multiTrack ? track.endSeconds : undefined;
         if (start || end) console.log("Track from "+start+" to "+end);
+
+        // Youtube ne redémarre pas à 0 si on lui indique exactement 0
+        if (multiTrack && !start) {
+            start = 0.001;
+        }
         
         if (!$scope.player) {
             // On peut récupérer cette variable a posteriori avec : YT.get("player")
