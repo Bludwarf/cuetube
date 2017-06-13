@@ -66,11 +66,17 @@ function Controller($scope, $http) {
     
     // Tracklist togglée
     $scope.lastToggledTracklist = null;
-    function toggleTracklist(tracklist) {
+    function toggleTracklist(tracklist, disc) {
         var lastToggledTracklist = $scope.lastToggledTracklist;
         if (lastToggledTracklist != null && lastToggledTracklist != tracklist) $(lastToggledTracklist).hide();
         
         $(tracklist).toggle();
+
+        if ($(tracklist).is(':visible')) {
+            $scope.discInTracklist = disc; // disque ouvert dans la liste des pistes (tooltip)
+        } else {
+            $scope.discInTracklist = null;
+        }
         
         $scope.lastToggledTracklist = tracklist;
     }
@@ -82,6 +88,7 @@ function Controller($scope, $http) {
     function enrichDisc(disc, discIndex) {
         
         disc.clickThumb = function(e) {
+
             // Ctrl + Click => activer/désactiver disque
             if (e.ctrlKey) {
                 return this.enabled = !this.enabled;
@@ -102,7 +109,7 @@ function Controller($scope, $http) {
             
             // Sinon => ouvrir la tracklist
             else {
-                return this.openTracklist(e);
+                return this.openTracklist(e, this);
             }
         };
         
@@ -123,9 +130,9 @@ function Controller($scope, $http) {
             e.stopPropagation();
         };
                 
-        disc.openTracklist = function(e) {
+        disc.openTracklist = function(e, disc) {
             var discThumb = e.currentTarget;
-            toggleTracklist(discThumb.nextElementSibling);
+            toggleTracklist(discThumb.nextElementSibling, disc);
             e.stopPropagation(); // pour ne pas appeler document.onclick
         };
         
