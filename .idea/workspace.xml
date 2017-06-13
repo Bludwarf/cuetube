@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/client/js/controllers/Controller.js" line="110" mnemonic="1" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="4aeafc41-70fa-4d0b-9377-fb0ef9317e58" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/views/index.ejs" afterPath="$PROJECT_DIR$/views/index.ejs" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client/js/controllers/Controller.js" afterPath="$PROJECT_DIR$/client/js/controllers/Controller.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/views/player.ejs" afterPath="$PROJECT_DIR$/views/player.ejs" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -28,8 +32,8 @@
       <file leaf-file-name="Controller.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/js/controllers/Controller.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.7222223">
-              <caret line="189" column="32" selection-start-line="189" selection-start-column="23" selection-end-line="189" selection-end-column="32" />
+            <state vertical-scroll-proportion="-7.3333335">
+              <caret line="134" column="62" selection-start-line="134" selection-start-column="62" selection-end-line="134" selection-end-column="62" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -37,11 +41,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.ejs" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/views/index.ejs">
+      <file leaf-file-name="player.ejs" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/views/player.ejs">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33175355">
-              <caret line="14" column="24" selection-start-line="14" selection-start-column="24" selection-end-line="14" selection-end-column="24" />
+            <state vertical-scroll-proportion="0.9220104">
+              <caret line="133" column="51" selection-start-line="133" selection-start-column="51" selection-end-line="133" selection-end-column="51" />
               <folding />
             </state>
           </provider>
@@ -109,16 +113,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="player.ejs" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/views/player.ejs">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.372549">
-              <caret line="268" column="258" selection-start-line="268" selection-start-column="258" selection-end-line="268" selection-end-column="258" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="CollectionService.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/services/CollectionService.js">
           <provider selected="true" editor-type-id="text-editor">
@@ -157,10 +151,10 @@
         <option value="$PROJECT_DIR$/src/CueObjects.js" />
         <option value="$PROJECT_DIR$/src/CueObjects.coffee" />
         <option value="$PROJECT_DIR$/src/disc.coffee" />
-        <option value="$PROJECT_DIR$/client/js/controllers/Controller.js" />
-        <option value="$PROJECT_DIR$/views/player.ejs" />
         <option value="$PROJECT_DIR$/client/collections/jeux vidéos.cues" />
         <option value="$PROJECT_DIR$/views/index.ejs" />
+        <option value="$PROJECT_DIR$/client/js/controllers/Controller.js" />
+        <option value="$PROJECT_DIR$/views/player.ejs" />
       </list>
     </option>
   </component>
@@ -474,7 +468,13 @@
       <option name="project" value="LOCAL" />
       <updated>1497387818556</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Page d'accueil de base (défaut)">
+      <created>1497388151279</created>
+      <option name="number" value="00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1497388151279</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -537,7 +537,8 @@
     <MESSAGE value="Correction collection Jeux Vidéos" />
     <MESSAGE value="FIX #16 liste cliquable" />
     <MESSAGE value="JS compilés par CoffeeScript" />
-    <option name="LAST_COMMIT_MESSAGE" value="JS compilés par CoffeeScript" />
+    <MESSAGE value="Page d'accueil de base (défaut)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Page d'accueil de base (défaut)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1010,26 +1011,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/js/cuesheet.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="2.2222223">
-          <caret line="34" column="16" selection-start-line="34" selection-start-column="9" selection-end-line="34" selection-end-column="16" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/disc.coffee">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="27" column="50" selection-start-line="27" selection-start-column="50" selection-end-line="27" selection-end-column="50" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/views/player.ejs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.372549">
-          <caret line="268" column="258" selection-start-line="268" selection-start-column="258" selection-end-line="268" selection-end-column="258" />
           <folding />
         </state>
       </provider>
@@ -1061,20 +1046,36 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/views/index.ejs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33175355">
+          <caret line="14" column="24" selection-start-line="14" selection-start-column="24" selection-end-line="14" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/js/cuesheet.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="2.2222223">
+          <caret line="34" column="16" selection-start-line="34" selection-start-column="9" selection-end-line="34" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/client/js/controllers/Controller.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.7222223">
-          <caret line="189" column="32" selection-start-line="189" selection-start-column="23" selection-end-line="189" selection-end-column="32" />
+        <state vertical-scroll-proportion="-7.3333335">
+          <caret line="134" column="62" selection-start-line="134" selection-start-column="62" selection-end-line="134" selection-end-column="62" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/views/index.ejs">
+    <entry file="file://$PROJECT_DIR$/views/player.ejs">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33175355">
-          <caret line="14" column="24" selection-start-line="14" selection-start-column="24" selection-end-line="14" selection-end-column="24" />
+        <state vertical-scroll-proportion="0.9220104">
+          <caret line="133" column="51" selection-start-line="133" selection-start-column="51" selection-end-line="133" selection-end-column="51" />
           <folding />
         </state>
       </provider>

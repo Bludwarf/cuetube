@@ -135,7 +135,11 @@
         }
                 
         .disc-wrapper.active  {
-            border: solid 3px #DB992C; /* = .track.active.color */
+            border-color: #DB992C; /* = .track.active.color */
+        }
+
+        .disc-wrapper.inTracklist, .disc-wrapper:hover  {
+            border-color: #FFFFFF;
         }
         
         .disabled-video-cache {
@@ -285,7 +289,7 @@
             
             <div class="discs">
             
-                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex]}">
+                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex], inTracklist: disc == discInTracklist}">
                     <div class="disc-thumb" ng-click="disc.clickThumb($event)" title="{{disc.title}}">
                         <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" />
                         <div class="disabled-video-cache" ng-hide="disc.enabled"></div>
