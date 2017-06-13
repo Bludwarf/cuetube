@@ -80,50 +80,6 @@ function Controller($scope, $http) {
     };
     
     function enrichDisc(disc, discIndex) {
-        disc.index = discIndex;
-        disc.enabled = true; // pour choisir les vidéos à lire
-        
-        // Getters pour Disc
-        Object.defineProperties(disc, {
-
-            /** l'id du disque correspond à l'id de la première vidéo YouTube */
-            id: {
-                get: function() {
-                    return this.videoId;
-                }
-            },
-            
-            videoId: {
-                get: function() {
-                    if (!this.files || !this.files.length) return undefined;
-                    return this.files[0].videoId;
-                }
-            },
-            
-            /** @type [Track] */
-            tracks: {
-                get: function() {
-                    var tracks = [];
-                    if (this.files) {
-                        this.files.forEach(function(file) {
-                            tracks = tracks.concat(file.tracks);
-                        });
-                    }
-                    return tracks;
-                }
-            },
-            
-            /** @type boolean */
-            playable: {
-                get: function() {
-                    if (!this.enabled) return false;
-                    // au moins un track.enabled
-                    return _.some(this.tracks, function(track) {
-                        return track.enabled;
-                    });
-                }
-            }
-        });
         
         disc.clickThumb = function(e) {
             // Ctrl + Click => activer/désactiver disque
@@ -171,7 +127,7 @@ function Controller($scope, $http) {
             var discThumb = e.currentTarget;
             toggleTracklist(discThumb.nextElementSibling);
             e.stopPropagation(); // pour ne pas appeler document.onclick
-        }
+        };
         
         disc.load = function() {
             $scope.currentDiscIndex = discIndex;
@@ -221,7 +177,7 @@ function Controller($scope, $http) {
             $scope.currentFile = track.file;
             
             return track;
-        }
+        };
         
         for (var fileIndex = 0; fileIndex < disc.files.length; ++fileIndex) {
             
@@ -384,7 +340,11 @@ function Controller($scope, $http) {
                 $http.get("/"+discId+".cue.json").then(res => {
                     if (res.status != 200) return console.error("Error GET cuesheet "+discId+" $http");
         
-                    var disc = res.data;
+                    var cue = new cuesheet.CueSheet();
+                    _.extend(cue, res.data);
+
+                    var disc = new Disc(cue);
+                    disc.index = discIndex;
                     discs[discIndex] = disc;
                     enrichDisc(disc, discIndex);
                     
