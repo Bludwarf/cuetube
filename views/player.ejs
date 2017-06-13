@@ -266,9 +266,9 @@
                 <div ng-model="currentDisc" class="columns">
                     <ol class="disc-list">
                         <div ng-repeat="file in currentDisc.files">
-                            <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}">
+                            <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index)">
                                 <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
-                                <span  ng-click="loadTrackIndex($index, $parent.$index)">{{track.title || "Track "+track.number}}</span>
+                                <span>{{track.title || "Track "+track.number}}</span>
                             </li>
                         </div>
                     </ol>
