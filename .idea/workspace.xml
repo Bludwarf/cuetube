@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4aeafc41-70fa-4d0b-9377-fb0ef9317e58" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/views/player.ejs" afterPath="$PROJECT_DIR$/views/player.ejs" />
+    <list default="true" id="4aeafc41-70fa-4d0b-9377-fb0ef9317e58" name="Default" comment="FIX #16 liste cliquable">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/client/js/disc.js.map" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/client/js/disc.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -453,7 +454,13 @@
       <option name="project" value="LOCAL" />
       <updated>1497387263841</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="FIX #16 liste cliquable">
+      <created>1497387354209</created>
+      <option name="number" value="00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1497387354209</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -470,9 +477,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="4" y="23" width="1276" height="777" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16972111" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16972111" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.329927" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.13430656" sideWeight="0.50278884" order="7" side_tool="true" content_ui="tabs" />
@@ -514,7 +521,8 @@
     <MESSAGE value="Ne pas jouer les disques disabled" />
     <MESSAGE value="FIX #17 Piste 1 de Lala Land" />
     <MESSAGE value="Correction collection Jeux Vidéos" />
-    <option name="LAST_COMMIT_MESSAGE" value="Correction collection Jeux Vidéos" />
+    <MESSAGE value="FIX #16 liste cliquable" />
+    <option name="LAST_COMMIT_MESSAGE" value="FIX #16 liste cliquable" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
