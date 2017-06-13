@@ -460,7 +460,7 @@ function Controller($scope, $http) {
                 var possibleDiscs = [];
                 for (var i = 0; i < discs.length; ++i) {
                     var disc = discs[i];
-                    if (disc && disc.playable) possibleDiscs.push(disc);
+                    if (disc && disc.enabled && disc.playable) possibleDiscs.push(disc);
                 }
                 
                 // Aucun disque jouable ?
