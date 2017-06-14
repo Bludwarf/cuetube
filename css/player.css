@@ -1,0 +1,183 @@
+body {
+    background: #292929;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* à cause de center center */
+    color: #CCC;
+}
+
+/* Affichage de l'image "fanart" en fond (src: https://css-tricks.com/snippets/css/transparent-background-images/) */
+.background-overlay {
+    background: #292929;
+    opacity: 0.8;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    position: fixed;
+}
+
+#playlist {
+    column-count: 3;
+}
+
+#player-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 388px; /* = #player-infos.top */
+}
+
+#player-controls-form input[type=range] {
+    width: 100%;
+}
+
+#player-infos {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 388px; /* = #player-wrap.height */
+}
+
+.disc {
+    display: inline-block; /* empêche la coupure de colonne */
+    break-inside: avoid-column; /* empêche la coupure de colonne, TODO : nécessaire ? */
+}
+
+.disc-name {
+    text-decoration: underline;
+    cursor: pointer;
+}
+.disc-name.active {
+    font-weight: bold;
+    color: #DB992C;
+}
+.disc-name:hover {
+    color: #FFF;
+}
+.disc-name:hover a,
+.disc-name:hover a:hover{
+    text-decoration: inherit;
+    color: #09F;
+}
+.track {
+    cursor: pointer;
+}
+.track:hover {
+    color: #FFF;
+}
+.track:hover a {
+    color: #09F;
+}
+.track.active {
+    font-weight: bold;
+    color: #DB992C;
+}
+
+.track.disabled {
+    opacity: 0.5;
+}
+
+/* affiche les cases uniquement au survol */
+.track:hover input[type=checkbox] {
+    visibility: initial;
+}
+
+.track input {
+    visibility: hidden; /* uniquement au survol */
+    cursor: default;
+}
+
+#player-div {
+    position: absolute /*fixed*/;
+    top: 0;
+    left: 0;
+    width: 668px;
+    bottom: 0;
+}
+
+#player-div > div {
+    margin: 14px;
+}
+
+#remain-div {
+    position: absolute;
+    left: 668px;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding: 1em;
+    padding-left: 0;
+}
+
+/** ajouts thumb disc */
+
+.disc-wrapper  {
+    float: left;
+    border: solid 3px #292929; /* = body */
+}
+
+.disc-wrapper.active  {
+    border-color: #DB992C; /* = .track.active.color */
+}
+
+.disc-wrapper.inTracklist, .disc-wrapper:hover  {
+    border-color: #FFFFFF;
+}
+
+.disabled-video-cache {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #292929; /* = body */
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.disc-wrapper:hover .disabled-video-cache {
+    opacity: 0.4;
+}
+
+.disc-thumb {
+    position: relative;
+}
+
+.disc-thumb input {
+    position: absolute;
+    /*z-index: 1;*/
+}
+
+.disc-thumb img {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+}
+/* mq : 320x180 */
+.disc-thumb img.mq {
+    width: 320px;
+    height: 180px;
+}
+
+.disc-wrapper .tracklist {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: black;
+    z-index: 1;
+    padding: 1em;
+}
+
+.columns {
+    column-width: 18em;
+}
+
+.buttons {
+    margin-bottom: 1em;
+    text-align: right;
+}
