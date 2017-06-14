@@ -10,193 +10,7 @@
     <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
     <script type="text/javascript" src="/js/jquery.min.js"></script>
 
-    <style>
-    
-        body {
-            background: #292929;
-            background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-attachment: fixed; /* à cause de center center */
-            color: #CCC;
-        }
-        
-        /* Affichage de l'image "fanart" en fond (src: https://css-tricks.com/snippets/css/transparent-background-images/) */
-        .background-overlay {
-            background: #292929;
-            opacity: 0.8;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            position: fixed;
-        }
-        
-        #playlist {
-            column-count: 3;
-        }
-        
-        #player-wrap {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 388px; /* = #player-infos.top */
-        }
-        
-        #player-controls-form input[type=range] {
-            width: 100%;
-        }
-        
-        #player-infos {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            top: 388px; /* = #player-wrap.height */
-        }
-        
-        .disc {
-            display: inline-block; /* empêche la coupure de colonne */
-            break-inside: avoid-column; /* empêche la coupure de colonne, TODO : nécessaire ? */
-        }
-    
-        .disc-name {
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        .disc-name.active {
-            font-weight: bold;
-            color: #DB992C;
-        }
-        .disc-name:hover {
-            color: #FFF;
-        }
-        .disc-name:hover a,
-        .disc-name:hover a:hover{
-            text-decoration: inherit;
-            color: #09F;
-        }
-        .track {
-            cursor: pointer;
-        }
-        .track:hover {
-            color: #FFF;
-        }
-        .track:hover a {
-            color: #09F;
-        }
-        .track.active {
-            font-weight: bold;
-            color: #DB992C;
-        }
-        
-        .track.disabled {
-            opacity: 0.5;
-        }
-        
-        /* affiche les cases uniquement au survol */
-        .track:hover input[type=checkbox] {
-            visibility: initial;
-        }
-        
-        .track input {
-            visibility: hidden; /* uniquement au survol */
-            cursor: default;
-        }
-        
-        #player-div {
-            position: absolute /*fixed*/;
-            top: 0;
-            left: 0;
-            width: 668px;
-            bottom: 0;
-        }
-        
-        #player-div > div {
-            margin: 14px;
-        }
-        
-        #remain-div {
-            position: absolute;
-            left: 668px;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            padding: 1em;
-            padding-left: 0;
-        }
-        
-        /** ajouts thumb disc */
-                
-        .disc-wrapper  {
-            float: left;
-            border: solid 3px #292929; /* = body */
-        }
-                
-        .disc-wrapper.active  {
-            border-color: #DB992C; /* = .track.active.color */
-        }
-
-        .disc-wrapper.inTracklist, .disc-wrapper:hover  {
-            border-color: #FFFFFF;
-        }
-        
-        .disabled-video-cache {
-            position: absolute;
-            left: 0;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #292929; /* = body */
-            opacity: 0.8;
-            pointer-events: none;
-        }
-        
-        .disc-wrapper:hover .disabled-video-cache {
-            opacity: 0.4;
-        }
-        
-        .disc-thumb {
-            position: relative;
-        }
-        
-        .disc-thumb input {
-            position: absolute;
-            /*z-index: 1;*/
-        }
-        
-        .disc-thumb img {
-            width: 120px;
-            height: 90px;
-            object-fit: cover;
-        }
-        /* mq : 320x180 */
-        .disc-thumb img.mq {
-            width: 320px;
-            height: 180px;
-        }
-        
-        .disc-wrapper .tracklist {
-            display: none;
-            position: absolute;
-            left: 0;
-            right: 0;
-            background: black;
-            z-index: 1;
-            padding: 1em;
-        }
-        
-        .columns {
-            column-width: 18em;
-        }
-        
-        .buttons {
-            margin-bottom: 1em;
-            text-align: right;
-        }
-        
-    </style>
+    <link rel="stylesheet" href="/css/player.css">
 
     <script>
         // exemple : https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fsoundsgood.co&amp;feature=player_embedded&amp;html5=true&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1&amp;showinfo=0&amp;rel=0&amp;autoplay=0&amp;disablekb=1&amp;playsinline=1&amp;widgetid=2
@@ -232,7 +46,7 @@
             return yth;
         })();
 
-        
+
     </script>
 
     <script type="text/javascript" src="/js/cuesheet.js"></script>
@@ -241,7 +55,7 @@
 </head>
 
 <body>
-    
+
     <div class="background-overlay"></div>
 
     <div id="ctrl" ng-controller="Controller">
@@ -252,9 +66,9 @@
             <div id="player-wrap">
                 <div id="player"></div>
             </div>
-            
+
             <div id="player-infos">
-                
+
                 <div id="player-controls">
                     <form id="player-controls-form">
                         <input name="fileSlider" ng-model="fileSlider.value" type="range" min="{{fileSlider.min}}" max="{{fileSlider.max}}" readonly/>
@@ -262,10 +76,10 @@
                         <input name="trackPosition" ng-model="slider.value" type="range" min="{{slider.min}}" max="{{slider.max}}" ng-change="seekTo(slider.value)" ng-readonly="loadingTrackIndex != null" />
                     </form>
                 </div>
-                
+
                 <h2 id="player-disc-name"></h2>
                 <h3 id="player-track-name"></h3>
-                
+
                 <!-- TODO : tracklist courante -->
                 <div ng-model="currentDisc" class="columns">
                     <ol class="disc-list">
@@ -281,14 +95,14 @@
         </div>
 
         <div id="remain-div">
-            
+
             <div class="buttons">
                 <button ng-click="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
                 <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button>
             </div>
-            
+
             <div class="discs">
-            
+
                 <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex], inTracklist: disc == discInTracklist}">
                     <div class="disc-thumb" ng-click="disc.clickThumb($event)" title="{{disc.title}}">
                         <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" />
@@ -310,14 +124,14 @@
                         </div>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     </div>
 
     <script>
         /* global $, location, yth, YT, angular */
-        
+
         /**
          * @author http://stackoverflow.com/a/16737459/1655155
          */
@@ -325,21 +139,21 @@
             if (typeof(angular) === undefined) document.location.reload(); // FIXME
             return angular.element(document.getElementById('ctrl')).scope();
         }
-    
+
         // 3. This function creates an <iframe> (and YouTube player)
         //    after the API code downloads.
         // Appelé automatiquement par l'IFRAME YouTube
         function onYouTubeIframeAPIReady() {
             getCtrl().next();
         }
-        
+
         /* global Notification */
         /**
          * @author
          */
         // TODO : doc pour Chrome : https://developer.chrome.com/apps/richNotifications
         function notify(message, options) {
-            
+
             /**
              * dir : Le sens du texte de la notification ; Ce peut être auto, ltr, or rtl.
              * lang : Spécifie la langue utilisée dans la notification. Cette chaîne doit être un BCP 47 language tag.
@@ -352,42 +166,42 @@
                 tag: options.tag || 'm3u-player',
                 icon: options.icon || "https://img.youtube.com/vi/"+getCtrl().getVideoId()+"/default.jpg" //'/img/M3U.png' // http://stackoverflow.com/a/2068371/1655155
             };
-            
+
           // Voyons si le navigateur supporte les notifications
           if (!("Notification" in window)) {
             alert("Ce navigateur ne supporte pas les notifications desktop");
           }
-        
+
           // Voyons si l'utilisateur est OK pour recevoir des notifications
           else if (Notification.permission === "granted") {
             // Si c'est ok, créons une notification
             var notification = new Notification(message, options);
           }
-        
+
           // Sinon, nous avons besoin de la permission de l'utilisateur
           // Note : Chrome n'implémente pas la propriété statique permission
           // Donc, nous devons vérifier s'il n'y a pas 'denied' à la place de 'default'
           else if (Notification.permission !== 'denied') {
             Notification.requestPermission(function (permission) {
-        
+
               // Quelque soit la réponse de l'utilisateur, nous nous assurons de stocker cette information
               if(!('permission' in Notification)) {
                 Notification.permission = permission;
               }
-        
+
               // Si l'utilisateur est OK, on crée une notification
               if (permission === "granted") {
                 var notification = new Notification(message, options);
               }
             });
           }
-        
+
           // Comme ça, si l'utlisateur a refusé toute notification, et que vous respectez ce choix,
           // il n'y a pas besoin de l'ennuyer à nouveau.
-          
+
           // TODO : notification.onclick = ...
         }
-        
+
         // Raccourcis clavier
         window.onkeypress = function(event) {
             var code = event.code;
@@ -399,7 +213,7 @@
                     break;
             }
         };
-        
+
         window.onkeydown = function(event) {
           var code = event.code;
           switch(code) {
@@ -415,17 +229,17 @@
             case 'ArrowRight':
                   // ...
                   break;
-            default: 
+            default:
                 return;
           }
           event.stopPropagation();
           event.preventDefault();
         };
-        
+
         function toggleDiscList(discListElement) {
             $(discListElement).toggle();
         };
-        
+
     </script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/jquery.min.js"></script>
@@ -433,16 +247,16 @@
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/angular.min.js"></script>
     <script src="/js/moment.min.js"></script>
-    
+
     <!-- Gestion des thumbs des disques -->
     <script>
-            
+
         // Fermeture de la tracklist ouverte si click ailleurs
         document.addEventListener('click', function(e) {
             var lastToggled = getCtrl().lastToggledTracklist;
             if (lastToggled != null) $(lastToggled).hide();
         });
-        
+
     </script>
 </body>
 
