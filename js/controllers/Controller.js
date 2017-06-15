@@ -201,15 +201,15 @@ function Controller($scope, $http) {
 
             // On prend la prochaine piste active
             var track = null;
-            while (track == null || !track.enabled) {
-                var nextTracks = this.nextTracks[shuffled];
-                track = this.tracks[nextTracks.shift() - 1];
-            }
 
-            $scope.currentTrackIndex = track.index;
-            $scope.currentTrack = track;
-            $scope.currentFileIndex = track.file.index;
-            $scope.currentFile = track.file;
+            if (shuffled) {
+                while (track == null || !track.enabled) {
+                    var nextTracks = this.nextTracks[shuffled];
+                    track = this.tracks[nextTracks.shift() - 1];
+                }
+            } else {
+                track = $scope.currentTrack.next;
+            }
 
             return track;
         };
@@ -406,6 +406,8 @@ function Controller($scope, $http) {
         $scope.currentDisc = disc;
         var file = disc.files[fileIndex];
         $scope.currentFile = file;
+        var track = file.tracks[trackIndex];
+        $scope.currentTrack = track;
 
         $scope.loadCurrentTrack($scope.player);
     };
@@ -413,6 +415,8 @@ function Controller($scope, $http) {
     $scope.next = function() {
         $scope.$apply(() => {
             var discs = $scope.discs;
+            var disc = $scope.currentDisc;
+            var track = $scope.currentTrack;
 
             // Aléatoire ?
             if ($scope.shuffle) {
@@ -430,15 +434,26 @@ function Controller($scope, $http) {
 
                 $scope.currentDisc = possibleDiscs[Math.floor(Math.random() * possibleDiscs.length)];
                 $scope.currentDiscIndex = $scope.currentDisc.index;
+
+                track = disc.nextTrack($scope.shuffle); // FIXME : arrêter la lecture si plus aucune piste
             }
 
-            // Non aléatoire
             else {
-                $scope.currentDiscIndex = $scope.currentDiscIndex + 1;
-                $scope.currentDisc = discs[$scope.currentDiscIndex];
+
+                // prochaine piste ou 1ère du prochain disque
+                track = track.next;
+                if (!track) {
+                    disc = disc.index < discs.length - 1 ? discs[disc.index+1] : discs[0];
+                    track = disc.tracks[0];
+                }
             }
 
-            $scope.currentDisc.nextTrack($scope.shuffle); // FIXME : arrêter la lecture si plus aucune piste
+            $scope.currentTrackIndex = track.index;
+            $scope.currentTrack = track;
+            $scope.currentFileIndex = track.file.index;
+            $scope.currentFile = track.file;
+            $scope.currentDiscIndex = track.file.disc.index;
+            $scope.currentDisc = track.file.disc;
         });
 
         // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
