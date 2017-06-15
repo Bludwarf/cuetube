@@ -75,6 +75,9 @@
                         <input name="fileSlider" ng-model="fileSlider.value" type="range" min="{{fileSlider.min}}" max="{{fileSlider.max}}" readonly/>
                         <!-- TODO : à mettre à disabled tant que la vidéo n'est pas chargée -->
                         <input name="trackPosition" ng-model="slider.value" type="range" min="{{slider.min}}" max="{{slider.max}}" ng-change="seekTo(slider.value)" ng-readonly="loadingTrackIndex != null" />
+
+                        <input name="shuffle" id="shuffle" ng-model="shuffle" type="checkbox" />
+                        <label for="shuffle">Aléatoire</label>
                     </form>
                 </div>
 
