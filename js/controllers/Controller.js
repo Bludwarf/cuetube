@@ -139,47 +139,64 @@ function Controller($scope, $http) {
         disc.load = function() {
             $scope.currentDiscIndex = discIndex;
             $scope.currentDisc = this;
-            this.nextTrack();
+            this.nextTrack($scope.shuffle);
             $scope.loadCurrentTrack($scope.player);
         };
 
-        disc.nextTrack = function() {
-            var disc = this;
+        // TODO : à mettre dans disc.js
+        // le tableau généré doit toujours pouvoir être modifié en dehors avec un shift()
+        Object.defineProperty(disc, 'nextTracks', {
+            get: function() {
+                if (!this._nextTracks) {
+                    this._nextTracks = {
+                        false: null,
+                        true: null
+                    };
+                }
 
-            var possibleTracks = [];
-            var nextIsNextInOrder = false; // pour recherche du prochain dans l'ordre
-            var nextInOrder = null; // prochain dans l'ordre
-            for (var i = 0; i < disc.tracks.length; ++i) {
-                var track = disc.tracks[i];
-                if (track) {
-                    if (!$scope.shuffle && !nextIsNextInOrder && track.isCurrent) {
-                        nextIsNextInOrder = true;
-                        continue;
-                    }
-                    if (track.enabled && !track.isCurrent) {
-                        possibleTracks.push(track);
-                        if (nextIsNextInOrder) {
-                            nextInOrder = track;
-                            nextIsNextInOrder = false;
+                function generate(disc, shuffled) {
+                    var nextTracks = disc._nextTracks[shuffled];
+                    if (!nextTracks || !nextTracks.length) {
+                        nextTracks = [];
+                        disc.tracks.forEach((track) => {
+                            nextTracks.push(track.number);
+                        });
+
+                        if (shuffled) {
+                            shuffle(nextTracks);
                         }
                     }
+                    return nextTracks;
                 }
-            }
 
-            var track;
-            if ($scope.shuffle && possibleTracks.length) {
-                track = possibleTracks[Math.floor(Math.random() * possibleTracks.length)];
-            }
-            else {
-                track = nextInOrder;
-            }
+                // Prochaines pistes pour ce disque (non aléatoires)
+                var nextTracks = this._nextTracks[false];
+                if (!nextTracks || !nextTracks.length) {
+                    this._nextTracks[false] = generate(this, false);
+                }
 
-            if (!track) {
-                console.log("Plus aucune piste à lire");
-                return false;
+                // Prochaines pistes pour ce disque (aléatoires)
+                nextTracks = this._nextTracks[true];
+                if (!nextTracks || !nextTracks.length) {
+                    this._nextTracks[true] = generate(this, true);
+                }
+
+                return this._nextTracks;
+            }
+        });
+
+        // disc doit bien être playable avant de lancer nextTrack
+        disc.nextTrack = function(shuffled) {
+
+            // On prend la prochaine piste active
+            var track = null;
+            while (track == null || !track.enabled) {
+                var nextTracks = this.nextTracks[shuffled];
+                track = this.tracks[nextTracks.shift() - 1];
             }
 
             $scope.currentTrackIndex = track.index;
+            $scope.currentTrack = track;
             $scope.currentFileIndex = track.file.index;
             $scope.currentFile = track.file;
 
@@ -410,7 +427,7 @@ function Controller($scope, $http) {
                 $scope.currentDisc = discs[$scope.currentDiscIndex];
             }
 
-            $scope.currentDisc.nextTrack(); // FIXME : arrêter la lecture si plus aucune piste
+            $scope.currentDisc.nextTrack($scope.shuffle); // FIXME : arrêter la lecture si plus aucune piste
         });
 
         // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
@@ -578,8 +595,23 @@ function Controller($scope, $http) {
         //     });
         // }
         else {
+
+            var player = $scope.player;
+
+            // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
+            /*
+             var loadedVideoId = getParameterByName('v', player.getVideoUrl());
+             if (loadedVideoId == this.getVideoId()) {
+             this.changeVideoIHM();
+             $scope.seekTo(start);
+             //player.playVideoAt(start); // TODO : lancer si pausé
+             }
+
+             // Changement de vidéo YouTube
+             else {
+             */
             // FIXME : graphiquement on ne voit plus les bornes start et end
-            $scope.player.loadVideoById({
+            player.loadVideoById({
                 videoId: this.getVideoId(),
                 startSeconds: start,
                 endSeconds: end,
@@ -591,7 +623,8 @@ function Controller($scope, $http) {
             });
 
             // Changement IHM (déjà appelé au 1er chargement par onPlayerReady)
-            this.changeVideoIHM();
+            //this.changeVideoIHM();
+            //}
         }
 
         $scope.loadingDiscIndex = $scope.currentDiscIndex;
