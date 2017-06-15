@@ -103,12 +103,12 @@ class Disc.Track
   @property 'endSeconds',
     get: ->
       if (@index+1 < @file.tracks.length)
-        @file.tracks[@index+1].startSeconds
-      # auto apprentissage de la durée du fichier par : $scope.$on("video started")...
+        return @file.tracks[@index+1].startSeconds
       else if (@file.duration)
-        @file.duration
+        return @file.duration
       else
-        console.log new Error "Impossible de connaitre la fin de la piste #{@number} sans connaitre la durée de son fichier #{@file.name}"
+        # auto apprentissage de la durée du fichier par : $scope.$on("video started")...
+        console.warn "Impossible de connaitre la fin de la piste #{@number} sans connaitre la durée de son fichier #{@file.name}"
         return undefined
     
   @property 'next',
