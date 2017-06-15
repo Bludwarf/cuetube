@@ -1,6 +1,14 @@
 # Utilisation
 
+## Player
+
   - Décocher une vidéo pour ne plus la lire automatiquement
+  - Décocher une ou plusieurs (maj + click) pistes d'un disque
+  - Inverser des pistes cochées (alt + click)
+  - Démarrer directement et uniquement un disque en double cliquant dessus
+  
+## API
+
   - Charger une collection de disques : `/player?collection=jeux%20vidéos`
   - Charger un ou plusieurs disque : `/player?discs=Dg0IjOzopYU,0WGKC2J3g_Y`
 
