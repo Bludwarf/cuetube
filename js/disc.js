@@ -170,7 +170,7 @@ Disc.Track = (function() {
       } else if (this.file.duration) {
         return this.file.duration;
       } else {
-        console.log(new Error("Impossible de connaitre la fin de la piste " + this.number + " sans connaitre la durée de son fichier " + this.file.name));
+        console.warn("Impossible de connaitre la fin de la piste " + this.number + " sans connaitre la durée de son fichier " + this.file.name);
         return void 0;
       }
     }

@@ -193,20 +193,6 @@ function Controller($scope, $http) {
 
                 var file = disc.files[fileIndex];
 
-                // Getters pour File
-                Object.defineProperties(file, {
-                    duration: {
-                        get: function() {
-                            // impossible à appeler avant de charger la vidéo car duration inconnu => toujours undefined
-                            // cf check
-                            if ($scope.player && $scope.player.getDuration)
-                                return $scope.player.getDuration();
-                            else
-                                return undefined;
-                        }
-                    }
-                });
-
                 for (var trackIndex = 0; trackIndex < file.tracks.length; ++trackIndex) {
 
                     // trackIndex mutable
