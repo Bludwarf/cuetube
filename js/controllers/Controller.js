@@ -433,6 +433,7 @@ function Controller($scope, $http) {
                 }
 
                 $scope.currentDisc = possibleDiscs[Math.floor(Math.random() * possibleDiscs.length)];
+                disc = $scope.currentDisc;
                 $scope.currentDiscIndex = $scope.currentDisc.index;
 
                 track = disc.nextTrack($scope.shuffle); // FIXME : arrêter la lecture si plus aucune piste
@@ -806,10 +807,8 @@ function Controller($scope, $http) {
 
     $scope.changeVideoIHM = function() {
         var disc = this.discs[this.currentDiscIndex];
-        $("#player-disc-name").html(disc.title);
         var file = disc.files[this.currentFileIndex];
         var track = file.tracks[this.currentTrackIndex];
-        $("#player-track-name").html(track.title || "Track "+track.number);
         document.title = disc.title + " - m3u-YouTube"; // comme Youtube
 
         // Slider
