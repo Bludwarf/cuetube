@@ -113,6 +113,17 @@ function Controller($scope, $http) {
             }
         };
 
+        // Active uniquement ce CD et le lit tout de suite
+        disc.doubleClickThumb = function(e) {
+
+            $scope.discs.forEach((disc) => {
+                if (!disc) return;
+                disc.enabled = disc == this;
+            });
+
+            this.load();
+        };
+
         disc.afterClickThumbCheckbox = function(e) {
             // Alt + Click => activer/désactiver tous les autres
             if (e.altKey) {
