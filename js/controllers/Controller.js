@@ -179,7 +179,7 @@ function Controller($scope, $http) {
                 return false;
             }
 
-            $scope.currentTrackIndex = track.indexInFile;
+            $scope.currentTrackIndex = track.index;
             $scope.currentFileIndex = track.file.index;
             $scope.currentFile = track.file;
 
@@ -195,19 +195,14 @@ function Controller($scope, $http) {
 
                 // Getters pour File
                 Object.defineProperties(file, {
-                    index: {
+                    duration: {
                         get: function() {
-                            return fileIndex;
-                        }
-                    },
-                    videoId: {
-                        get: function() {
-                            return getParameterByName("v", this.name);
-                        }
-                    },
-                    disc: {
-                        get: function() {
-                            return disc;
+                            // impossible à appeler avant de charger la vidéo car duration inconnu => toujours undefined
+                            // cf check
+                            if ($scope.player && $scope.player.getDuration)
+                                return $scope.player.getDuration();
+                            else
+                                return undefined;
                         }
                     }
                 });
@@ -220,63 +215,6 @@ function Controller($scope, $http) {
                         var track = file.tracks[trackIndex];
                         track.enabled = disc.enabled; // pour choisir les pistes à lire
                         Object.defineProperties(track, {
-                            index: {
-                                get: function() {
-                                    return this.number - 1;
-                                }
-                            },
-                            indexInFile: {
-                                get: function() {
-                                    return trackIndex;
-                                }
-                            },
-                            file: {
-                                get: function() {
-                                    return file;
-                                }
-                            },
-                            disc: {
-                                get: function() {
-                                    return this.file.disc;
-                                }
-                            },
-                            startSeconds: {
-                                get: function() {
-                                    var time = this.indexes[this.indexes.length - 1].time;
-                                    return time.min * 60 + time.sec + time.frame * .75;
-                                }
-                            },
-                            endSeconds: {
-                                get: function() {
-                                    if (this.index+1 < file.tracks.length)
-                                        return file.tracks[this.index+1].startSeconds;
-                                    // auto apprentissage de la durée du fichier par : $scope.$on("video started")...
-                                    else if (file.duration)
-                                        return file.duration;
-                                    // impossible à appeler avant de charger la vidéo car duration inconnu => toujours undefined
-                                    // cf check
-                                    else if ($scope.player && $scope.player.getDuration)
-                                        return $scope.player.getDuration();
-                                    else
-                                        return undefined;
-                                }
-                            },
-                            next: {
-                                get: function() {
-                                    // Même fichier ?
-                                    if (this.index < this.file.tracks.length) {
-                                        return this.file.tracks[this.index+1];
-                                    }
-                                    // Même disque ?
-                                    if (this.file.index < this.file.disc.files.length) {
-                                        var nextFile = this.file.disc.files[this.file.index+1];
-                                        if (nextFile.tracks && nextFile.tracks.length) {
-                                            return nextFile.tracks[0];
-                                        }
-                                    }
-                                    return null;
-                                }
-                            },
                             isCurrent: {
                                 get: function() {
                                     return $scope.currentTrackIndex == this.index
@@ -596,19 +534,6 @@ function Controller($scope, $http) {
         var query = querystring.decode(url.substr(i+1));
         return query.v;
     }*/
-
-    // TODO : clean
-    function getParameterByName(name, url) {
-        if (!url) {
-          url = window.location.href;
-        }
-        name = name.replace(/[\[\]]/g, "\\$&");
-        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-            results = regex.exec(url);
-        if (!results) return null;
-        if (!results[2]) return '';
-        return decodeURIComponent(results[2].replace(/\+/g, " "));
-    }
 
     $scope.loadCurrentTrack = function(player) {
         var disc = this.discs[this.currentDiscIndex];
