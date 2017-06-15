@@ -1141,8 +1141,19 @@ function Controller($scope, $http) {
      */
     $scope.save = function() {
         localStorage.setItem('discIds', _.pluck($scope.discs, 'id'));
+        localStorage.setItem('shuffle', $scope.shuffle);
         console.log("Sauvegarde terminée");
     };
 
+    $scope.restore = function(key, defaultValue) {
+        var string = localStorage.getItem(key);
+        if (!string) return defaultValue;
+        return JSON.parse(string);
+    }
+
+    // INIT
+
+    // Paramètres
+    $scope.shuffle = $scope.restore('shuffle', true);
 
 } // Controller
