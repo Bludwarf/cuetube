@@ -211,6 +211,12 @@ function Controller($scope, $http) {
                 track = $scope.currentTrack.next;
             }
 
+            // TODO : à changer en playTrack() ou setTrack()
+            $scope.currentTrackIndex = track.index;
+            $scope.currentTrack = track;
+            $scope.currentFileIndex = track.file.index;
+            $scope.currentFile = track.file;
+
             return track;
         };
 
