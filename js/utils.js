@@ -33,3 +33,11 @@ function shuffle(array) {
 
     return array;
 }
+
+/**
+ * @author http://stackoverflow.com/a/16737459/1655155
+ */
+function getCtrl() {
+    if (typeof(angular) === undefined) document.location.reload(); // FIXME
+    return angular.element(document.getElementById('ctrl')).scope();
+}
