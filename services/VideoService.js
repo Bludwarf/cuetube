@@ -14,18 +14,28 @@ function pad2(i) {
 module.exports = {
     
     /**
+     * FIXME : à revoir : trop compliqué
      * @param cue : cf CueService#getCue()
      */
     createVideo: function(name, author, duration, cue) {
         return {
           // TODO : title/name: "Minecraft FULL SOUNDTRACK (2016)"
-          title: name,
-          name: name,
-          author: author,
+          title: cue.title || name,
+          name: cue.title || name,
+          author: cue.performer || author,
           url: cue.files[0].name,
           videoId: this.getVideoIdFromUrl(cue.files[0].name),
-          cues: this.tracksToCues(duration*1, cue.files[0].tracks)
+          cues: this.tracksToCues(duration*1, this.getTracks(cue)),
+            files: cue.files
         };
+    },
+
+    getTracks: function(cue) {
+        var tracks = [];
+        cue.files.forEach(function(file) {
+            tracks = tracks.concat(file.tracks);
+        });
+        return tracks;
     },
     
     /**

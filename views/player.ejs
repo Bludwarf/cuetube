@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Playlist m3u YouTube</title>
-    <link rel="icon" type="image/png" href="img/favicon_16-vfl8NGn4k-m3u.png" />
+    <link rel="icon" type="image/png" href="/img/favicon_16-vfl8NGn4k-m3u.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
@@ -135,14 +135,6 @@
 
     <script>
         /* global $, location, yth, YT, angular */
-
-        /**
-         * @author http://stackoverflow.com/a/16737459/1655155
-         */
-        function getCtrl() {
-            if (typeof(angular) === undefined) document.location.reload(); // FIXME
-            return angular.element(document.getElementById('ctrl')).scope();
-        }
 
         // 3. This function creates an <iframe> (and YouTube player)
         //    after the API code downloads.

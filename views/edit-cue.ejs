@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr" ng-app>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Playlist m3u YouTube</title>
+    <link rel="icon" type="image/png" href="/img/favicon_16-vfl8NGn4k-m3u.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+
+    <script>
+        // exemple : https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fsoundsgood.co&amp;feature=player_embedded&amp;html5=true&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1&amp;showinfo=0&amp;rel=0&amp;autoplay=0&amp;disablekb=1&amp;playsinline=1&amp;widgetid=2
+
+        /* global $, location, angular */
+    </script>
+
+    <style>
+        body {
+            margin: auto auto;
+        }
+
+        form {
+            width: 42em;
+            margin: auto auto;
+        }
+
+        fieldset.file {
+            text-indent: 1em;
+        }
+
+        fieldset.track {
+            text-indent: 2em;
+        }
+
+        input.title {
+            width: 30em;
+        }
+        input.min {
+            width: 2em;
+        }
+        input.sec {
+            width: 2em;
+        }
+
+    </style>
+
+    <script type="text/javascript" src="/js/cuesheet.js"></script>
+    <script type="text/javascript" src="/js/utils.js"></script>
+    <script type="text/javascript" src="/js/disc.js"></script>
+    <script type="text/javascript" src="/js/controllers/EditCue.js"></script>
+</head>
+
+<body id="ctrl" ng-controller="EditCue" ng-init="init('<%=req.params.id%>', <%=JSON.stringify(cueData)%>)">
+
+    <form>
+
+        <h1>Modification de <%=req.params.id%>.cue</h1>
+
+        <label>title: <input type="text" name="title" class="title" value="{{disc.title}}" /></label>
+        <label>performer: <input type="text" name="performer" value="{{disc.performer}}" /></label>
+
+        <fieldset ng-repeat="file in disc.files" class="file">
+            <legend><a href="{{file.name}}" target="_blank">videoId</a> <input type="text" name="fileName" value="{{file.videoId}}" size="300"/></legend>
+
+            <fieldset ng-repeat="track in file.tracks"class="track">
+                <input type="text" name="trackTimeMin" class="min" ng-readonly="$index == 0" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
+                <input type="text" name="trackTimeSec" class="sec" ng-readonly="$index == 0" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
+                <input type="text" name="trackTitle" class="title" ng-model="track.title" />
+            </fieldset>
+
+        </fieldset>
+
+    </form>
+
+    <script>
+        /* global $, location, angular */
+
+        /**
+         * @author http://stackoverflow.com/a/16737459/1655155
+         */
+        function getCtrl() {
+            if (typeof(angular) === undefined) document.location.reload(); // FIXME
+            return angular.element(document.getElementById('ctrl')).scope();
+        }
+
+    </script>
+    <!--<script src="/socket.io/socket.io.js"></script>-->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/underscore-min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/angular.min.js"></script>
+    <script src="/js/moment.min.js"></script
+</body>
+
+</html>

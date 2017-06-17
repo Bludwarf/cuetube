@@ -26,6 +26,48 @@ var router = express();
 var server = http.createServer(router);
 //var io = socketio.listen(server);
 
+function getCue(req, cb) {
+    var q = {
+        title: req.query.title || req.query.name || "Minecraft FULL SOUNDTRACK (2016)",
+        name: req.query.title || req.query.name || "Minecraft FULL SOUNDTRACK (2016)",
+        author: req.query.author || "Luigi",
+        duration: req.query.duration || 2*3600 + 6*60 + 53, // TODO : pouvoir entrer 2h6m53
+    };
+
+    CueService.getCue(req.params.id + ".cue", {
+        title: q.name,
+        performer: q.author,
+        file: "https://www.youtube.com/watch?v="+req.params.id,
+        type: 'MP3',
+        duration: q.duration * 1
+    }, function(err, cue) {
+        // On ignore l'erreur si aucun fichier cue n'existe
+        if (err) {
+            if (err.code === 'ENOENT') {
+                // TODO : il faut quand même créer un fichier CUE avec une seule piste ? (pour garder l'url par exemple)
+                // TODO : ou alors modifier la signature de VideoService.createVideo pour passer options
+                console.log("Aucun fichier cue pour la vidéo "+req.params.id);
+            }
+            /*else*/ return cb(err);
+        }
+        return cb(null, cue);
+    });
+}
+
+
+/**
+ *
+ * @param req
+ * @param cb Function(err, Video)
+ */
+function getVideo(req, cb) {
+    getCue(req, function(err, cue) {
+        console.log("Create video : "+cue.title);
+        var video = VideoService.createVideo(cue.title, cue.performer, req.query.duration, cue);
+        return cb(null, video);
+    });
+}
+
 router
     .use(express.static(path.resolve(__dirname, 'client')))
     .use('/socket.io/socket.io.js', express.static(__dirname+'/node_modules/socket.io/node_modules/socket.io-client/dist/socket.io.min.js'))
@@ -59,31 +101,11 @@ router
 // EXEMPLE : GET /minecraft.json
 .get("/:id.json", function(req, res) {
 
-    var q = {
-        title: req.query.title || req.query.name || "Minecraft FULL SOUNDTRACK (2016)",
-        name: req.query.title || req.query.name || "Minecraft FULL SOUNDTRACK (2016)",
-        author: req.query.author || "Luigi",
-        duration: req.query.duration || 2*3600 + 6*60 + 53, // TODO : pouvoir entrer 2h6m53
-    };
-
-    CueService.getCue(req.params.id + ".cue", {
-        title: q.name,
-        performer: q.author,
-        file: "https://www.youtube.com/watch?v="+req.params.id,
-        type: 'MP3',
-        duration: q.duration * 1
-    }, function(err, cue) {
+    getVideo(req, function(err, video) {
         // On ignore l'erreur si aucun fichier cue n'existe
         if (err) {
-            if (err.code === 'ENOENT') {
-                // TODO : il faut quand même créer un fichier CUE avec une seule piste ? (pour garder l'url par exemple)
-                // TODO : ou alors modifier la signature de VideoService.createVideo pour passer options
-                console.log("Aucun fichier cue pour la vidéo "+req.params.id);
-            }
-            /*else*/ return res.status(500).send(err.message);
+            return res.status(500).send(err.message);
         }
-        console.log("Create video : "+q.name);
-        var video = VideoService.createVideo(q.name, q.author, q.duration, cue);
         res.json(video);
     });
 
@@ -147,6 +169,19 @@ router
         if (err) return res.status(500).send(err.message);
         res.json(ids);
     })
+})
+
+.get("/edit/:id.cue", function(req, res) {
+
+    getCue(req, function(err, cue) {
+        if (err) {
+            return res.status(500).send(err.message);
+        }
+        res.render("edit-cue.ejs", {
+            req: req,
+            cueData: cue
+        });
+    });
 })
 
 ;

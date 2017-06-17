@@ -6,6 +6,10 @@
   - Décocher une ou plusieurs (maj + click) pistes d'un disque
   - Inverser des pistes cochées (alt + click)
   - Démarrer directement et uniquement un disque en double cliquant dessus
+
+## Gestion
+
+  - Edition de cue : `/edit/:id.cue`
   
 ## API
 
