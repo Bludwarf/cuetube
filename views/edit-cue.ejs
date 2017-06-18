@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" ng-app>
+<html lang="fr" ng-app="cuetube">
 
 <head>
     <meta charset="utf-8" />
@@ -22,7 +22,7 @@
         }
 
         form {
-            width: 42em;
+            width: 54em;
             margin: auto auto;
         }
 
@@ -35,7 +35,10 @@
         }
 
         input.title {
-            width: 30em;
+            width: 25em;
+        }
+        input.performer {
+            width: 15em;
         }
         input.min {
             width: 2em;
@@ -58,19 +61,24 @@
 
         <h1>Modification de <%=req.params.id%>.cue</h1>
 
-        <label>title: <input type="text" name="title" class="title" value="{{disc.title}}" /></label>
-        <label>performer: <input type="text" name="performer" value="{{disc.performer}}" /></label>
+        <label>title: <input type="text" name="title" class="title" ng-model="disc.title" /></label>
+        <label>performer: <input type="text" name="performer" ng-model="disc.performer" /></label>
+
+        <button type="button" ng-click="save()">Sauvegarder</button>
 
         <fieldset ng-repeat="file in disc.files" class="file">
             <legend><a href="{{file.name}}" target="_blank">videoId</a> <input type="text" name="fileName" value="{{file.videoId}}" size="300"/></legend>
 
             <fieldset ng-repeat="track in file.tracks"class="track">
-                <input type="text" name="trackTimeMin" class="min" ng-readonly="$index == 0" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
-                <input type="text" name="trackTimeSec" class="sec" ng-readonly="$index == 0" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
-                <input type="text" name="trackTitle" class="title" ng-model="track.title" />
+                <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-readonly="$index == 0" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
+                <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-readonly="$index == 0" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
+                <input type="text" name="trackTitle" class="title" placeholder="title" ng-model="track.title" />
+                <input type="text" name="trackPerformer" class="performer" placeholder="performer" ng-model="track.performer" empty-to-null />
             </fieldset>
 
         </fieldset>
+
+        <button type="button" ng-click="save()">Sauvegarder</button>
 
     </form>
 
@@ -91,7 +99,9 @@
     <script src="/js/underscore-min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/angular.min.js"></script>
-    <script src="/js/moment.min.js"></script
+    <script src="/js/moment.min.js"></script>
+
+    <script type="text/javascript" src="/js/app.js"></script>
 </body>
 
 </html>

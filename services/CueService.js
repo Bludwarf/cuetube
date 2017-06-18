@@ -188,6 +188,11 @@ module.exports = {
                 var track = file.tracks[t];
                 data += PAD+"TRACK "+pad2(track.number)+" "+track.type+EOL;
                 if (track.title) data += PAD+PAD+"TITLE \""+track.title+"\""+EOL;
+
+                // performer
+                if (track.performer) {
+                    data += PAD+"PERFORMER "+track.performer+EOL;
+                }
                 
                 for (var i = 0; i < track.indexes.length; ++i) {
                     var index = track.indexes[i];
@@ -197,6 +202,9 @@ module.exports = {
                 }
             }
         }
+
+        // cache
+        cueSheets[path.basename(cueFile)] = cue;
         
         fs.writeFile(cueFile, data, 'utf-8', (err) => {
             if (err)

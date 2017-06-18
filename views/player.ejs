@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" ng-app>
+<html lang="fr" ng-app="cuetube">
 
 <head>
     <meta charset="utf-8" />
@@ -83,6 +83,7 @@
 
                 <h2 id="player-disc-name">{{currentDisc.title}}</h2>
                 <h3 id="player-track-name">{{currentTrack.title}}</h3><!-- TODO : "Track X" si title vide -->
+                <h4 id="player-track-performer">{{currentTrack.performer}}</h4>
 
                 <!-- TODO : tracklist courante -->
                 <div ng-model="currentDisc" class="columns">
@@ -102,7 +103,7 @@
 
             <div class="buttons">
                 <button ng-click="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
-                <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button>
+                <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>
             </div>
 
             <div class="discs">
@@ -115,6 +116,8 @@
                     </div>
                     <div class="tracklist" ng-click="stopPropagation($event)">
                         <h2 class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" ng-click="disc.load()">{{disc.title}}</h2>
+
+                        <a href="/edit/{{disc.videoId}}.cue" target="_blank">Éditer</a>
                         <div class="columns">
                             <ol class="disc-list">
                                 <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
@@ -243,6 +246,8 @@
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/angular.min.js"></script>
     <script src="/js/moment.min.js"></script>
+
+    <script src="/js/app.js"></script>
 
     <!-- Gestion des thumbs des disques -->
     <script>

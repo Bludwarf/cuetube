@@ -90,7 +90,7 @@ class Disc.Track
     @enabled = @file.disc.enabled
 
   # Propriétés directement liées au track de la cue
-  @propertiesOf 'cuesheetTrack', ['number', 'title', 'indexes']
+  @propertiesOf 'cuesheetTrack', ['number', 'title', 'indexes', 'performer']
   
   @property 'disc',
     get: -> @file.disc
