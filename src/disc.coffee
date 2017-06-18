@@ -114,10 +114,10 @@ class Disc.Track
   @property 'next',
     get: ->
       # Même fichier ?
-      if @index < @file.tracks.length
+      if @index < @file.tracks.length - 1
         return @file.tracks[@index+1]
       # Même disque ?
-      else if @file.index < @file.disc.files.length
+      else if @file.index < @file.disc.files.length - 1
         nextFile = @file.disc.files[@file.index+1]
         if nextFile.tracks && nextFile.tracks.length
           return nextFile.tracks[0]
