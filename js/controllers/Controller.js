@@ -415,6 +415,15 @@ function Controller($scope, $http) {
         var track = file.tracks[trackIndex];
         $scope.currentTrack = track;
 
+        // Suppression dans la liste des suivants auto
+        var nextTracks = $scope.currentDisc.nextTracks[$scope.shuffle];
+        var i = nextTracks.indexOf(track.number);
+        if ($scope.shuffle) {
+            nextTracks.splice(i, 1); // on supprime que celui-ci
+        } else {
+            nextTracks.splice(0, i + 1); // on supprime tout jusqu'à celui-ci
+        }
+
         $scope.loadCurrentTrack($scope.player);
     };
 
@@ -424,19 +433,22 @@ function Controller($scope, $http) {
             var disc = $scope.currentDisc;
             var track = $scope.currentTrack;
 
+            var possibleDiscs = [];
+            for (var i = 0; i < discs.length; ++i) {
+                let disc = discs[i];
+                if (disc && disc.enabled && disc.playable) possibleDiscs.push(disc);
+            }
+
+            // Aucun disque jouable ?
+            if (!possibleDiscs.length) {
+                console.error("Aucun disque activé (ou sans piste activées)");
+                return;
+            }
+
+            var discIndex = possibleDiscs.indexOf(disc);
+
             // Aléatoire ?
             if ($scope.shuffle) {
-                var possibleDiscs = [];
-                for (var i = 0; i < discs.length; ++i) {
-                    var disc = discs[i];
-                    if (disc && disc.enabled && disc.playable) possibleDiscs.push(disc);
-                }
-
-                // Aucun disque jouable ?
-                if (!possibleDiscs.length) {
-                    console.error("Aucun disque activé (ou sans piste activées)");
-                    return;
-                }
 
                 $scope.currentDisc = possibleDiscs[Math.floor(Math.random() * possibleDiscs.length)];
                 disc = $scope.currentDisc;
@@ -450,7 +462,7 @@ function Controller($scope, $http) {
                 // prochaine piste ou 1ère du prochain disque
                 track = track.next;
                 if (!track) {
-                    disc = disc.index < discs.length - 1 ? discs[disc.index+1] : discs[0];
+                    disc = discIndex < possibleDiscs.length - 1 ? possibleDiscs[discIndex+1] : possibleDiscs[0];
                     track = disc.tracks[0];
                 }
             }

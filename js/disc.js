@@ -179,9 +179,9 @@ Disc.Track = (function() {
   Track.property('next', {
     get: function() {
       var nextFile;
-      if (this.index < this.file.tracks.length) {
+      if (this.index < this.file.tracks.length - 1) {
         return this.file.tracks[this.index + 1];
-      } else if (this.file.index < this.file.disc.files.length) {
+      } else if (this.file.index < this.file.disc.files.length - 1) {
         nextFile = this.file.disc.files[this.file.index + 1];
         if (nextFile.tracks && nextFile.tracks.length) {
           return nextFile.tracks[0];
