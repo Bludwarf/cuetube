@@ -147,7 +147,7 @@ Disc.Track = (function() {
     this.enabled = this.file.disc.enabled;
   }
 
-  Track.propertiesOf('cuesheetTrack', ['number', 'title', 'indexes']);
+  Track.propertiesOf('cuesheetTrack', ['number', 'title', 'indexes', 'performer']);
 
   Track.property('disc', {
     get: function() {
