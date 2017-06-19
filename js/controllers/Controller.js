@@ -313,6 +313,21 @@ function Controller($scope, $http) {
                     discs[discIndex] = disc;
                     enrichDisc(disc, discIndex);
 
+                    // Reprise des paramètres sauvegardés
+                    let savedString = localStorage.getItem('disc.'+disc.id);
+                    if (savedString) {
+                        let saved = JSON.parse(savedString);
+                        if (saved.enabled != undefined) {
+                            disc.enabled = saved.enabled;
+                        }
+                        if (saved.disabledTrackIndices) {
+                            let tracks = disc.tracks;
+                            saved.disabledTrackIndices.forEach((trackIndex) => {
+                                tracks[trackIndex].enabled = false;
+                            });
+                        }
+                    }
+
                     // INIT si dernier disque
                     if (--remainingDiscNumber == 0)
                         initYT();
@@ -1159,6 +1174,25 @@ function Controller($scope, $http) {
     $scope.save = function() {
         localStorage.setItem('discIds', _.pluck($scope.discs, 'id'));
         localStorage.setItem('shuffle', $scope.shuffle);
+
+        // Sauvegarde pour chaque disque
+        $scope.discs.forEach((disc) => {
+            let storage = {};
+
+            if (!disc.enabled) {
+                storage.enabled = false;
+            }
+
+            var disabledTrackIndices = disc.disabledTracks;
+            if (disabledTrackIndices && disabledTrackIndices.length) {
+                storage.disabledTrackIndices = disc.disabledTracks.map((track) => track.number-1);
+            }
+
+            if (!_.isEmpty(storage)) {
+                localStorage.setItem('disc.' + disc.id, JSON.stringify(storage)); // Chargé dans loadDisc
+            }
+        });
+
         console.log("Sauvegarde terminée");
     };
 
@@ -1166,7 +1200,7 @@ function Controller($scope, $http) {
         var string = localStorage.getItem(key);
         if (!string) return defaultValue;
         return JSON.parse(string);
-    }
+    };
 
     // INIT
 
