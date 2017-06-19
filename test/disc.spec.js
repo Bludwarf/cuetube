@@ -62,6 +62,20 @@ describe("Disc mono vidéo", function() {
     track2.enabled = false;
     expect(disc.playable).toBe(true);
   });
+
+  it("has disabled tracks", function() {
+      var disc = new Disc();
+
+      let file = disc.newFile();
+      let track1 = file.newTrack();
+      let track2 = file.newTrack();
+
+      expect(disc.disabledTracks.length).toBe(0);
+
+      track1.enabled = false;
+      expect(track1.number).toBe(1);
+      expect(disc.disabledTracks.map(function(track) {return track.number})).toEqual([1]);
+  });
 });
 
 describe("Disc multi vidéo", function() {

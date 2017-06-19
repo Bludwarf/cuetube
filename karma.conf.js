@@ -23,7 +23,8 @@ module.exports = function(config) {
 
     // list of files to exclude
     exclude: [
-      'client/js/*.min.js'
+      'client/js/*.min.js',
+      'client/js/app.js'
     ],
 
 

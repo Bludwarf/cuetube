@@ -53,6 +53,14 @@ class Disc
       _.some @tracks, (track) ->
         return track.enabled
   
+  @property 'disabledTracks',
+    get: ->
+      tracks = []
+      @tracks.forEach (track) ->
+        if !track.enabled
+          tracks.push track
+      tracks
+  
   newFile: ->
     file = new Disc.File @, @.files.length
     @.files.push file
@@ -84,9 +92,13 @@ class Disc.File
     track
 
 class Disc.Track
+  # Attention index = index dans le fichier et pas dans le disque, utiliser number-1 pour cela
   constructor: (@file, @index, @cuesheetTrack) ->
     if !@cuesheetTrack
       @cuesheetTrack = new cuesheet.Track(undefined, Disc.File.DEFAULT_TYPE) # number doit être setté manuellement
+      _.extend @cuesheetTrack, {
+        number: @index + 1
+      }
     @enabled = @file.disc.enabled
 
   # Propriétés directement liées au track de la cue
