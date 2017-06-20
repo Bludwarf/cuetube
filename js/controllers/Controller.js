@@ -193,6 +193,10 @@ function Controller($scope, $http) {
                 }
 
                 return this._nextTracks;
+            },
+            set: function(value) {
+                //console.log(`Pistes suivantes pour le disque ${this.id} : ${JSON.stringify(value)}`);
+                this._nextTracks = value;
             }
         });
 
@@ -326,6 +330,9 @@ function Controller($scope, $http) {
                                 tracks[trackIndex].enabled = false;
                             });
                         }
+                        _.extend(disc, {
+                            nextTracks: saved.nextTracks
+                        });
                     }
 
                     // INIT si dernier disque
@@ -371,6 +378,43 @@ function Controller($scope, $http) {
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     }
+
+    $scope.onYouTubeIframeAPIReady = function() {
+
+        // Si chargement
+        let currentStr = localStorage.getItem('current');
+        if (currentStr) {
+            let current = JSON.parse(currentStr);
+            var disc = _.find($scope.discs, (disc) => disc.id === current.discId);
+
+            if (!disc) {
+                console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé`);
+            } else {
+                console.log("Chargement de la précédente lecture...", current);
+
+                $scope.currentDisc = disc;
+                $scope.currentDiscIndex = disc.index;
+
+                let file = disc.files[current.fileIndex];
+                $scope.currentFile = file;
+                $scope.currentFileIndex = file.index;
+
+                let track = file.tracks[current.trackIndex];
+                $scope.currentTrack = track;
+                $scope.currentTrackIndex = track.index;
+
+                // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
+                let player = $scope.loadCurrentTrack($scope.player);
+                $scope.$apply(() => {
+                    $scope.player = player;
+                });
+
+                return;
+            }
+        }
+
+        getCtrl().next();
+    };
 
     //@deprecated
     $scope.setDiscIndex = function(discIndex) {
@@ -1174,6 +1218,11 @@ function Controller($scope, $http) {
     $scope.save = function() {
         localStorage.setItem('discIds', _.pluck($scope.discs, 'id'));
         localStorage.setItem('shuffle', $scope.shuffle);
+        localStorage.setItem('current', JSON.stringify({
+            discId: $scope.currentDisc.id,
+            fileIndex: $scope.currentFile.index,
+            trackIndex: $scope.currentTrack.index
+        }));
 
         // Sauvegarde pour chaque disque
         $scope.discs.forEach((disc) => {
@@ -1187,6 +1236,10 @@ function Controller($scope, $http) {
             if (disabledTrackIndices && disabledTrackIndices.length) {
                 storage.disabledTrackIndices = disc.disabledTracks.map((track) => track.number-1);
             }
+
+            _.extend(storage, {
+                nextTracks: disc.nextTracks
+            });
 
             if (!_.isEmpty(storage)) {
                 localStorage.setItem('disc.' + disc.id, JSON.stringify(storage)); // Chargé dans loadDisc
