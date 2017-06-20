@@ -62,6 +62,10 @@ function getCue(req, cb) {
  */
 function getVideo(req, cb) {
     getCue(req, function(err, cue) {
+        if (err) {
+            console.log("Erreur de création de la vidéo", err);
+            return cb(err);
+        }
         console.log("Create video : "+cue.title);
         var video = VideoService.createVideo(cue.title, cue.performer, req.query.duration, cue);
         return cb(null, video);

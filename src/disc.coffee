@@ -62,7 +62,9 @@ class Disc
       tracks
   
   newFile: ->
-    file = new Disc.File @, @.files.length
+    @cuesheet.newFile()
+    cuesheetFile = @cuesheet.getCurrentFile()
+    file = new Disc.File @, @.files.length, cuesheetFile
     @.files.push file
     file
 
@@ -87,7 +89,9 @@ class Disc.File
       getParameterByName "v", @name
   
   newTrack: ->
-    track = new Disc.Track @, @.tracks.length
+    @disc.cuesheet.newTrack @.tracks.length+1, @DEFAULT_TYPE
+    cuesheetTrack = @disc.cuesheet.getCurrentTrack()
+    track = new Disc.Track @, @.tracks.length, cuesheetTrack
     @.tracks.push track
     track
 
@@ -99,7 +103,14 @@ class Disc.Track
       _.extend @cuesheetTrack, {
         number: @index + 1
       }
+    else
+      # Clean du title si vide pour avoir "Track #" par défaut
+      if @cuesheetTrack.title != null and !@cuesheetTrack.title.trim()
+        @cuesheetTrack.title = null
+
     @enabled = @file.disc.enabled
+
+
 
   # Propriétés directement liées au track de la cue
   @propertiesOf 'cuesheetTrack', ['number', 'title', 'indexes', 'performer']
