@@ -1061,7 +1061,9 @@ function Controller($scope, $http) {
                 if (res.status != 200) return alert("POST createNewDiscFromPlaylist $http != 200");
 
                 console.log("Disque créé");
-                //var disc = res.data; // TODO : doit-on refaire un parsing pour être sûr ?
+                console.log(res.data);
+                var video = res.data; // TODO : doit-on refaire un parsing pour être sûr ?
+                var disc = new Disc(video.cue);
                 disc.index = $scope.discs.length;
                 $scope.discs.push(disc);
 
@@ -1116,14 +1118,14 @@ function Controller($scope, $http) {
             var lines = description.split(/\n/);
 
             // Création de la cuesheet
-            var disc = new cuesheet.CueSheet();
+            let disc = new Disc();
             _.extend(disc, {
                 title: snippet.title,
                 performer: snippet.channelTitle
             });
 
             // Un seul fichier puisqu'une seule vidéo
-            var file = disc.newFile().getCurrentFile();
+            let file = disc.newFile();
             _.extend(file, {
                 name: $scope.getVideoUrlFromId(videoId),
                 type: "MP3"
@@ -1178,7 +1180,8 @@ function Controller($scope, $http) {
                         title = text;
                     }
 
-                    var track = disc.newTrack(file.tracks ? (file.tracks.length + 1) : 1, "AUDIO").getCurrentTrack();
+                    //var track = disc.newTrack(file.tracks ? (file.tracks.length + 1) : 1, "AUDIO").getCurrentTrack();
+                    let track = file.newTrack();
                     _.extend(track, {
                         title: title,
                         performer: artist,
@@ -1191,11 +1194,14 @@ function Controller($scope, $http) {
 
             enrichDisc(disc);
 
-            $http.post("/"+videoId+".cue.json", disc).then(res => {
+            console.log("Création du disc...", disc);
+
+            // TODO : pouvoir passer le disc en JSON -> problème de circular ref
+            $http.post("/"+videoId+".cue.json", disc.cuesheet).then(res => {
                 if (res.status != 200) return alert("POST createNewDiscFromVideo $http != 200");
 
+                // TODO : factoriser avec createFromPlaylist
                 console.log("Disque créé");
-                //var disc = res.data; // TODO : doit-on refaire un parsing pour être sûr ?
                 disc.index = $scope.discs.length;
                 $scope.discs.push(disc);
 
