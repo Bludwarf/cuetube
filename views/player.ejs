@@ -104,7 +104,6 @@
             <div class="buttons">
                 <button ng-click="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
                 <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>
-                <button ng-click="save()">Sauver</button></a>
             </div>
 
             <div class="discs">
@@ -144,7 +143,7 @@
         //    after the API code downloads.
         // Appelé automatiquement par l'IFRAME YouTube
         function onYouTubeIframeAPIReady() {
-            getCtrl().next();
+            getCtrl().onYouTubeIframeAPIReady();
         }
 
         // Raccourcis clavier
@@ -181,9 +180,15 @@
           event.preventDefault();
         };
 
+        // Avant fermeture de la page
+        window.onbeforeunload = function(e) {
+            console.log("Sauvegarde avant fermeture...");
+            getCtrl().save();
+        };
+
         function toggleDiscList(discListElement) {
             $(discListElement).toggle();
-        };
+        }
 
     </script>
     <!--<script src="/socket.io/socket.io.js"></script>-->

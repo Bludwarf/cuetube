@@ -6,6 +6,11 @@
   - Décocher une ou plusieurs (maj + click) pistes d'un disque
   - Inverser des pistes cochées (alt + click)
   - Démarrer directement et uniquement un disque en double cliquant dessus
+  - Sauvegarder l'état du lecteur
+    - Disques désactivés
+    - Pistes désactivées pour chaque disque
+    - Pistes suivantes pour chaque disque
+    - Dernière piste lue
 
 ## Gestion
 
