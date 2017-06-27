@@ -17,7 +17,15 @@ module.exports = function(config) {
     files: [
       'client/js/*.js',
       'client/js/controllers/*.js',
-      'test/**/*.js'
+      'test/**/*.js',
+
+        // Resources JSON
+        'bower_components/karma-read-json/karma-read-json.js',
+        // JSON fixture
+        { pattern:  'samples/**/*.json',
+            watched:  true,
+            served:   true,
+            included: false }
     ],
 
 

@@ -68,6 +68,10 @@ class Disc
     @.files.push file
     file
 
+  # TODO : Pour éviter le problème : TypeError: Converting circular structure to JSON
+  toJSON: ->
+    @cuesheet
+
 class Disc.File
   constructor: (@disc, @index, @cuesheetFile) ->
     if !@cuesheetFile

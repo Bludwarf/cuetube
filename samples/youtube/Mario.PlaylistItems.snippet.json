@@ -1,0 +1,1060 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/lqT8Tb_YkuEUVBMK5ptLu8MZPg4\"",
+  "pageInfo": {
+    "totalResults": 30,
+    "resultsPerPage": 50
+  },
+  "items": [
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/P6e1fgDmOgJqDsBb3QpmdiSQ9cI\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkIzNTBBMjkyMkZCODRFQTA=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - World Map 1: Grass Land Theme",
+        "description": "This is the first track in 'The SMB3 Anthology.'\r\n\r\nThis a cool song to get started with.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/LI_mwl3QcYA/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/LI_mwl3QcYA/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/LI_mwl3QcYA/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 0,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "LI_mwl3QcYA"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/KuwJHdbj1Jnb0mAYleHcJ7dgA1c\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkY3MkUzQzgwN0NERTY3NUU=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - World Map 2: Desert Land Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nA cool low-key tune perfect for a desert.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/eRXqOpw3uQA/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/eRXqOpw3uQA/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/eRXqOpw3uQA/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 1,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "eRXqOpw3uQA"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/_xi8iZ3ns88OOrO659zvaE4ijOQ\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjJENDVGMDQ4QjQ0MTg1Mjg=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - World Map 3: Water Land Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is kinda cool, but it has a water essence.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/C382wc4StOw/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/C382wc4StOw/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/C382wc4StOw/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 2,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "C382wc4StOw"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/G_hfKJ3lRgP8PkneII8rToQzsdU\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjNCQjhBRUM4RjdDRUI2NzY=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - World Map 4: Giant Land Theme",
+        "description": "This is the next track in this BGM anthology.\r\n\r\nThis is a cool, fast-paced map tune.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/85yuGwTMJh4/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/85yuGwTMJh4/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/85yuGwTMJh4/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 3,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "85yuGwTMJh4"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/hW6SI-C_g-lI_5ttF6dYMG2rioU\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkM1RDIzRDE2Q0JFODRDOTk=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - World Map 5: Sky Land Theme",
+        "description": "This is the next track in this BGM anthology.\r\n\r\nThis is my fav World Map theme from SMB3.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/Ob7WHx13X7A/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/Ob7WHx13X7A/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/Ob7WHx13X7A/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 4,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "Ob7WHx13X7A"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/AtnGMkzy15wBDFi3MhPhItzL7sI\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkVDMzg0QjA5MUIwQjI0OEI=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - World Map 6: Ice Land Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is kinda cool, but pretty annyoing after a while.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/c8LnHIODRMM/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/c8LnHIODRMM/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/c8LnHIODRMM/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 5,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "c8LnHIODRMM"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/JeJiHntb7HXkU_44L0vrfoYuFJ8\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjhEMjcwRTAwMTdFNTEyNkE=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - World Map 7: Pipe Maze Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is kind of dark. Kinda like it's preparing for World 8.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/PhYMtJrfTLY/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/PhYMtJrfTLY/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/PhYMtJrfTLY/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 6,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "PhYMtJrfTLY"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/5jZlnB8QTrWhhuvpQmibvjm2J9M\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjBFNjI3Rjc4OTA3MTE5RDg=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - World Map 8: Dark Land Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nBowser really outdid himself with this level.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/XA6xrfUb06E/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/XA6xrfUb06E/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/XA6xrfUb06E/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 7,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "XA6xrfUb06E"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/W3jwP9bwt7rR8kbsGmL-6cmB1FM\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjBDQUFGQkVCNjc5M0QwQzU=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Overworld 1 Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is my second fav Overworld Theme fromthe NES SMB series, behind the SMB2 Overworld.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/Q_saM7I20pY/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/Q_saM7I20pY/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/Q_saM7I20pY/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 8,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "Q_saM7I20pY"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/S3IobnsVsjYZVb_82cABhdrNpX8\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjA3MDI4REM4MEVFNzEyNTA=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Overworld 2 Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is my least fav Overworld but it's still very good.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/5wApmRF5gyM/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/5wApmRF5gyM/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/5wApmRF5gyM/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 9,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "5wApmRF5gyM"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/vcE7iGv5I2h33hjmu5mx7zNTctg\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkVGRDI4NDFDMDhGOEYwMjM=",
+      "snippet": {
+        "publishedAt": "2008-07-17T22:48:17.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Underwater Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis cooler but not as classic as the underwater theme from SMB1.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/icKfm1MsTxE/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/icKfm1MsTxE/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/icKfm1MsTxE/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 10,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "icKfm1MsTxE"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/qKIhebUTVy_ctAiUh9gRJnBY69I\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjY3NzUyMjZFRjU1RDhFMzU=",
+      "snippet": {
+        "publishedAt": "2008-07-19T16:18:15.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Underworld Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nA remix of the SMB1 underworld Theme.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/TmnZgBpYG_4/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/TmnZgBpYG_4/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/TmnZgBpYG_4/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 11,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "TmnZgBpYG_4"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/5OKKz5S5fTFwtXy_q_uFwyxdMQo\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjMzQTFFQzM4RDZENzZCNzk=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Warp Zone Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis also plays when you go to the secret coin heavens. Cool little chillout track.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/EOg0GZZuCak/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/EOg0GZZuCak/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/EOg0GZZuCak/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 12,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "EOg0GZZuCak"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/9SyVu3PJuSazNrOdxWG2-CJpcZc\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkM2MkU1QkY2REUzMzhBNDM=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Starman Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThe same as the SMB1 and SMB2 one with a litlle snare and cymbal sample added in.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/w3FhYeqX4aU/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/w3FhYeqX4aU/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/w3FhYeqX4aU/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 13,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "w3FhYeqX4aU"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/o-aNpbVqRSOo7DF6ofCTgtGMYos\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjhCRTNFOTdBRTIxREYzMDc=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Warp Whistle Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThe quick snippet that plays while the Warp Tornado brings you to the Warp Zone.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/v4HCJ1Cedxk/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/v4HCJ1Cedxk/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/v4HCJ1Cedxk/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 14,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "v4HCJ1Cedxk"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/CFX7-BL6pe05IeycMVtpPGtyi2Q\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkJDMDJGRjI5MEIyQUQ3NDc=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Music Box Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is one of the things you can get from a Hammer Bros. fight. It plays a slower and more 8-bit sounding version of the SMB1 overworld.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/nWDSwqu5r2Y/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/nWDSwqu5r2Y/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/nWDSwqu5r2Y/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 15,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "nWDSwqu5r2Y"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/j81CaV8rTqfF3gOnRsvfwMNL97o\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjUwMzRGNTNGQjk0OUU3OTg=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Spade Panel Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is the song that plays during your run at a Spade Panel Theme. Spade Panels are the places where you play memory matching and slot machine style matching.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/YZFxVDyB0xw/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/YZFxVDyB0xw/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/YZFxVDyB0xw/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 16,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "YZFxVDyB0xw"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/IvRxbeAu19UwdsgyQKqqBVMq0cg\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkE1Qjg0NzBBNDA4RTA2NkI=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Toad's House Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nWith three chests a visit, Toad's House is a surprise every time you go in there.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/3Tf2hgrnw2M/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/3Tf2hgrnw2M/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/3Tf2hgrnw2M/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 17,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "3Tf2hgrnw2M"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/4A2QgHnRVAwqLFYbyRhsJ4hvJcQ\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkY5OEI2MzEwM0E5MTQ5QTg=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Fortress Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nWith a Koopa Kid in every Fortress it just might be the most challeenging part of the game, next to the Airships.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/wEc6-RUYVoE/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/wEc6-RUYVoE/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/wEc6-RUYVoE/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 18,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "wEc6-RUYVoE"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/ikuw-dYied2H1ARGUEuvItfCTa4\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjlCQ0I0N0E0OTY1ODIwMTM=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Hammer Bros. Battle Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nMy fav track from the SMB3 anthology.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/0-INuS99s5Q/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/0-INuS99s5Q/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/0-INuS99s5Q/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 19,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "0-INuS99s5Q"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/yXtpn64bF9Pkn3tT_ubXRL5E7jc\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjA0MjI4NjFDQTBBNzA1QTM=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - King Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is what plays when Toad tells you the HORRIBLE NEWS about how the king has been transformed. Then you have to do a bunch of crap.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/vwk9mrE-cFA/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/vwk9mrE-cFA/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/vwk9mrE-cFA/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 20,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "vwk9mrE-cFA"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/fLzQGisOKeRkItjzatJnC6QjO0I\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkJBRjhENDEyNEYzREYwOTY=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Airship Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nKoopalings roam these parks...and Airships are known to be devilish.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/Uh0OKW5cwVo/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/Uh0OKW5cwVo/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/Uh0OKW5cwVo/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 21,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "Uh0OKW5cwVo"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/HcJUZbG8cTg1XAPjFScVRDSASfM\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkYwRTJBNEEwOUM4OUFERjQ=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Koopa Kid Battle Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nKoopalings and Koopa Kids rule Fortress' and Airships and there has to be a tune liable enough to handle that many fights.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/03gX-re5C9g/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/03gX-re5C9g/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/03gX-re5C9g/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 22,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "03gX-re5C9g"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/POJwK19LS3ghjxU_5Zq3y4zM1nM\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLkFDODVDQ0FEODk0NDNGODk=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Victory Fanfare",
+        "description": "The next track in this BGM anthology.\r\n\r\nWhen you get three of the same Card in a row this tune plays.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/5fZJLyJyPKQ/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/5fZJLyJyPKQ/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/5fZJLyJyPKQ/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 23,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "5fZJLyJyPKQ"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/3TQeFV5tCTAlJVm8cUmx0_7-0sQ\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjYyRDA5N0Y1ODc1RkE3N0Q=",
+      "snippet": {
+        "publishedAt": "2008-07-19T17:33:08.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - King Restored Fanfare",
+        "description": "The next track in this BGM anthology.\r\n\r\nWhen you find the wand, transform the king, this ong plays. Its a HAPPY HAPPY HAPPY HAPPY HAPPY HAPPY SONG!",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/Wj022XKwbp0/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/Wj022XKwbp0/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/Wj022XKwbp0/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 24,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "Wj022XKwbp0"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/vP6M3tucb9dtSDp1iA53p-W-F-0\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjMzRTdDMjEyQkQ1NDk0RkM=",
+      "snippet": {
+        "publishedAt": "2008-07-19T18:21:36.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Course Clear Fanfare",
+        "description": "The next track in this BGM anthology.\r\n\r\nWhen you beat a course, this kinky tune plays.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/sE0xXjdrx-Q/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/sE0xXjdrx-Q/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/sE0xXjdrx-Q/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 25,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "sE0xXjdrx-Q"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/ROYJXwFtlxWM48LsBxqCvSVh4Sk\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjA5NDM3RUI3MkQ2RkJFN0Y=",
+      "snippet": {
+        "publishedAt": "2008-07-19T18:21:36.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - You're Dead Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is a kinda cool deatht theme.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/OFX8-ctkQqY/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/OFX8-ctkQqY/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/OFX8-ctkQqY/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 26,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "OFX8-ctkQqY"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/HpKcMCq_i4LfZNR9EGjikiQrt_w\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjVDQUYwNDIyRDY0MDMwOEU=",
+      "snippet": {
+        "publishedAt": "2008-07-19T18:21:36.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Game Over Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis is another very happy Game Over theme, though not as happy as the SMB2 game over theme, yet not as touching as the SMB1 game over theme.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/FvIVNRmKW9M/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/FvIVNRmKW9M/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/FvIVNRmKW9M/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 27,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "FvIVNRmKW9M"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/dvx0oDBRnYjFv3r1LvG24G38yQw\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjFEM0NDMUNBMDVENTA0QUE=",
+      "snippet": {
+        "publishedAt": "2008-07-19T18:21:36.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Bowser Battle Theme",
+        "description": "The next track in this BGM anthology.\r\n\r\nThis Bowser battle is even easier than the SMB1 Bowser battle. And 80x easier than the SMB2 boss fights.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/h-xih93YIwk/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/h-xih93YIwk/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/h-xih93YIwk/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 28,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "h-xih93YIwk"
+        }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/02Ozj04Vlcuxb-Awvm2EjJid2kc\"",
+      "id": "UEwwMDFBMTAyNENCNDlGNjYxLjk4RTEwQzRFRjAyQjVBQjM=",
+      "snippet": {
+        "publishedAt": "2008-07-19T18:21:36.000Z",
+        "channelId": "UCenB8W7mKwSnagwi-Uh4ngw",
+        "title": "Super Mario Bros. 3 - Ending Fanfare",
+        "description": "The final track in this BGM anthology. And the final track for all of the Super Mario Bros. Anthology.\r\n\r\nMy rating:\r\n9.5/10\r\n\r\nAll three games in my opinion were fabulous, even SMB2(despite my lousy rating). Even with my superior gaming skills and impressive reflexes, I still have yet to beat either one of them.\r\n\r\nI believe Shigeru Miyamoto is the biggest genius on the planet. His ideas, ranging from Donkey Kong to Zelda to Metroid back to Mario, are some of the greatest ideas ever created.\r\n\r\nKoji Kondo's 8-bit musical composition work is the work of God. The original SMB series, Mario 64, Zelda, NES and SNES series, Ocarina of Time, and many more Japan-exclusive titles have been endowed with incredible music to play along with, making the gameplay of the some of the greatest even more exsquisite.\r\n\r\nMario will live in our hearts for years to come. Nothing could posbbily eclipse the first three Super Mario Bros. games. Even though SMB2 wasn't really a Mario game, it will still go down in history as \"one of the whitest black sheeps in the video game world.\"\r\n\r\nI hope you've played all the games yourself and endeavoured the maticulously well-designed levels and gameplay. All these games have set the standard for some of the biggest games of our time. Castlevania is probably the most obvious. With SMB1-like jumps and obstacles, SMB2-like enemies and bosses, and SMB3-like level design.\r\n\r\nALL HAIL MARIO!\r\n\r\nNOTE: I did put in a slight slideshow for you to enjoy. There's a thing at the very end that will make you laugh. No, it's not a screamer.\r\n\r\nAll of this music has been composed by Koji Kondo.\r\n\r\nAll three games have been directed by Shigeru Miyamoto.\r\n\r\nAll games and music are direct copyrgihts of Nintendo. No copyright infringement was meant by uploading the BGM of SMB1, SMB2, and SMB3.\r\n\r\nDISCLAIMER: Any problems you have with anything about copyright and/or quality issues of these videos please contact me at daftpunkenstein@yahoo.com\r\n\r\nHEEEEEEEEE!",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/cQWKjnnhKn8/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/cQWKjnnhKn8/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/cQWKjnnhKn8/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "DAFTPUNKletlive",
+        "playlistId": "PL001A1024CB49F661",
+        "position": 29,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "cQWKjnnhKn8"
+        }
+      }
+    }
+  ]
+}
