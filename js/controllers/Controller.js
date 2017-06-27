@@ -292,6 +292,8 @@ function Controller($scope, $http) {
 
             })(fileIndex);
         }
+
+        return disc;
     }
 
     // TODO : discsById
@@ -991,45 +993,8 @@ function Controller($scope, $http) {
      */
     $scope.newDiscFromPlaylistItems = function(playlistItems) {
         playlistItems = playlistItems.items || playlistItems;
-
-        var disc = new cuesheet.CueSheet();
-        _.extend(disc, {
-            title: prompt("Nom du disque"),
-            performer: playlistItems[0].snippet.channelTitle
-            /*rems: [
-                "COMMENT \"Playlist YouTube : https://www.youtube.com/watch?v=RRtlWfi6jiM&list=PL1800E1EFCA1EABE3\""
-            ]*/
-        });
-
-        for (var i = 0; i < playlistItems.length; ++i) {
-            var item = playlistItems[i];
-            var file = disc.newFile().getCurrentFile();
-            _.extend(file, {
-                name: $scope.getVideoUrlFromId(item.snippet.resourceId.videoId),
-                type: "MP3"
-            });
-
-            var track = disc.newTrack().getCurrentTrack();
-            _.extend(track, {
-                number: i + 1,
-                title: item.snippet.title,
-                type: "AUDIO",
-                indexes: [
-                    {
-                        "number": 1,
-                        "time": {
-                            "min": 0,
-                            "sec": 0,
-                            "frame": 0
-                        }
-                    }
-                ]
-            });
-        }
-
-        enrichDisc(disc);
-
-        return disc;
+        let disc = ytparser.newDiscFromPlaylistItems(playlistItems, prompt("Nom du disque"));
+        return enrichDisc(disc);
     };
 
     /**
@@ -1047,6 +1012,15 @@ function Controller($scope, $http) {
         }
     }
 
+    $scope.createDisc = function(disc) {
+        console.log("Disque créé");
+        disc.index = $scope.discs.length;
+        $scope.discs.push(disc);
+
+        // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
+        prompt("Disque créé avec l'id suivant", disc.id);
+    };
+
     $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl) {
         var playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
 
@@ -1059,17 +1033,7 @@ function Controller($scope, $http) {
             var disc = $scope.newDiscFromPlaylistItems(playlistItems);
             $http.post("/"+disc.id+".cue.json", disc).then(res => {
                 if (res.status != 200) return alert("POST createNewDiscFromPlaylist $http != 200");
-
-                console.log("Disque créé");
-                console.log(res.data);
-                var video = res.data; // TODO : doit-on refaire un parsing pour être sûr ?
-                var disc = new Disc(video.cue);
-                disc.index = $scope.discs.length;
-                $scope.discs.push(disc);
-
-                // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
-                prompt("Disque créé avec l'id suivant", disc.id);
-
+                $scope.createDisc(disc);
             }, resKO => {
                 alert('Erreur POST createNewDiscFromPlaylist : '+resKO.data);
                 return;
@@ -1200,13 +1164,7 @@ function Controller($scope, $http) {
             $http.post("/"+videoId+".cue.json", disc.cuesheet).then(res => {
                 if (res.status != 200) return alert("POST createNewDiscFromVideo $http != 200");
 
-                // TODO : factoriser avec createFromPlaylist
-                console.log("Disque créé");
-                disc.index = $scope.discs.length;
-                $scope.discs.push(disc);
-
-                // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
-                prompt("Disque créé avec l'id suivant", disc.id);
+                $scope.createDisc(disc);
 
                 cb(null, disc);
 
