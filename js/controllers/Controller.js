@@ -1004,10 +1004,11 @@ function Controller($scope, $http) {
      */
     function getIdOrUrl(idOrUrl, promptMessage, urlParam) {
         idOrUrl = idOrUrl || prompt(promptMessage);
-        if (idOrUrl.match(/:\/\//)) { // URL ?
+        if (!idOrUrl) {
+            return undefined;
+        } else if (idOrUrl.match(/:\/\//)) { // URL ?
             return getParameterByName(urlParam, idOrUrl);
-        }
-        else {
+        } else {
             return idOrUrl;
         }
     }
@@ -1023,6 +1024,7 @@ function Controller($scope, $http) {
 
     $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl) {
         var playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
+        if (!playlistId) return;
 
         $scope.getPlaylistItems(playlistId, (err, playlistItems) => {
             if (err) {
@@ -1070,6 +1072,7 @@ function Controller($scope, $http) {
 
     $scope.createNewDiscFromVideo = function(videoIdOrUrl, cb) {
         var videoId = getIdOrUrl(videoIdOrUrl, 'Id ou URL de la vidéo YouTube (multipiste)', 'v');
+        if (!videoId) return;
         cb = cb || function(err, disc) {
         };
 
