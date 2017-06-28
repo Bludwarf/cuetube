@@ -155,18 +155,15 @@ function Controller($scope, $http) {
         };
 
         // TODO : à mettre dans disc.js
-        // le tableau généré doit toujours pouvoir être modifié en dehors avec un shift()
+        /**
+         * Prochaines pistes en mode aléatoire
+         * Note dev : le tableau généré doit toujours pouvoir être modifié en dehors avec un shift()
+         */
         Object.defineProperty(disc, 'nextTracks', {
             get: function() {
-                if (!this._nextTracks) {
-                    this._nextTracks = {
-                        false: null,
-                        true: null
-                    };
-                }
 
                 function generate(disc, shuffled) {
-                    var nextTracks = disc._nextTracks[shuffled];
+                    let nextTracks = disc._nextTracks;
                     if (!nextTracks || !nextTracks.length) {
                         nextTracks = [];
                         disc.tracks.forEach((track) => {
@@ -180,16 +177,9 @@ function Controller($scope, $http) {
                     return nextTracks;
                 }
 
-                // Prochaines pistes pour ce disque (non aléatoires)
-                var nextTracks = this._nextTracks[false];
-                if (!nextTracks || !nextTracks.length) {
-                    this._nextTracks[false] = generate(this, false);
-                }
-
                 // Prochaines pistes pour ce disque (aléatoires)
-                nextTracks = this._nextTracks[true];
-                if (!nextTracks || !nextTracks.length) {
-                    this._nextTracks[true] = generate(this, true);
+                if (!this._nextTracks || !this._nextTracks.length) {
+                    this._nextTracks = generate(this, true);
                 }
 
                 return this._nextTracks;
@@ -204,11 +194,11 @@ function Controller($scope, $http) {
         disc.nextTrack = function(shuffled) {
 
             // On prend la prochaine piste active
-            var track = null;
+            let track = null;
 
             if (shuffled) {
-                while (track == null || !track.enabled) {
-                    var nextTracks = this.nextTracks[shuffled];
+                while (track === null || !track.enabled) {
+                    let nextTracks = this.nextTracks;
                     track = this.tracks[nextTracks.shift() - 1];
                 }
             } else {
@@ -477,12 +467,10 @@ function Controller($scope, $http) {
         $scope.currentTrack = track;
 
         // Suppression dans la liste des suivants auto
-        var nextTracks = $scope.currentDisc.nextTracks[$scope.shuffle];
-        var i = nextTracks.indexOf(track.number);
         if ($scope.shuffle) {
+            let nextTracks = $scope.currentDisc.nextTracks;
+            let i = nextTracks.indexOf(track.number);
             nextTracks.splice(i, 1); // on supprime que celui-ci
-        } else {
-            nextTracks.splice(0, i + 1); // on supprime tout jusqu'à celui-ci
         }
 
         $scope.loadCurrentTrack($scope.player);
