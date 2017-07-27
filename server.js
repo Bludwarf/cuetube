@@ -79,114 +79,121 @@ router
     .use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
     .set('view engine', 'ejs')
 
-.get("/:id.cue.json", function(req, res) {
+    .get("/:id.cue.json", function(req, res) {
 
-    var options = getOptions(req);
+        var options = getOptions(req);
 
-    CueService.getCue(req.params.id + ".cue", options, function(err, cue) {
-        if (err) return res.status(500).send(err.message);
-        res.json(cue);
-    });
-
-})
-
-// EXEMPLE : GET /minecraft.cue
-// Si le fichier existe déjà les paramètres de la requête sont ignorés
-.get("/:id.cue", function(req, res) {
-
-    var options = getOptions(req);
-
-    CueService.getCueFile(req.params.id + ".cue", options, function(err, targetFile) {
-        if (err) return res.status(500).send(err.message);
-        res.sendFile(targetFile);
-    });
-})
-
-// EXEMPLE : GET /minecraft.json
-.get("/:id.json", function(req, res) {
-
-    getVideo(req, function(err, video) {
-        // On ignore l'erreur si aucun fichier cue n'existe
-        if (err) {
-            return res.status(500).send(err.message);
-        }
-        res.json(video);
-    });
-
-})
-
-// Création d'un disque (à partir d'un objet CueSheet de cue-parser)
-.post("/:id.cue.json", function(req, res) {
-    var id = req.params.id;
-    var disc = req.body;
-    var cueFile = path.resolve(__dirname, 'client/cues/'+id+'.cue');
-    CueService.writeCueFile(cueFile, disc, (err) => {
-        if (err) return res.status(500).send(err.message);
-        return res.end();
-    });
-})
-
-// Création d'une vidéo
-.post("/:id.json", function(req, res) {
-    var videoId = req.params.id;
-    VideoService.createVideoFiles(videoId, req.body, (err) => {
-        return res.end();
-    })
-})
-
-// Rechargement de cache, etc...
-.get("/reload", function(req, res) {
-    CueService.reload();
-    VideoService.reload();
-    res.redirect("/");
-})
-
-.get("/", function(req, res) {
-    res.render("index.ejs");
-})
-
-/**
- * Paramètres :
- *   - discs : liste des id des disques à charger séparés par ",". Exemple pour les jeux vidéos : Dg0IjOzopYU,0WGKC2J3g_Y,TGXwvLupP5A,WGmHaMRAXuI,GRWpooKRLwg,zvHQELG1QHE
- *   - collection : id d'un fichier /client/collections/*.cues contenant une liste d'ids de disques
- */
-.get("/player", function(req, res) {
-    res.render("player.ejs");
-})
-
-.get("/discs", function(req, res) {
-    CueService.getDiscsIds((err, discs) => {
-        if (err) return res.status(500).send(err.message);
-        res.json(discs);
-    })
-})
-
-.get("/collection/:id/discs", function(req, res) {
-    CollectionService.getDiscsIds(req.params.id, (err, discs) => {
-        if (err) return res.status(500).send(err.message);
-        res.json(discs);
-    })
-})
-
-.get("/collections", function(req, res) {
-    CollectionService.getCollectionsIds((err, ids) => {
-        if (err) return res.status(500).send(err.message);
-        res.json(ids);
-    })
-})
-
-.get("/edit/:id.cue", function(req, res) {
-
-    getCue(req, function(err, cue) {
-        if (err) {
-            return res.status(500).send(err.message);
-        }
-        res.render("edit-cue.ejs", {
-            req: req,
-            cueData: cue
+        CueService.getCue(req.params.id + ".cue", options, function(err, cue) {
+            if (err) return res.status(500).send(err.message);
+            res.json(cue);
         });
-    });
-})
+
+    })
+
+    // EXEMPLE : GET /minecraft.cue
+    // Si le fichier existe déjà les paramètres de la requête sont ignorés
+    .get("/:id.cue", function(req, res) {
+
+        var options = getOptions(req);
+
+        CueService.getCueFile(req.params.id + ".cue", options, function(err, targetFile) {
+            if (err) return res.status(500).send(err.message);
+            res.sendFile(targetFile);
+        });
+    })
+
+    // EXEMPLE : GET /minecraft.json
+    .get("/:id.json", function(req, res) {
+
+        getVideo(req, function(err, video) {
+            // On ignore l'erreur si aucun fichier cue n'existe
+            if (err) {
+                return res.status(500).send(err.message);
+            }
+            res.json(video);
+        });
+
+    })
+
+    // Création d'un disque (à partir d'un objet CueSheet de cue-parser)
+    .post("/:id.cue.json", function(req, res) {
+        var id = req.params.id;
+        var disc = req.body;
+        var cueFile = path.resolve(__dirname, 'client/cues/'+id+'.cue');
+        CueService.writeCueFile(cueFile, disc, (err) => {
+            if (err) return res.status(500).send(err.message);
+            return res.end();
+        });
+    })
+
+    // Création d'une vidéo
+    .post("/:id.json", function(req, res) {
+        var videoId = req.params.id;
+        VideoService.createVideoFiles(videoId, req.body, (err) => {
+            return res.end();
+        })
+    })
+
+    // Rechargement de cache, etc...
+    .get("/reload", function(req, res) {
+        CueService.reload();
+        VideoService.reload();
+        res.redirect("/");
+    })
+
+    .get("/", function(req, res) {
+        res.render("index.ejs");
+    })
+
+    /**
+     * Paramètres :
+     *   - discs : liste des id des disques à charger séparés par ",". Exemple pour les jeux vidéos : Dg0IjOzopYU,0WGKC2J3g_Y,TGXwvLupP5A,WGmHaMRAXuI,GRWpooKRLwg,zvHQELG1QHE
+     *   - collection : id d'un fichier /client/collections/*.cues contenant une liste d'ids de disques
+     */
+    .get("/player", function(req, res) {
+        res.render("player.ejs");
+    })
+
+    .get("/discs", function(req, res) {
+        CueService.getDiscsIds((err, discs) => {
+            if (err) return res.status(500).send(err.message);
+            res.json(discs);
+        })
+    })
+
+    .get("/collection/:id/discs", function(req, res) {
+        CollectionService.getDiscsIds(req.params.id, (err, discs) => {
+            if (err) return res.status(500).send(err.message);
+            res.json(discs);
+        })
+    })
+
+    .post("/collection/:id/discs", function(req, res) {
+        CollectionService.setDiscsIds(req.params.id, req.body, (err) => {
+            if (err) return res.status(500).send(err.message);
+            res.end();
+        })
+    })
+
+    .get("/collections", function(req, res) {
+        CollectionService.getCollectionsIds((err, ids) => {
+            if (err) return res.status(500).send(err.message);
+            res.json(ids);
+        })
+    })
+
+    .get("/edit/:id.cue", function(req, res) {
+
+        getCue(req, function(err, cue) {
+            if (err) {
+                return res.status(500).send(err.message);
+            }
+            res.render("edit-cue.ejs", {
+                req: req,
+                cueData: cue
+            });
+        });
+    })
 
 ;
 

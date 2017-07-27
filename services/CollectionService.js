@@ -1,17 +1,17 @@
-var path = require("path");
-var fs = require('fs');
+const path = require("path");
+const fs = require('fs');
 
-var root = path.resolve(__dirname, "..");
-var dir = root + "/client/collections/";
+const root = path.resolve(__dirname, "..");
+const dir = root + "/client/collections/";
 
 module.exports = {
     getDiscsIds: function(collectionId, cb) {
         collectionId = collectionId.toLowerCase();
-        var collectionFile = path.resolve(dir, collectionId + '.cues');
+        const collectionFile = path.resolve(dir, collectionId + '.cues');
         fs.readFile(collectionFile, 'utf-8', (err, collectionContent) => {
             if (err) return cb(err);
-            var lines = collectionContent.split(/\r?\n/);
-            var nonEmptyLines = [];
+            const lines = collectionContent.split(/\r?\n/);
+            const nonEmptyLines = [];
             lines.forEach(function(line) {
                 if (line.trim()) nonEmptyLines.push(line);
             });
@@ -26,9 +26,9 @@ module.exports = {
         fs.readdir(dir, (err, files) => {
             if (err) return cb(err);
             
-            var ids = [];
-            for (var i = 0; i < files.length; ++i) {
-                var file = files[i];
+            const ids = [];
+            for (let i = 0; i < files.length; ++i) {
+                const file = files[i];
                 if (file.match(/\.cues$/i)) {
                     ids.push(file.slice(0, -5));
                 }
@@ -36,5 +36,12 @@ module.exports = {
             
             cb(null, ids);
         });
-    }
-}
+    },
+    
+    setDiscsIds: function(collectionId, discIds, cb) {
+        collectionId = collectionId.toLowerCase();
+        const collectionFile = path.resolve(dir, collectionId + '.cues');
+        const content = discIds.join("\n");
+        fs.writeFile(collectionFile, content, cb);
+    },
+};
