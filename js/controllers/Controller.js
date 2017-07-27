@@ -1011,6 +1011,21 @@ function Controller($scope, $http) {
 
     $scope.createDisc = function(disc) {
         console.log("Disque créé");
+
+        const existingIds = $scope.discs.map(disc => disc.id);
+
+        const existingDiscIndex = existingIds.indexOf(disc.id);
+        if (existingDiscIndex !== -1) {
+            if (!confirm("Ce disque est déjà dans le lecteur. Voulez-vous l'écraser ?")) {
+                console.log("Création du disque annulée");
+                return;
+            }
+            const existingDisc = $scope.discs[existingDiscIndex];
+            disc.index = existingDisc.index;
+            $scope.discs[existingDiscIndex] = disc;
+            return;
+        }
+
         disc.index = $scope.discs.length;
         $scope.discs.push(disc);
 
