@@ -53,9 +53,17 @@ ytparser.getVideoUrlFromId = function(id) {
  * Remplace CueService.extractTracks
  * @param json représentation ou objet YouTube Vidéo (snippet)
  */
-ytparser.newDiscFromVideo = function(json, videoUrl) {
-    if (typeof json === 'string') return newDiscFromVideo_json(json, videoUrl);
-    else return newDiscFromVideo(json, videoUrl);
+ytparser.newDiscFromVideo = function(video, videoUrl) {
+    const snippet = video.items[0].snippet;
+    return newDiscFromVideoSnippet(snippet, videoUrl);
+};
+
+/**
+ * Remplace CueService.extractTracks
+ * @param json représentation ou objet YouTube Vidéo (snippet)
+ */
+ytparser.newDiscFromVideoSnippet = function(snippet, videoUrl) {
+    return newDiscFromVideoSnippet(snippet, videoUrl);
 };
 
 function newDiscFromVideo_json(jsonString, videoUrl) {
@@ -64,12 +72,11 @@ function newDiscFromVideo_json(jsonString, videoUrl) {
 
 /**
  * 
- * @param snippet
+ * @param snippet video.items[0].snippet dans le JSON d'une vidéo YouTube
  * @param videoUrl $scope.getVideoUrlFromId(videoId)
  * @returns {Array}
  */
-function newDiscFromVideo(video, videoUrl) {
-    let snippet = video.items[0].snippet;
+function newDiscFromVideoSnippet(snippet, videoUrl) {
     let description = snippet.localized.description || snippet.description;
 
     // Recherche des lignes contenant des timecodes
@@ -120,6 +127,7 @@ function newDiscFromVideo(video, videoUrl) {
 
                 // Deux parties (artiste - title ou title - artiste) ?
                 if (sep.trim() && texts.length > 1) {
+                    alert(artistInTitle);
                     if (artistInTitle === undefined) {
                         artistInTitle = confirm("Le nom de l'artiste apparaît-il dans le texte suivant ?\n"+text);
                     }

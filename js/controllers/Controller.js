@@ -1034,86 +1034,8 @@ function Controller($scope, $http) {
         $scope.getVideoSnippet(videoId, (err, snippet) => {
             if (err) return cb(err);
 
-            const description = snippet.localized.description;
-
-            // Recherche des lignes contenant des timecodes
-            const lines = description.split(/\n/);
-
-            // Création de la cuesheet
-            let disc = new Disc();
-            _.extend(disc, {
-                title: snippet.title,
-                performer: snippet.channelTitle
-            });
-
-            // Un seul fichier puisqu'une seule vidéo
-            let file = disc.newFile();
-            _.extend(file, {
-                name: $scope.getVideoUrlFromId(videoId),
-                type: "MP3"
-            });
-
-            // Parsing de la description
-            const rx = /(.+[^\d:])?(\d+(?::\d+)+)([^\d:].+)?/i; // 1:avant time code, 2:timecode, 3:après timecode
-            const sepRxAfter = /^([^\w]+)(\w.+)$/;
-            const sepRxBefore = /^[^\w]*(\w.+)([^\w]+)$/;
-            let artistBeforeTitle; // comme dans le m3u ?
-            for (let i = 0; i < lines.length; ++i) {
-                const line = lines[i];
-                const parts = rx.exec(line);
-                if (parts) {
-                    console.log("createNewDiscFromVideo : "+line);
-                    const time = parseTime(parts[2]);
-                    const textAfterTime = !!parts[3];
-                    let text = textAfterTime ? parts[3] : parts[1];
-
-                    // On cherche le séparateur
-                    const sepRx = textAfterTime ? sepRxAfter : sepRxBefore;
-                    const sepParts = sepRx.exec(text);
-                    const sep = sepParts ? sepParts[1] : null;
-                    text = sepParts ? sepParts[2] : text;
-
-                    // Séparation du texte
-                    let title, artist;
-                    if (sep && sep.trim()) {
-                        const texts = text.split(sep);
-
-                        // Deux parties (artiste - title ou title - artiste) ?
-                        if (sep.trim() && texts.length > 1) {
-                            if (typeof(artistBeforeTitle) === 'undefined') {
-                                artistBeforeTitle = confirm("Le nom de l'artiste est bien avant le titre dans le texte suivant ?\n"+text);
-                            }
-
-                            if (artistBeforeTitle) {
-                                artist = texts[0];
-                                title = texts[1];
-                            }
-                            else {
-                                title = texts[0];
-                                artist = texts[1];
-                            }
-                        }
-                        else {
-                            title = text;
-                        }
-                    }
-                    else {
-                        // sep vide
-                        title = text;
-                    }
-
-                    //const track = disc.newTrack(file.tracks ? (file.tracks.length + 1) : 1, "AUDIO").getCurrentTrack();
-                    let track = file.newTrack();
-                    _.extend(track, {
-                        title: title,
-                        performer: artist,
-                        indexes: [
-                            new cuesheet.Index(1, time)
-                        ]
-                    });
-                }
-            }//for
-
+            const videoUrl = $scope.getVideoUrlFromId(videoId);
+            let disc = ytparser.newDiscFromVideoSnippet(snippet, videoUrl);
             enrichDisc(disc);
 
             console.log("Création du disc...", disc);
