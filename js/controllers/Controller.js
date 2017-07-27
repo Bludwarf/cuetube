@@ -493,11 +493,13 @@ function Controller($scope, $http) {
             else {
 
                 // prochaine piste ou 1ère du prochain disque
-                track = track.next;
-                if (!track) {
-                    disc = discIndex < possibleDiscs.length - 1 ? possibleDiscs[discIndex+1] : possibleDiscs[0];
-                    track = disc.tracks[0];
-                }
+                do {
+                    track = track.next;
+                    if (!track) {
+                        disc = discIndex < possibleDiscs.length - 1 ? possibleDiscs[discIndex + 1] : possibleDiscs[0];
+                        track = disc.tracks[0];
+                    }
+                } while (!track.enabled);
             }
 
             $scope.currentTrackIndex = track.index;
