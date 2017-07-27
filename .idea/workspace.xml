@@ -2,11 +2,21 @@
 <project version="4">
   <component name="BookmarkManager">
     <bookmark url="file://$PROJECT_DIR$/client/js/controllers/Controller.js" line="162" mnemonic="2" />
-    <bookmark url="file://$PROJECT_DIR$/client/js/controllers/Controller.js" line="1022" mnemonic="1" />
+    <bookmark url="file://$PROJECT_DIR$/client/js/controllers/Controller.js" line="1026" mnemonic="1" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4aeafc41-70fa-4d0b-9377-fb0ef9317e58" name="Default" comment="FIX #27 Prochaine piste désactivée en lecture continue">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+    <list default="true" id="4aeafc41-70fa-4d0b-9377-fb0ef9317e58" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/cuetube.iml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Generated_files.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/markdown-navigator.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/markdown-navigator/profiles_settings.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/watcherTasks.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client/js/controllers/Controller.js" afterPath="$PROJECT_DIR$/client/js/controllers/Controller.js" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -31,8 +41,8 @@
       <file leaf-file-name="Controller.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/js/controllers/Controller.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="184">
-              <caret line="632" column="29" lean-forward="false" selection-start-line="632" selection-start-column="29" selection-end-line="632" selection-end-column="29" />
+            <state relative-caret-position="378">
+              <caret line="208" column="43" lean-forward="false" selection-start-line="208" selection-start-column="43" selection-end-line="208" selection-end-column="43" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -87,7 +97,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>newDiscFromPlaylistItems</find>
       <find>utils.</find>
       <find>json</find>
       <find>createNewDiscFromPlaylist</find>
@@ -117,6 +126,7 @@
       <find>$scope.load(</find>
       <find>track</find>
       <find>.load =</find>
+      <find>.load</find>
     </findStrings>
     <replaceStrings>
       <replace>let</replace>
@@ -506,7 +516,7 @@
       <workItem from="1497976813563" duration="3002000" />
       <workItem from="1498579223753" duration="3902000" />
       <workItem from="1498667001669" duration="713000" />
-      <workItem from="1501163047710" duration="9776000" />
+      <workItem from="1501163047710" duration="10013000" />
     </task>
     <task id="LOCAL-00001" summary="Sauvegarde des discIds dans le localStorage">
       <created>1492872976664</created>
@@ -634,11 +644,18 @@
       <option name="project" value="LOCAL" />
       <updated>1501172364068</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="FIX #26 Disque désactivé lu">
+      <created>1501172867878</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1501172867878</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="24339000" />
+    <option name="totallyTimeSpent" value="24576000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -707,7 +724,8 @@
     <MESSAGE value="FIX #36 + TU renforcés + TU pour le serveur" />
     <MESSAGE value="FIX #30 Ne pas désactiver l'édition du temps pour la 1ère piste" />
     <MESSAGE value="FIX #27 Prochaine piste désactivée en lecture continue" />
-    <option name="LAST_COMMIT_MESSAGE" value="FIX #27 Prochaine piste désactivée en lecture continue" />
+    <MESSAGE value="FIX #26 Disque désactivé lu" />
+    <option name="LAST_COMMIT_MESSAGE" value="FIX #26 Disque désactivé lu" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1139,8 +1157,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/js/controllers/Controller.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="184">
-          <caret line="632" column="29" lean-forward="false" selection-start-line="632" selection-start-column="29" selection-end-line="632" selection-end-column="29" />
+        <state relative-caret-position="378">
+          <caret line="208" column="43" lean-forward="false" selection-start-line="208" selection-start-column="43" selection-end-line="208" selection-end-column="43" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
