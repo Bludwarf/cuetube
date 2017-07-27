@@ -203,7 +203,11 @@ function Controller($scope, $http) {
                     track = this.tracks[nextTracks.shift() - 1];
                 }
             } else {
-                track = $scope.currentTrack.next;
+                if ($scope.currentTrack.disc === this) {
+                    track = $scope.currentTrack.next;
+                } else {
+                    track = this.tracks[0];
+                }
             }
 
             // TODO : à changer en playTrack() ou setTrack()
