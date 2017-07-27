@@ -70,8 +70,8 @@
             <legend><a href="{{file.name}}" target="_blank">videoId</a> <input type="text" name="fileName" value="{{file.videoId}}" size="300"/></legend>
 
             <fieldset ng-repeat="track in file.tracks"class="track">
-                <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-readonly="$index == 0" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
-                <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-readonly="$index == 0" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
+                <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
+                <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
                 <input type="text" name="trackTitle" class="title" placeholder="title" ng-model="track.title" />
                 <input type="text" name="trackPerformer" class="performer" placeholder="performer" ng-model="track.performer" empty-to-null />
             </fieldset>

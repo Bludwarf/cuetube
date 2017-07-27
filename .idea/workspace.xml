@@ -5,22 +5,9 @@
     <bookmark url="file://$PROJECT_DIR$/client/js/controllers/Controller.js" line="1011" mnemonic="1" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4aeafc41-70fa-4d0b-9377-fb0ef9317e58" name="Default" comment="Sauvegarder les prochaines pistes à lire + lecture actuelle">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/samples/youtube/README.md" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/samples/youtube/videos/Braveheart.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/spec/CueService.spec.js" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/cuetube_node_modules.xml" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/cuetube.iml" afterPath="$PROJECT_DIR$/.idea/cuetube.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/Generated_files.xml" afterPath="$PROJECT_DIR$/.idea/libraries/Generated_files.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/watcherTasks.xml" afterPath="$PROJECT_DIR$/.idea/watcherTasks.xml" />
+    <list default="true" id="4aeafc41-70fa-4d0b-9377-fb0ef9317e58" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client/collections/jeux vidéos.cues" afterPath="$PROJECT_DIR$/client/collections/jeux vidéos.cues" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client/js/controllers/Controller.js" afterPath="$PROJECT_DIR$/client/js/controllers/Controller.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client/js/yt-parser.js" afterPath="$PROJECT_DIR$/client/js/yt-parser.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package.json" afterPath="$PROJECT_DIR$/package.json" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/services/CueService.js" afterPath="$PROJECT_DIR$/services/CueService.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/yt-parser.spec.js" afterPath="$PROJECT_DIR$/test/yt-parser.spec.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/views/edit-cue.ejs" afterPath="$PROJECT_DIR$/views/edit-cue.ejs" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -53,7 +40,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="yt-parser.spec.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="yt-parser.spec.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/yt-parser.spec.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="476">
@@ -61,6 +48,16 @@
               <folding>
                 <element signature="e#0#45#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="edit-cue.ejs" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/views/edit-cue.ejs">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="73" column="84" lean-forward="false" selection-start-line="73" selection-start-column="84" selection-end-line="73" selection-end-column="84" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -213,6 +210,7 @@
         <option value="$PROJECT_DIR$/samples/youtube/videos/Braveheart.snippet.json" />
         <option value="$PROJECT_DIR$/client/js/yt-parser.js" />
         <option value="$PROJECT_DIR$/test/yt-parser.spec.js" />
+        <option value="$PROJECT_DIR$/views/edit-cue.ejs" />
       </list>
     </option>
   </component>
@@ -562,7 +560,7 @@
       <workItem from="1497976813563" duration="3002000" />
       <workItem from="1498579223753" duration="3902000" />
       <workItem from="1498667001669" duration="713000" />
-      <workItem from="1501163047710" duration="8195000" />
+      <workItem from="1501163047710" duration="8305000" />
     </task>
     <task id="LOCAL-00001" summary="Sauvegarde des discIds dans le localStorage">
       <created>1492872976664</created>
@@ -662,11 +660,18 @@
       <option name="project" value="LOCAL" />
       <updated>1498667672233</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="FIX #36 + TU renforcés + TU pour le serveur">
+      <created>1501171325730</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1501171325730</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="22758000" />
+    <option name="totallyTimeSpent" value="22868000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -732,7 +737,8 @@
     <MESSAGE value="FIX #20 Impossible d'ajouter la playlist Mario" />
     <MESSAGE value="Sortir quand clic &quot;Cancel&quot;" />
     <MESSAGE value="FIX #23 En lecture continue (non aléatoire) réinitialiser nextTracks au lancement manuel d'une piste" />
-    <option name="LAST_COMMIT_MESSAGE" value="FIX #23 En lecture continue (non aléatoire) réinitialiser nextTracks au lancement manuel d'une piste" />
+    <MESSAGE value="FIX #36 + TU renforcés + TU pour le serveur" />
+    <option name="LAST_COMMIT_MESSAGE" value="FIX #36 + TU renforcés + TU pour le serveur" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -741,14 +747,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/views/player.ejs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/js/controllers/Controller.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1169,6 +1167,14 @@
           <folding>
             <element signature="e#0#45#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/views/edit-cue.ejs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="73" column="84" lean-forward="false" selection-start-line="73" selection-start-column="84" selection-end-line="73" selection-end-column="84" />
+          <folding />
         </state>
       </provider>
     </entry>
