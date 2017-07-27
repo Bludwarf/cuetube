@@ -7,23 +7,23 @@
  */
 function Controller($scope, $http) {
 
-    var GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
+    const GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
 
-    //var socket = io.connect();
+    //const socket = io.connect();
     //socket.emit('getVideo', $scope.text);
 
     /*fetch("/minecraft.json").then((res) => {
        return res.blob();
     })*/
 
-    var discsParam = getParameterByName("discs", document.location.search);
-    var collectionParam = getParameterByName("collection", document.location.search);
+    const discsParam = getParameterByName("discs", document.location.search);
+    const collectionParam = getParameterByName("collection", document.location.search);
 
     // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
-    var discIds;
-    var remainingDiscNumber;
-    var discs;
+    let discIds;
+    let remainingDiscNumber;
+    let discs;
 
     // Liste des disque en paramètre ?
     if (discsParam) {
@@ -67,7 +67,7 @@ function Controller($scope, $http) {
     // Tracklist togglée
     $scope.lastToggledTracklist = null;
     function toggleTracklist(tracklist, disc) {
-        var lastToggledTracklist = $scope.lastToggledTracklist;
+        const lastToggledTracklist = $scope.lastToggledTracklist;
         if (lastToggledTracklist != null && lastToggledTracklist != tracklist) $(lastToggledTracklist).hide();
 
         $(tracklist).toggle();
@@ -99,9 +99,9 @@ function Controller($scope, $http) {
                 this.enabled = !this.enabled;
                 // Cochage => on décoche tous les autres
                 // et vice-versa
-                var discs = $scope.discs;
-                for (var i = 0; i < discs.length; ++i) {
-                    var disc = discs[i];
+                const discs = $scope.discs;
+                for (let i = 0; i < discs.length; ++i) {
+                    const disc = discs[i];
                     if (!disc || disc === this) continue;
                     disc.enabled = !this.enabled;
                 }
@@ -127,12 +127,12 @@ function Controller($scope, $http) {
         disc.afterClickThumbCheckbox = function(e) {
             // Alt + Click => activer/désactiver tous les autres
             if (e.altKey) {
-                var input = e.currentTarget;
+                const input = e.currentTarget;
                 // Cochage => on décoche tous les autres
                 // et vice-versa
-                var discs = $scope.discs;
-                for (var i = 0; i < discs.length; ++i) {
-                    var disc = discs[i];
+                const discs = $scope.discs;
+                for (let i = 0; i < discs.length; ++i) {
+                    const disc = discs[i];
                     if (!disc || disc === this) continue;
                     disc.enabled = !input.checked;
                 }
@@ -142,7 +142,7 @@ function Controller($scope, $http) {
         };
 
         disc.openTracklist = function(e, disc) {
-            var discThumb = e.currentTarget;
+            const discThumb = e.currentTarget;
             toggleTracklist(discThumb.nextElementSibling, disc);
             e.stopPropagation(); // pour ne pas appeler document.onclick
         };
@@ -214,73 +214,62 @@ function Controller($scope, $http) {
             return track;
         };
 
-        for (var fileIndex = 0; fileIndex < disc.files.length; ++fileIndex) {
+        for (let fileIndex = 0; fileIndex < disc.files.length; ++fileIndex) {
+            const file = disc.files[fileIndex];
 
-            // fileIndex mutable
-            ((fileIndex) => {
+            for (let trackIndex = 0; trackIndex < file.tracks.length; ++trackIndex) {
+                const track = file.tracks[trackIndex];
 
-                var file = disc.files[fileIndex];
+                track.enabled = disc.enabled; // pour choisir les pistes à lire
+                Object.defineProperties(track, {
+                    isCurrent: {
+                        get: function() {
+                            return $scope.currentTrackIndex == this.index
+                                && $scope.currentFileIndex  == this.file.index
+                                && $scope.currentDiscIndex  == this.file.disc.index;
+                        }
+                    }
+                });
 
-                for (var trackIndex = 0; trackIndex < file.tracks.length; ++trackIndex) {
+                /**
+                 * Quand coché + alt click =>   coche tous
+                 *  si décoché + alt click => décoche tous
+                 */
+                track.afterClickCheckbox = function(e) {
+                    let input = e.currentTarget;
 
-                    // trackIndex mutable
-                    ((trackIndex) => {
+                    // Alt + Click => activer/désactiver tous les autres
+                    if (e.altKey) {
+                        // Cochage => on décoche tous les autres
+                        // et vice-versa
+                        const tracks = this.disc.tracks;
+                        for (let i = 0; i < tracks.length; ++i) {
+                            const track = tracks[i];
+                            if (!track || track === this) continue;
+                            track.enabled = !input.checked;
+                        }
+                    }
 
-                        var track = file.tracks[trackIndex];
-                        track.enabled = disc.enabled; // pour choisir les pistes à lire
-                        Object.defineProperties(track, {
-                            isCurrent: {
-                                get: function() {
-                                    return $scope.currentTrackIndex == this.index
-                                        && $scope.currentFileIndex  == this.file.index
-                                        && $scope.currentDiscIndex  == this.file.disc.index;
-                                }
-                            }
+                    // Maj + click => activer/désactiver tous entre les deux
+                    if (e.shiftKey) {
+                        let last = $scope.lastCheckedTrack;
+                        let startIndex = Math.min(last.index, this.index);
+                        let endIndex   = Math.max(last.index, this.index);
+                        let tracks = this.disc.tracks.slice(startIndex, endIndex + 1);
+                        tracks.forEach(function(track) {
+                            if (!track || track === this) return;
+                            track.enabled = input.checked;
                         });
+                    }
 
-                        /**
-                         * Quand coché + alt click =>   coche tous
-                         *  si décoché + alt click => décoche tous
-                         */
-                        track.afterClickCheckbox = function(e) {
-                            let input = e.currentTarget;
+                    // Sauvegarde du dernier click (sans Maj)
+                    if (!e.shiftKey) {
+                        $scope.lastCheckedTrack = this;
+                    }
 
-                            // Alt + Click => activer/désactiver tous les autres
-                            if (e.altKey) {
-                                // Cochage => on décoche tous les autres
-                                // et vice-versa
-                                var tracks = this.disc.tracks;
-                                for (var i = 0; i < tracks.length; ++i) {
-                                    var track = tracks[i];
-                                    if (!track || track === this) continue;
-                                    track.enabled = !input.checked;
-                                }
-                            }
-
-                            // Maj + click => activer/désactiver tous entre les deux
-                            if (e.shiftKey) {
-                                let last = $scope.lastCheckedTrack;
-                                let startIndex = Math.min(last.index, this.index);
-                                let endIndex   = Math.max(last.index, this.index);
-                                let tracks = this.disc.tracks.slice(startIndex, endIndex + 1);
-                                tracks.forEach(function(track) {
-                                    if (!track || track === this) return;
-                                    track.enabled = input.checked;
-                                });
-                            }
-
-                            // Sauvegarde du dernier click (sans Maj)
-                            if (!e.shiftKey) {
-                                $scope.lastCheckedTrack = this;
-                            }
-
-                            e.stopPropagation();
-                        };
-
-                    })(trackIndex);
-                }
-
-            })(fileIndex);
+                    e.stopPropagation();
+                };
+            }
         }
 
         return disc;
@@ -292,53 +281,48 @@ function Controller($scope, $http) {
         discs = new Array(remainingDiscNumber);
         $scope.discs = discs;
 
-        for (var discIndex = 0; discIndex < discIds.length; ++discIndex) {
+        for (let discIndex = 0; discIndex < discIds.length; ++discIndex) {
 
-            // discIndex mutable
-            ((discIndex) => {
+            const discId = discIds[discIndex];
+            $http.get("/"+discId+".cue.json").then(res => {
+                if (res.status != 200) return console.error("Error GET cuesheet "+discId+" $http");
 
-                var discId = discIds[discIndex];
-                $http.get("/"+discId+".cue.json").then(res => {
-                    if (res.status != 200) return console.error("Error GET cuesheet "+discId+" $http");
+                const cue = new cuesheet.CueSheet();
+                _.extend(cue, res.data);
 
-                    var cue = new cuesheet.CueSheet();
-                    _.extend(cue, res.data);
+                const disc = new Disc(cue);
+                disc.index = discIndex;
+                discs[discIndex] = disc;
+                enrichDisc(disc, discIndex);
 
-                    var disc = new Disc(cue);
-                    disc.index = discIndex;
-                    discs[discIndex] = disc;
-                    enrichDisc(disc, discIndex);
-
-                    // Reprise des paramètres sauvegardés
-                    let savedString = localStorage.getItem('disc.'+disc.id);
-                    if (savedString) {
-                        let saved = JSON.parse(savedString);
-                        if (saved.enabled != undefined) {
-                            disc.enabled = saved.enabled;
-                        }
-                        if (saved.disabledTrackIndices) {
-                            let tracks = disc.tracks;
-                            saved.disabledTrackIndices.forEach((trackIndex) => {
-                                tracks[trackIndex].enabled = false;
-                            });
-                        }
-                        _.extend(disc, {
-                            nextTracks: saved.nextTracks
+                // Reprise des paramètres sauvegardés
+                let savedString = localStorage.getItem('disc.'+disc.id);
+                if (savedString) {
+                    let saved = JSON.parse(savedString);
+                    if (saved.enabled != undefined) {
+                        disc.enabled = saved.enabled;
+                    }
+                    if (saved.disabledTrackIndices) {
+                        let tracks = disc.tracks;
+                        saved.disabledTrackIndices.forEach((trackIndex) => {
+                            tracks[trackIndex].enabled = false;
                         });
                     }
+                    _.extend(disc, {
+                        nextTracks: saved.nextTracks
+                    });
+                }
 
-                    // INIT si dernier disque
-                    if (--remainingDiscNumber == 0)
-                        initYT();
-                }, resKO => {
-                    // INIT si dernier disque
-                    if (--remainingDiscNumber == 0)
-                        initYT();
-                    console.error("Error GET cuesheet "+discId+" via $http : "+resKO.data);
-                    prompt('Veuillez ajouter la cuesheet '+discId, discId);
-                });
-
-            })(discIndex);
+                // INIT si dernier disque
+                if (--remainingDiscNumber == 0)
+                    initYT();
+            }, resKO => {
+                // INIT si dernier disque
+                if (--remainingDiscNumber == 0)
+                    initYT();
+                console.error("Error GET cuesheet "+discId+" via $http : "+resKO.data);
+                prompt('Veuillez ajouter la cuesheet '+discId, discId);
+            });
         }
     }
 
@@ -363,10 +347,10 @@ function Controller($scope, $http) {
         console.log("Initialisation de YouTube");
 
         // 2. This code loads the IFrame Player API code asynchronously.
-        var tag = document.createElement('script');
+        const tag = document.createElement('script');
 
         tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
+        const firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     }
@@ -377,7 +361,7 @@ function Controller($scope, $http) {
         let currentStr = localStorage.getItem('current');
         if (currentStr) {
             let current = JSON.parse(currentStr);
-            var disc = _.find($scope.discs, (disc) => disc.id === current.discId);
+            const disc = _.find($scope.discs, (disc) => disc.id === current.discId);
 
             if (!disc) {
                 console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé`);
@@ -425,17 +409,17 @@ function Controller($scope, $http) {
     // @deprecated
     $scope.loadDiscIndex = function(discIndex) {
         this.currentDiscIndex = discIndex;
-        var disc = $scope.discs[discIndex];
+        const disc = $scope.discs[discIndex];
         $scope.currentDisc = disc;
 
         // Next file
-        var fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
-        var file = disc.files[fileIndex];
+        const fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
+        const file = disc.files[fileIndex];
         this.currentFileIndex = fileIndex;
         $scope.currentFile = file;
 
         // Next track
-        var trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
+        const trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
         this.currentTrackIndex = trackIndex;
 
         this.loadTrackIndex(trackIndex);
@@ -459,11 +443,11 @@ function Controller($scope, $http) {
         $scope.currentFileIndex  = fileIndex;
         $scope.currentDiscIndex  = discIndex;
 
-        var disc = $scope.discs[discIndex];
+        const disc = $scope.discs[discIndex];
         $scope.currentDisc = disc;
-        var file = disc.files[fileIndex];
+        const file = disc.files[fileIndex];
         $scope.currentFile = file;
-        var track = file.tracks[trackIndex];
+        const track = file.tracks[trackIndex];
         $scope.currentTrack = track;
 
         // Suppression dans la liste des suivants auto
@@ -478,12 +462,12 @@ function Controller($scope, $http) {
 
     $scope.next = function() {
         $scope.$apply(() => {
-            var discs = $scope.discs;
-            var disc = $scope.currentDisc;
-            var track = $scope.currentTrack;
+            const discs = $scope.discs;
+            let disc = $scope.currentDisc;
+            let track = $scope.currentTrack;
 
-            var possibleDiscs = [];
-            for (var i = 0; i < discs.length; ++i) {
+            const possibleDiscs = [];
+            for (let i = 0; i < discs.length; ++i) {
                 let disc = discs[i];
                 if (disc && disc.enabled && disc.playable) possibleDiscs.push(disc);
             }
@@ -494,7 +478,7 @@ function Controller($scope, $http) {
                 return;
             }
 
-            var discIndex = possibleDiscs.indexOf(disc);
+            const discIndex = possibleDiscs.indexOf(disc);
 
             // Aléatoire ?
             if ($scope.shuffle) {
@@ -525,7 +509,7 @@ function Controller($scope, $http) {
         });
 
         // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
-        var player = $scope.loadCurrentTrack($scope.player);
+        const player = $scope.loadCurrentTrack($scope.player);
         $scope.$apply(() => {
             $scope.player = player;
         });
@@ -533,16 +517,16 @@ function Controller($scope, $http) {
 
     $scope.previous = function() {
 
-        var previousEntry = this.history.length && this.history[this.history.length - 2];
+        const previousEntry = this.history.length && this.history[this.history.length - 2];
         if (!previousEntry) return;
 
         this.currentDiscIndex = previousEntry.discIndex;
         this.currentFileIndex = previousEntry.fileIndex;
         this.currentTrackIndex = previousEntry.trackIndex;
 
-        var disc = $scope.discs[this.currentDiscIndex];
+        const disc = $scope.discs[this.currentDiscIndex];
         $scope.currentDisc = disc;
-        var file = disc.files[this.currentFileIndex];
+        const file = disc.files[this.currentFileIndex];
         $scope.currentFile = file;
 
         this.history.pop(); // suppression du previous
@@ -551,9 +535,9 @@ function Controller($scope, $http) {
     };
 
     $scope.showOnlyPlaylist = function(discIndex) {
-        var discs = $("#playlist .disc");
+        const discs = $("#playlist .disc");
         discs.each(function() {
-            var list = $(".disc-list", this);
+            const list = $(".disc-list", this);
             if (this.dataset.index == discIndex)
                 list.show();
             else
@@ -563,12 +547,12 @@ function Controller($scope, $http) {
 
     /** Ajout d'une nouvelle vidéo */
     $scope.addVideo = function() {
-        var videoId = prompt("videoId de la nouvelle vidéo ?");
+        const videoId = prompt("videoId de la nouvelle vidéo ?");
         if (!videoId) return;
 
         // Structure YouTube
         // FIXME : remplacer les prompt en cascade par un form
-        var video = {
+        const video = {
             snippet: {
                 title: prompt("Titre"),
                 channelTitle: prompt("Nom de la chaîne")
@@ -592,8 +576,8 @@ function Controller($scope, $http) {
 
     // TODO : mettre un getter dans l'objet Cue.File
     $scope.getVideoId = function() {
-        var disc = this.discs[this.currentDiscIndex];
-        var file = disc.files[this.currentFileIndex];
+        const disc = this.discs[this.currentDiscIndex];
+        const file = disc.files[this.currentFileIndex];
         //return getVideoIdFromUrl(file.name);
         //return getParameterByName("v", file.name);
         return file.videoId;
@@ -626,21 +610,21 @@ function Controller($scope, $http) {
 
 
     /*function getVideoIdFromUrl(url) {
-        var i = url.indexOf('?');
+        const i = url.indexOf('?');
         if (i === -1) return undefined;
-        var query = querystring.decode(url.substr(i+1));
+        const query = querystring.decode(url.substr(i+1));
         return query.v;
     }*/
 
     $scope.loadCurrentTrack = function(player) {
-        var disc = this.discs[this.currentDiscIndex];
-        var file = disc.files[this.currentFileIndex];
-        var track = file.tracks[this.currentTrackIndex];
-        var multiTrack = file.tracks.length > 1;
+        const disc = this.discs[this.currentDiscIndex];
+        const file = disc.files[this.currentFileIndex];
+        const track = file.tracks[this.currentTrackIndex];
+        const multiTrack = file.tracks.length > 1;
         this.showOnlyPlaylist(this.currentDiscIndex);
 
-        var start = multiTrack ? track.startSeconds : undefined;
-        var end = multiTrack ? track.endSeconds : undefined;
+        let start = multiTrack ? track.startSeconds : undefined;
+        const end = multiTrack ? track.endSeconds : undefined;
         if (start || end) console.log("Track from "+start+" to "+end);
 
         // Youtube ne redémarre pas à 0 si on lui indique exactement 0
@@ -690,11 +674,11 @@ function Controller($scope, $http) {
         // }
         else {
 
-            var player = $scope.player;
+            const player = $scope.player;
 
             // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
             /*
-             var loadedVideoId = getParameterByName('v', player.getVideoUrl());
+             const loadedVideoId = getParameterByName('v', player.getVideoUrl());
              if (loadedVideoId == this.getVideoId()) {
              this.changeVideoIHM();
              $scope.seekTo(start);
@@ -742,7 +726,7 @@ function Controller($scope, $http) {
         return $scope.player;
     };
 
-    var YT_STATES = [
+    const YT_STATES = [
         "ENDED",
         "PLAYING",
         "PAUSED",
@@ -752,20 +736,20 @@ function Controller($scope, $http) {
     ];
 
     $scope.$on("video started", (event) => {
-        var scope = event.currentScope;
-        var player = scope.player;
+        const scope = event.currentScope;
+        const player = scope.player;
         scope.loadingDiscIndex = null;
         scope.loadingFileIndex = null;
         scope.loadingTrackIndex = null;
 
         // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
-        var file = scope.currentFile;
+        const file = scope.currentFile;
         if (!file.duration) file.duration = player.getDuration();
         // TODO : on pourrait stocker cette information sur le serveur
 
         // Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant
-        //var slider = document.getElementById("player-controls-form").trackPosition;
-        var slider = scope.slider;
+        //const slider = document.getElementById("player-controls-form").trackPosition;
+        const slider = scope.slider;
         if (slider && (!slider.max || slider.max == 'undefined')) {
             console.log("Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant");
             slider.max = file.duration;
@@ -775,12 +759,12 @@ function Controller($scope, $http) {
         scope.changeVideoIHM(); // au cas ou on a déplacé le curseur
 
         // Incrémentation du nombre de lectures de la piste courante
-        var track = $scope.getCurrentTrack();
+        const track = $scope.getCurrentTrack();
         ++track.played;
     });
 
     $scope.$on("video ended", (event) => {
-        var scope = event.currentScope;
+        const scope = event.currentScope;
         scope.next();
     });
 
@@ -803,8 +787,8 @@ function Controller($scope, $http) {
      * 5  YT.PlayerState.CUED
      */
     function onPlayerStateChange(event) {
-        //var player = event.target;
-        var state = event.data;
+        //const player = event.target;
+        const state = event.data;
 
         console.log("player state : " + state + (YT_STATES[state] ? ":"+YT_STATES[state] : ""));
 
@@ -826,12 +810,12 @@ function Controller($scope, $http) {
         // FIXME : détection changement manuel de cue
         /*else if (event.data = YT.PlayerState.PAUSED && loadingFileIndex == null && loadingTrackIndex == null) {
           console.log("Pause at : "+player.getCurrentTime());
-          var cueIndex = getCueIndexAt(videos[currentDiscIndex], player.getCurrentTime());
+          const cueIndex = getCueIndexAt(videos[currentDiscIndex], player.getCurrentTime());
           console.log("Pause at cue :", cueIndex);
 
           if (cueIndex != -1 && cueIndex != currentTrackIndex) {
             console.log("Changement de cue manuel");
-            var video = videos[currentDiscIndex];
+            const video = videos[currentDiscIndex];
             player.loadVideoById({
               videoId: video.videoId,
               startSeconds: video.cues[cueIndex].startSeconds,
@@ -847,41 +831,43 @@ function Controller($scope, $http) {
 
         // Détection d'une série de 3 évènements
         if ($scope.lastPlayerStates.length >= 3) {
-            var states = new Array(3);
-            for (var i = 0; i < 3; ++i)
-                states[i] = $scope.lastPlayerStates[$scope.lastPlayerStates.length - (3-i)];
+            const states = new Array(3);
+            for (let i = 0; i < 3; ++i) {
+                states[i] = $scope.lastPlayerStates[$scope.lastPlayerStates.length - (3 - i)];
+            }
 
-            if (states[0] == YT.PlayerState.PAUSED &&
-                states[1] == YT.PlayerState.BUFFERING &&
-                states[2] == YT.PlayerState.PLAYING)
+            if (states[0] === YT.PlayerState.PAUSED &&
+                states[1] === YT.PlayerState.BUFFERING &&
+                states[2] === YT.PlayerState.PLAYING) {
                 $scope.$emit("video manual seeked");
+            }
         }
     }
 
     /*function getCueIndexAt(video, time) {
-        var first = video.cues[0];
+        const first = video.cues[0];
         if (time < first.startSeconds) return -1;
 
-        var last = video.cues[video.cues.length - 1];
+        const last = video.cues[video.cues.length - 1];
         if (time >= last.endSeconds) return -1;
 
-        for (var i = 0; i < video.cues.length; ++i) {
-            var cue = video.cues[i];
+        for (const i = 0; i < video.cues.length; ++i) {
+            const cue = video.cues[i];
             if (time <= cue.endSeconds) return i;
         }
         return -1;
     }*/
 
     $scope.changeVideoIHM = function() {
-        var disc = this.discs[this.currentDiscIndex];
-        var file = disc.files[this.currentFileIndex];
-        var track = file.tracks[this.currentTrackIndex];
+        const disc = this.discs[this.currentDiscIndex];
+        const file = disc.files[this.currentFileIndex];
+        const track = file.tracks[this.currentTrackIndex];
         document.title = disc.title + " - m3u-YouTube"; // comme Youtube
 
         // Slider
-        //var form = document.getElementById("player-controls-form");
-        //var slider = form.trackPosition;
-        var slider = $scope.slider;
+        //const form = document.getElementById("player-controls-form");
+        //const slider = form.trackPosition;
+        const slider = $scope.slider;
         slider.min = track.startSeconds;
         slider.max = track.endSeconds;
         $scope.fileSlider.max = file.duration;
@@ -892,7 +878,7 @@ function Controller($scope, $http) {
      * Appelé par loadCurrentTrack lors de la 1ère création du player
      */
     function onFirstPlayerLoad() {
-       /*var lists = $("#playlist .video-list");
+       /*const lists = $("#playlist .video-list");
        lists.each(function()  {
            toggleVideoList(this);
        });*/
@@ -900,9 +886,9 @@ function Controller($scope, $http) {
 
 
     $scope.playPause = function() {
-        var player = $scope.player;
+        const player = $scope.player;
         if (!player) return;
-        var state = player.getPlayerState();
+        const state = player.getPlayerState();
         if (state == YT.PlayerState.PLAYING)
             player.pauseVideo();
         else
@@ -910,7 +896,7 @@ function Controller($scope, $http) {
     };
 
     $scope.getCurrentTrack = function() {
-        var track = $scope.currentFile.tracks[this.currentTrackIndex];
+        const track = $scope.currentFile.tracks[this.currentTrackIndex];
         return track;
     };
 
@@ -936,7 +922,7 @@ function Controller($scope, $http) {
 
     $scope.checkCurrentTimeInterval = 1000; // FIXME : mouvement saccadé du slider
     $scope.checkCurrentTime = function (slider) {
-        var time = $scope.player.getCurrentTime();
+        const time = $scope.player.getCurrentTime();
         $scope.safeApply(() => { // FIXME : aucune actualisation sans safeApply, erreur "$apply already in progress" si $apply
             $scope.slider.value = time;
             $scope.fileSlider.value = time;
@@ -947,7 +933,7 @@ function Controller($scope, $http) {
 
     /** src : https://coderwall.com/p/ngisma/safe-apply-in-angular-js */
     $scope.safeApply = function(fn) {
-      var phase = this.$root.$$phase;
+      const phase = this.$root.$$phase;
       if(phase == '$apply' || phase == '$digest') {
         if(fn && (typeof(fn) === 'function')) {
           fn();
@@ -1011,7 +997,7 @@ function Controller($scope, $http) {
     };
 
     $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl) {
-        var playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
+        const playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
         if (!playlistId) return;
 
         $scope.getPlaylistItems(playlistId, (err, playlistItems) => {
@@ -1020,7 +1006,7 @@ function Controller($scope, $http) {
                 return;
             }
 
-            var disc = $scope.newDiscFromPlaylistItems(playlistItems);
+            const disc = $scope.newDiscFromPlaylistItems(playlistItems);
             $http.post("/"+disc.id+".cue.json", disc).then(res => {
                 if (res.status != 200) return alert("POST createNewDiscFromPlaylist $http != 200");
                 $scope.createDisc(disc);
@@ -1037,29 +1023,8 @@ function Controller($scope, $http) {
         }
     });
 
-    // fonction extraite de cue-parser/lib/cue.js
-    /**
-     * Accepte : H:M:S ou M:S
-     * @return {cuesheet.Time}
-     */
-    function parseTime(timeSting) {
-        var timePattern = /^(?:(\d+):)?(\d+):(\d+)$/,
-        parts = timeSting.match(timePattern),
-        time = new cuesheet.Time();
-
-        if (!parts) {
-            throw new Error('Invalid time format:' + timeSting);
-        }
-
-        time.min = (parts[1] ? parts[1]*60 : 0) + parseInt(parts[2], 10);
-        time.sec = parseInt(parts[3], 10);
-        time.frame = 0;
-
-        return time;
-    }
-
     $scope.createNewDiscFromVideo = function(videoIdOrUrl, cb) {
-        var videoId = getIdOrUrl(videoIdOrUrl, 'Id ou URL de la vidéo YouTube (multipiste)', 'v');
+        const videoId = getIdOrUrl(videoIdOrUrl, 'Id ou URL de la vidéo YouTube (multipiste)', 'v');
         if (!videoId) return;
         cb = cb || function(err, disc) {
         };
@@ -1067,10 +1032,10 @@ function Controller($scope, $http) {
         $scope.getVideoSnippet(videoId, (err, snippet) => {
             if (err) return cb(err);
 
-            var description = snippet.localized.description;
+            const description = snippet.localized.description;
 
             // Recherche des lignes contenant des timecodes
-            var lines = description.split(/\n/);
+            const lines = description.split(/\n/);
 
             // Création de la cuesheet
             let disc = new Disc();
@@ -1087,29 +1052,29 @@ function Controller($scope, $http) {
             });
 
             // Parsing de la description
-            var rx = /(.+[^\d:])?(\d+(?::\d+)+)([^\d:].+)?/i; // 1:avant time code, 2:timecode, 3:après timecode
-            var sepRxAfter = /^([^\w]+)(\w.+)$/;
-            var sepRxBefore = /^[^\w]*(\w.+)([^\w]+)$/;
-            var artistBeforeTitle; // comme dans le m3u ?
-            for (var i = 0; i < lines.length; ++i) {
-                var line = lines[i];
-                var parts = rx.exec(line);
+            const rx = /(.+[^\d:])?(\d+(?::\d+)+)([^\d:].+)?/i; // 1:avant time code, 2:timecode, 3:après timecode
+            const sepRxAfter = /^([^\w]+)(\w.+)$/;
+            const sepRxBefore = /^[^\w]*(\w.+)([^\w]+)$/;
+            let artistBeforeTitle; // comme dans le m3u ?
+            for (let i = 0; i < lines.length; ++i) {
+                const line = lines[i];
+                const parts = rx.exec(line);
                 if (parts) {
                     console.log("createNewDiscFromVideo : "+line);
-                    var time = parseTime(parts[2]);
-                    var textAfterTime = !!parts[3];
-                    var text = textAfterTime ? parts[3] : parts[1];
+                    const time = parseTime(parts[2]);
+                    const textAfterTime = !!parts[3];
+                    let text = textAfterTime ? parts[3] : parts[1];
 
                     // On cherche le séparateur
-                    var sepRx = textAfterTime ? sepRxAfter : sepRxBefore;
-                    var sepParts = sepRx.exec(text);
-                    var sep = sepParts ? sepParts[1] : null;
+                    const sepRx = textAfterTime ? sepRxAfter : sepRxBefore;
+                    const sepParts = sepRx.exec(text);
+                    const sep = sepParts ? sepParts[1] : null;
                     text = sepParts ? sepParts[2] : text;
 
                     // Séparation du texte
-                    var title, artist;
+                    let title, artist;
                     if (sep && sep.trim()) {
-                        var texts = text.split(sep);
+                        const texts = text.split(sep);
 
                         // Deux parties (artiste - title ou title - artiste) ?
                         if (sep.trim() && texts.length > 1) {
@@ -1135,7 +1100,7 @@ function Controller($scope, $http) {
                         title = text;
                     }
 
-                    //var track = disc.newTrack(file.tracks ? (file.tracks.length + 1) : 1, "AUDIO").getCurrentTrack();
+                    //const track = disc.newTrack(file.tracks ? (file.tracks.length + 1) : 1, "AUDIO").getCurrentTrack();
                     let track = file.newTrack();
                     _.extend(track, {
                         title: title,
@@ -1187,7 +1152,7 @@ function Controller($scope, $http) {
                 storage.enabled = false;
             }
 
-            var disabledTrackIndices = disc.disabledTracks;
+            const disabledTrackIndices = disc.disabledTracks;
             if (disabledTrackIndices && disabledTrackIndices.length) {
                 storage.disabledTrackIndices = disc.disabledTracks.map((track) => track.number-1);
             }
@@ -1205,7 +1170,7 @@ function Controller($scope, $http) {
     };
 
     $scope.restore = function(key, defaultValue) {
-        var string = localStorage.getItem(key);
+        const string = localStorage.getItem(key);
         if (!string) return defaultValue;
         return JSON.parse(string);
     };
