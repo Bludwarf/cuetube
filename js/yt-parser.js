@@ -167,7 +167,7 @@ function newDiscFromVideoSnippet(snippet, videoUrl) {
                 ]
             });
         } else {
-            console.error("newDiscFromVideo:track : Impossible de parser la ligne : "+line);
+            console.warn("newDiscFromVideo:track : Impossible de parser la ligne : "+line);
         }
     }//for
 
