@@ -20,12 +20,15 @@
     "node": ">=4.6.1"
   },
   "devDependencies": {
+    "jasmine": "^2.6.0",
     "jasmine-core": "^2.6.3",
     "karma": "^1.7.0",
     "karma-chrome-launcher": "^2.1.1",
-    "karma-jasmine": "^1.1.0"
+    "karma-jasmine": "^1.1.0",
+    "nodemon": "^1.11.0"
   },
   "scripts": {
-    "test": "node node_modules/karma/bin/karma start karma.conf.js"
+    "jasmine:watch": "node node_modules/nodemon/bin/nodemon.js --exec jasmine",
+    "test": "jasmine && node node_modules/karma/bin/karma start karma.conf.js"
   }
 }

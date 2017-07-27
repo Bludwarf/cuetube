@@ -1,0 +1,57 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/h7ZWWjYdA_7iQ-_2RZawDxcYh8s\"",
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 1
+  },
+  "items": [
+    {
+
+
+      "kind": "youtube#video",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/4m6APd8qZEnw3HSpN23MN60EuTM\"",
+      "id": "S7end66UPiI",
+      "snippet": {
+        "publishedAt": "2014-02-06T15:48:06.000Z",
+        "channelId": "UCCvOdzng6XDd-V3OCCFufrw",
+        "title": "Braveheart soundtrack",
+        "description": "Track listing:\n\n\n\"Copyright Disclaimer Under Section 107 of the Copyright Act 1976, allowance is made for \"fair use\" for purposes such as criticism, comment, news reporting, teaching, scholarship, and research. Fair use is a use permitted by copyright statute that might otherwise be infringing. Non-profit, educational or personal use tips the balance in favor of fair use\"\n\n\nFrom the movie \"Braveheart\".Composed by James Horner.\n\n\nCD 1\n0:00:00 - 01. Prelude\n0:00:44 - 02. Main Title\n0:03:34 - 03. The Barn\n0:04:26 - 04. I Can Fight\n0:05:12 - 05. Death in the Wallace Family\n0:07:54 - 06. A Gift of a Thistle\n0:09:31 - 07. Outlawed Tunes On Outlawed Pipes\n0:11:32 - 08. Leaving Home\n0:11:55 - 09. The Royal Wedding\n0:13:33 - 10. Returning Home\n0:14:47 - 11. Scottish Wedding Music 1\n0:16:00 - 12. Scottish Wedding Music 2\n0:16:52 - 13. Prima Nnoctes\n0:18:35 - 14. Wallace Courts Murron\n0:22:59 - 15. The Secret Wedding\n0:29:30 - 16. Attack On Murron\n0:32:28 - 17. Revenge\n0:38:49 - 18. Murron's Burial\n0:41:00 - 19. Retaliation\n0:41:43 - 20. The King Vengeance\n0:43:51 - 21. The Fighting Continues\n0:44:11 - 22. Making Plains - Gathering the Clans\n0:46:03 - 23. Sons of Scotland\n0:52:20 - 24. The Battle of Stirling\n0:53:55 - 25. Battle Temptation\n0:54:18 - 26. Heavy Horse\nCD 2\n0:56:16 - 01. Sir William\n0:58:38 - 02. Invasion of England\n0:59:54 - 03. Vision of Murron\n1:01:39 - 04. Meeting with the Princess\n1:03:24 - 05. Longshank's Surprise\n1:04:55 - 06. March to Edinburgh\n1:05:50 - 07. Falkirk\n1:09:52 - 08. Betrayal & Desolation\n1:16:12 - 09. Lament\n1:17:39 - 10. Mornay's Dream\n1:18:54 - 11. The Legend Spreads\n1:20:01 - 12. Ambushed Ambush\n1:21:00 - 13. For the Love of a Princess (film version)\n1:23:12 - 14. For the Love of a Princess (album version)\n1:27:17 - 15. The Trap\n1:28:55 - 16. The Princess Pleads for Wallace's Life\n1:32:30 - 17. Through the Crowd\n1:33:47 - 18. The Execution\n1:37:29 - 19. Bannockburn\n1:41:06 - 20. End Credits\n1:48:15 - 21. Johnny Cope (bonus)\n1:51:15 - 22. Glendaural (bonus)\n1:55:06 - 23. Scotland the Brave (bonus)\n1:57:54 - 24. Leaving Glenhurqhart (bonus)\n2:01:26 - 25. Kirkhill (bonus",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/S7end66UPiI/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/S7end66UPiI/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/S7end66UPiI/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          },
+          "standard": {
+            "url": "https://i.ytimg.com/vi/S7end66UPiI/sddefault.jpg",
+            "width": 640,
+            "height": 480
+          },
+          "maxres": {
+            "url": "https://i.ytimg.com/vi/S7end66UPiI/maxresdefault.jpg",
+            "width": 1280,
+            "height": 720
+          }
+        },
+        "channelTitle": "Henry Fire",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "localized": {
+          "title": "Braveheart soundtrack",
+          "description": "Track listing:\n\n\n\"Copyright Disclaimer Under Section 107 of the Copyright Act 1976, allowance is made for \"fair use\" for purposes such as criticism, comment, news reporting, teaching, scholarship, and research. Fair use is a use permitted by copyright statute that might otherwise be infringing. Non-profit, educational or personal use tips the balance in favor of fair use\"\n\n\nFrom the movie \"Braveheart\".Composed by James Horner.\n\n\nCD 1\n0:00:00 - 01. Prelude\n0:00:44 - 02. Main Title\n0:03:34 - 03. The Barn\n0:04:26 - 04. I Can Fight\n0:05:12 - 05. Death in the Wallace Family\n0:07:54 - 06. A Gift of a Thistle\n0:09:31 - 07. Outlawed Tunes On Outlawed Pipes\n0:11:32 - 08. Leaving Home\n0:11:55 - 09. The Royal Wedding\n0:13:33 - 10. Returning Home\n0:14:47 - 11. Scottish Wedding Music 1\n0:16:00 - 12. Scottish Wedding Music 2\n0:16:52 - 13. Prima Nnoctes\n0:18:35 - 14. Wallace Courts Murron\n0:22:59 - 15. The Secret Wedding\n0:29:30 - 16. Attack On Murron\n0:32:28 - 17. Revenge\n0:38:49 - 18. Murron's Burial\n0:41:00 - 19. Retaliation\n0:41:43 - 20. The King Vengeance\n0:43:51 - 21. The Fighting Continues\n0:44:11 - 22. Making Plains - Gathering the Clans\n0:46:03 - 23. Sons of Scotland\n0:52:20 - 24. The Battle of Stirling\n0:53:55 - 25. Battle Temptation\n0:54:18 - 26. Heavy Horse\nCD 2\n0:56:16 - 01. Sir William\n0:58:38 - 02. Invasion of England\n0:59:54 - 03. Vision of Murron\n1:01:39 - 04. Meeting with the Princess\n1:03:24 - 05. Longshank's Surprise\n1:04:55 - 06. March to Edinburgh\n1:05:50 - 07. Falkirk\n1:09:52 - 08. Betrayal & Desolation\n1:16:12 - 09. Lament\n1:17:39 - 10. Mornay's Dream\n1:18:54 - 11. The Legend Spreads\n1:20:01 - 12. Ambushed Ambush\n1:21:00 - 13. For the Love of a Princess (film version)\n1:23:12 - 14. For the Love of a Princess (album version)\n1:27:17 - 15. The Trap\n1:28:55 - 16. The Princess Pleads for Wallace's Life\n1:32:30 - 17. Through the Crowd\n1:33:47 - 18. The Execution\n1:37:29 - 19. Bannockburn\n1:41:06 - 20. End Credits\n1:48:15 - 21. Johnny Cope (bonus)\n1:51:15 - 22. Glendaural (bonus)\n1:55:06 - 23. Scotland the Brave (bonus)\n1:57:54 - 24. Leaving Glenhurqhart (bonus)\n2:01:26 - 25. Kirkhill (bonus"
+        }
+      }
+    }
+  ]
+}
