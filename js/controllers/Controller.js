@@ -150,6 +150,7 @@ function Controller($scope, $http) {
         disc.load = function() {
             $scope.currentDiscIndex = discIndex;
             $scope.currentDisc = this;
+            this.enabled = true;
             this.nextTrack($scope.shuffle);
             $scope.loadCurrentTrack($scope.player);
         };
@@ -450,6 +451,10 @@ function Controller($scope, $http) {
         const track = file.tracks[trackIndex];
         $scope.currentTrack = track;
 
+        // On active automatiquement cette piste et ce disque
+        disc.enabled = true;
+        track.enabled = true;
+
         // Suppression dans la liste des suivants auto
         if ($scope.shuffle) {
             let nextTracks = $scope.currentDisc.nextTracks;
@@ -623,6 +628,10 @@ function Controller($scope, $http) {
         const file = disc.files[this.currentFileIndex];
         const track = file.tracks[this.currentTrackIndex];
         const multiTrack = file.tracks.length > 1;
+
+        disc.enabled = true;
+        track.enabled = true;
+
         this.showOnlyPlaylist(this.currentDiscIndex);
 
         let start = multiTrack ? track.startSeconds : undefined;
