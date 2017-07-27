@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/client/js/controllers/Controller.js" line="161" mnemonic="2" />
-    <bookmark url="file://$PROJECT_DIR$/client/js/controllers/Controller.js" line="1013" mnemonic="1" />
+    <bookmark url="file://$PROJECT_DIR$/client/js/controllers/Controller.js" line="162" mnemonic="2" />
+    <bookmark url="file://$PROJECT_DIR$/client/js/controllers/Controller.js" line="1022" mnemonic="1" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4aeafc41-70fa-4d0b-9377-fb0ef9317e58" name="Default" comment="">
+    <list default="true" id="4aeafc41-70fa-4d0b-9377-fb0ef9317e58" name="Default" comment="FIX #27 Prochaine piste désactivée en lecture continue">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client/js/controllers/Controller.js" afterPath="$PROJECT_DIR$/client/js/controllers/Controller.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client/js/yt-parser.js" afterPath="$PROJECT_DIR$/client/js/yt-parser.js" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -32,8 +31,8 @@
       <file leaf-file-name="Controller.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/js/controllers/Controller.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="1044" column="33" lean-forward="false" selection-start-line="1044" selection-start-column="33" selection-end-line="1044" selection-end-column="33" />
+            <state relative-caret-position="184">
+              <caret line="632" column="29" lean-forward="false" selection-start-line="632" selection-start-column="29" selection-end-line="632" selection-end-column="29" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -66,6 +65,16 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="player.ejs" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/views/player.ejs">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="266">
+              <caret line="125" column="241" lean-forward="false" selection-start-line="125" selection-start-column="227" selection-end-line="125" selection-end-column="241" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
@@ -78,12 +87,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>check</find>
-      <find>Sauve</find>
-      <find>snip</find>
-      <find>= new Disc</find>
-      <find>prom</find>
-      <find>getVideoUrlFromId</find>
       <find>newDiscFromPlaylistItems</find>
       <find>utils.</find>
       <find>json</find>
@@ -92,7 +95,6 @@
       <find>getIdOrUrl</find>
       <find>nextTracks</find>
       <find>nextTracks =</find>
-      <find>loadDisc</find>
       <find>nodemon</find>
       <find>[</find>
       <find>extractTracks</find>
@@ -108,6 +110,13 @@
       <find>$scope.next</find>
       <find>snipp</find>
       <find>snippet</find>
+      <find>afterClickCheckbox</find>
+      <find>loadDisc</find>
+      <find>loadTrackIndex</find>
+      <find>$scope.load</find>
+      <find>$scope.load(</find>
+      <find>track</find>
+      <find>.load =</find>
     </findStrings>
     <replaceStrings>
       <replace>let</replace>
@@ -497,7 +506,7 @@
       <workItem from="1497976813563" duration="3002000" />
       <workItem from="1498579223753" duration="3902000" />
       <workItem from="1498667001669" duration="713000" />
-      <workItem from="1501163047710" duration="9291000" />
+      <workItem from="1501163047710" duration="9776000" />
     </task>
     <task id="LOCAL-00001" summary="Sauvegarde des discIds dans le localStorage">
       <created>1492872976664</created>
@@ -618,11 +627,18 @@
       <option name="project" value="LOCAL" />
       <updated>1501171658735</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="FIX #27 Prochaine piste désactivée en lecture continue">
+      <created>1501172364068</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1501172364068</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="23854000" />
+    <option name="totallyTimeSpent" value="24339000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -644,7 +660,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32922733" sideWeight="0.49642858" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26539755" sideWeight="0.49721116" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24969843" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32922733" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3281075" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -899,14 +915,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/views/player.ejs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="884">
-          <caret line="52" column="50" lean-forward="false" selection-start-line="52" selection-start-column="44" selection-end-line="52" selection-end-column="50" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/disc.coffee">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="374">
@@ -1121,10 +1129,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/views/player.ejs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="125" column="241" lean-forward="false" selection-start-line="125" selection-start-column="227" selection-end-line="125" selection-end-column="241" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/client/js/controllers/Controller.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="1044" column="33" lean-forward="false" selection-start-line="1044" selection-start-column="33" selection-end-line="1044" selection-end-column="33" />
+        <state relative-caret-position="184">
+          <caret line="632" column="29" lean-forward="false" selection-start-line="632" selection-start-column="29" selection-end-line="632" selection-end-column="29" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
