@@ -127,7 +127,6 @@ function newDiscFromVideoSnippet(snippet, videoUrl) {
 
                 // Deux parties (artiste - title ou title - artiste) ?
                 if (sep.trim() && texts.length > 1) {
-                    alert(artistInTitle);
                     if (artistInTitle === undefined) {
                         artistInTitle = confirm("Le nom de l'artiste apparaît-il dans le texte suivant ?\n"+text);
                     }

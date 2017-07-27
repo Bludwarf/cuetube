@@ -34,13 +34,20 @@ function Controller($scope, $http) {
     // Collection de disques en paramètre ?
     else if (collectionParam) {
         $http.get("/collection/"+collectionParam+"/discs").then(res => {
-            if (res.status != 200) return console.error("Error GET collection != 200");
+            if (res.status != 200) {
+                console.error("Error GET collection != 200");
+                alert("Impossible d'ouvrir la collection : "+collectionParam);
+                history.back();
+                return;
+            }
 
             discIds = res.data;
             loadDiscs(discIds);
 
         }, resKO => {
             console.error("Error GET collection : "+resKO.data);
+            alert("Impossible d'ouvrir la collection : "+collectionParam);
+            history.back();
         });
     }
 
@@ -1006,6 +1013,17 @@ function Controller($scope, $http) {
         console.log("Disque créé");
         disc.index = $scope.discs.length;
         $scope.discs.push(disc);
+
+        // En mode collection on ajoute également le disque à la collection
+        if (collectionParam) {
+            console.log("Ajout du disque dans la collection "+collectionParam);
+            const discIds = $scope.discs.map(disc => disc.id);
+            $http.post(`/collection/${collectionParam}/discs`, discIds).then(res => {
+                console.log("Disque ajouté avec succès dans la collection "+collectionParam);
+            }, resKO => {
+                alert("Erreur lors de l'ajout du disque dans la collection " + collectionParam);
+            });
+        }
 
         // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
         prompt("Disque créé avec l'id suivant", disc.id);
