@@ -1000,7 +1000,7 @@ function Controller($scope, $http, cuetubeConf) {
     $scope.newDiscFromPlaylistItems = function(playlistItems) {
         playlistItems = playlistItems.items || playlistItems;
         let disc = ytparser.newDiscFromPlaylistItems(playlistItems, prompt("Nom du disque"));
-        return enrichDisc(disc);
+        return enrichDisc(disc, $scope.discs.length);
     };
 
     /**
@@ -1036,7 +1036,6 @@ function Controller($scope, $http, cuetubeConf) {
             return;
         }
 
-        disc.index = $scope.discs.length; // TODO : enrichDisc en échec (obligatoire ?)
         $scope.discs.push(disc);
 
         // En mode collection on ajoute également le disque à la collection
@@ -1100,7 +1099,7 @@ function Controller($scope, $http, cuetubeConf) {
 
             const videoUrl = $scope.getVideoUrlFromId(videoId);
             let disc = ytparser.newDiscFromVideoSnippet(snippet, videoUrl);
-            enrichDisc(disc);
+            enrichDisc(disc, $scope.discs.length);
 
             console.log("Création du disc...", disc);
 
