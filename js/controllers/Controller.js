@@ -622,12 +622,17 @@ function Controller($scope, $http, cuetubeConf) {
             }
         })
         .success(function(data) {
-            if (!data.items || data.items.length != 1) return cb(new Error("Items not found for videoId "+videoId));
+            if (!data.items || data.items.length !== 1) return cb(new Error("Items not found for videoId "+videoId));
+            $scope.debugData.getVideoSnippet = data;
             cb(null, data.items[0].snippet);
         })
         .error(function(data) {
             cb(data);
         })
+    };
+
+    $scope.debugData = {
+        getVideoSnippet: undefined
     };
 
 
