@@ -4,8 +4,9 @@
 
 /**
  * @property track.played : nombre de fois joué
+ * @param cuetubeConf cf fichier de conf /js/app.conf.js
  */
-function Controller($scope, $http) {
+function Controller($scope, $http, cuetubeConf) {
 
     const GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
 
@@ -160,6 +161,10 @@ function Controller($scope, $http) {
             this.enabled = true;
             this.nextTrack($scope.shuffle);
             $scope.loadCurrentTrack($scope.player);
+        };
+
+        disc.play = function() {
+            return this.load();
         };
 
         // TODO : à mettre dans disc.js
@@ -1041,7 +1046,14 @@ function Controller($scope, $http) {
         }
 
         // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
-        prompt("Disque créé avec l'id suivant", disc.id);
+        if (cuetubeConf.debug) {
+            prompt("Disque créé avec l'id suivant", disc.id);
+        }
+
+        // Lecture auto
+        if (cuetubeConf.addDisc.autoplay) {
+            disc.play();
+        }
     };
 
     $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl) {
