@@ -156,7 +156,7 @@ function Controller($scope, $http, cuetubeConf) {
         };
 
         disc.load = function() {
-            $scope.currentDiscIndex = discIndex;
+            $scope.currentDiscIndex = discIndex === undefined ? this.index : discIndex;
             $scope.currentDisc = this;
             this.enabled = true;
             this.nextTrack($scope.shuffle);
@@ -1036,7 +1036,7 @@ function Controller($scope, $http, cuetubeConf) {
             return;
         }
 
-        disc.index = $scope.discs.length;
+        disc.index = $scope.discs.length; // TODO : enrichDisc en échec (obligatoire ?)
         $scope.discs.push(disc);
 
         // En mode collection on ajoute également le disque à la collection
@@ -1107,9 +1107,7 @@ function Controller($scope, $http, cuetubeConf) {
             // TODO : pouvoir passer le disc en JSON -> problème de circular ref
             $http.post("/"+videoId+".cue.json", disc.cuesheet).then(res => {
                 if (res.status != 200) return alert("POST createNewDiscFromVideo $http != 200");
-
                 $scope.createDisc(disc);
-
                 cb(null, disc);
 
             }, resKO => {
@@ -1121,11 +1119,13 @@ function Controller($scope, $http, cuetubeConf) {
     };
 
     $scope.createNewDiscFromVideoOrPlaylist = function(url, cb) {
+
+        url = url || prompt("URL de la vidéo/playlist YouTube");
         const playlistId = getParameterByName('list', url);
         if (playlistId) {
             return $scope.createNewDiscFromPlaylist(playlistId, cb);
         } else {
-            return $scope.createNewDiscFromPlaylist(url, cb);
+            return $scope.createNewDiscFromVideo(url, cb);
         }
     };
 
