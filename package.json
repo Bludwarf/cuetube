@@ -29,6 +29,7 @@
   },
   "scripts": {
     "jasmine:watch": "node node_modules/nodemon/bin/nodemon.js --exec jasmine",
+    "karma": "node node_modules/karma/bin/karma start karma.conf.js",
     "test": "jasmine && node node_modules/karma/bin/karma start karma.conf.js"
   }
 }
