@@ -1061,7 +1061,7 @@ function Controller($scope, $http, cuetubeConf) {
         }
     };
 
-    $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl) {
+    $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl, cb) {
         const playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
         if (!playlistId) return;
 
@@ -1075,9 +1075,10 @@ function Controller($scope, $http, cuetubeConf) {
             $http.post("/"+disc.id+".cue.json", disc).then(res => {
                 if (res.status != 200) return alert("POST createNewDiscFromPlaylist $http != 200");
                 $scope.createDisc(disc);
+                cb(null, disc);
             }, resKO => {
                 alert('Erreur POST createNewDiscFromPlaylist : '+resKO.data);
-                return;
+                cb(resKO.data);
             });
         });
     };
@@ -1117,6 +1118,15 @@ function Controller($scope, $http, cuetubeConf) {
             });
         });
 
+    };
+
+    $scope.createNewDiscFromVideoOrPlaylist = function(url, cb) {
+        const playlistId = getParameterByName('list', url);
+        if (playlistId) {
+            return $scope.createNewDiscFromPlaylist(playlistId, cb);
+        } else {
+            return $scope.createNewDiscFromPlaylist(url, cb);
+        }
     };
 
     /**
