@@ -322,7 +322,7 @@ ytparser.parseTrack = function(input) {
         title: title,
         performer: artist,
         indexes: [
-            new cuesheet.Index(input.trackNumber, time)
+            new cuesheet.Index(1, time)
         ]
     };
 
