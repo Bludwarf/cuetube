@@ -60,6 +60,20 @@ Dans l'ordre d'existance :
 
 Stockée dans `/client/youtube/*.json`.
 
+## Exemple de tracklist parsées
+
+```
+01 Artiste - Piste 1
+```
+
+```
+01 Artiste - Piste 1 (commentaire) 00:00
+```
+
+```
+#01. Piste 1 (commentaire) - 00:00
+```
+
 # DEV
 
 Version NodeJS : [4.6.1](https://nodejs.org/en/blog/release/v4.6.1/)
