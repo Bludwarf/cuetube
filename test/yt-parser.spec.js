@@ -46,7 +46,7 @@ describe("Parser réponses YouTube", function() {
         expect(trackN.title).toBe("End");
         expect(trackN.indexes.length).toBe(1);
         let indexN1 = trackN.indexes[0];
-        expect(indexN1.number).toBe(28);
+        expect(indexN1.number).toBe(1);
         expect(indexN1.time.min).toBe(111);
         expect(indexN1.time.sec).toBe(48);
         expect(indexN1.time.frame).toBe(0);
@@ -115,7 +115,7 @@ describe("Parser réponses YouTube", function() {
         expect(results.artistInTitle).toBeUndefined();
         expect(results.track.title).toBe("Mia And Sebastian's Theme (Celesta)");
         expect(results.track.performer).toBeUndefined();
-        expect(results.track.indexes[0].number).toBe(16);
+        expect(results.track.indexes[0].number).toBe(1);
         expect(results.track.indexes[0].time.min).toBe(45);
         expect(results.track.indexes[0].time.sec).toBe(52);
     });
@@ -145,7 +145,7 @@ describe("Parser réponses YouTube", function() {
         expect(results.artistInTitle).toBe(true);
         expect(results.artistBeforeTitle).toBe(true);
         expect(results.track.title).toBe("La Misére (Club Remix)");
-        expect(results.track.indexes[0].number).toBe(12);
+        expect(results.track.indexes[0].number).toBe(1);
         expect(results.track.indexes[0].time.min).toBe(46);
         expect(results.track.indexes[0].time.sec).toBe(37);
     });
@@ -168,7 +168,7 @@ describe("Parser réponses YouTube", function() {
         });
         expect(results.artistInTitle).toBeUndefined();
         expect(results.track.title).toBe("End Titles");
-        expect(results.track.indexes[0].number).toBe(33);
+        expect(results.track.indexes[0].number).toBe(1);
         expect(results.track.indexes[0].time.min).toBe(108);
         expect(results.track.indexes[0].time.sec).toBe(37);
     });
@@ -199,7 +199,7 @@ describe("Parser réponses YouTube", function() {
         expect(results.artistBeforeTitle).toBe(false);
         expect(results.track.title).toBe("O-O-H child the five");
         expect(results.track.performer).toBe("Stairsteps");
-        expect(results.track.indexes[0].number).toBe(11);
+        expect(results.track.indexes[0].number).toBe(1);
         expect(results.track.indexes[0].time.min).toBe(38);
         expect(results.track.indexes[0].time.sec).toBe(57);
 
@@ -212,7 +212,7 @@ describe("Parser réponses YouTube", function() {
         expect(results.artistBeforeTitle).toBeUndefined();
         expect(results.track.title).toBe("Ain't no mountain high enough");
         expect(results.track.performer).toBeUndefined();
-        expect(results.track.indexes[0].number).toBe(12);
+        expect(results.track.indexes[0].number).toBe(1);
         expect(results.track.indexes[0].time.min).toBe(42);
         expect(results.track.indexes[0].time.sec).toBe(11);
     });
