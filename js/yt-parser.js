@@ -6,6 +6,8 @@
 
 var ytparser = {};
 
+const TIME_ZERO = parseTime("0:00");
+
 ytparser.newDiscFromPlaylistItems = function(playlistItems, title) {
     playlistItems = playlistItems.items || playlistItems;
 
@@ -54,19 +56,24 @@ ytparser.getVideoUrlFromId = function(id) {
 /**
  * Remplace CueService.extractTracks
  * @param json représentation ou objet YouTube Vidéo (snippet)
+ * @param options pour aider le parsing
+ * @param {boolean} options.artistInTitle comme dans le m3u ?
+ * @param {boolean} options.artistBeforeTitle true si l'artiste apparait dans le titre de la chanson
  */
-ytparser.newDiscFromVideo = function(video, videoUrl) {
+ytparser.newDiscFromVideo = function(video, videoUrl, options) {
     const snippet = video.items[0].snippet;
     const contentDetails = video.items[0].contentDetails;
-    return newDiscFromVideoSnippet(snippet, videoUrl, contentDetails);
+    return newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options);
 };
 
 /**
  * Remplace CueService.extractTracks
  * @param json représentation ou objet YouTube Vidéo (snippet)
+ * @param {boolean} options.artistInTitle comme dans le m3u ?
+ * @param {boolean} options.artistBeforeTitle true si l'artiste apparait dans le titre de la chanson
  */
-ytparser.newDiscFromVideoSnippet = function(snippet, videoUrl, contentDetails) {
-    return newDiscFromVideoSnippet(snippet, videoUrl, contentDetails);
+ytparser.newDiscFromVideoSnippet = function(snippet, videoUrl, contentDetails, options) {
+    return newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options);
 };
 
 /**
@@ -74,9 +81,11 @@ ytparser.newDiscFromVideoSnippet = function(snippet, videoUrl, contentDetails) {
  * @param snippet video.items[0].snippet dans le JSON d'une vidéo YouTube
  * @param videoUrl $scope.getVideoUrlFromId(videoId)
  * @param contentDetails? video.items[0].contentDetails dans le JSON d'une vidéo YouTube (facultatif)
+ * @param {boolean} options.artistInTitle comme dans le m3u ?
+ * @param {boolean} options.artistBeforeTitle true si l'artiste apparait dans le titre de la chanson
  * @returns {Array}
  */
-function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails) {
+function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options) {
     let description = snippet.localized.description || snippet.description;
 
     // Recherche des lignes contenant des timecodes
@@ -99,77 +108,42 @@ function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails) {
     });
 
     // Parsing de la description
-    let rx = /(.+[^\d:])?(\d+(?::\d+)+)([^\d:].+)?/i; // 1:avant time code, 2:timecode, 3:après timecode
-    let sepRxAfter = /^([^\w]+)(\w.+)$/;
-    let sepRxBefore = /^[^\w]*(\w.+)([^\w]+)$/;
-    let artistBeforeTitle; // comme dans le m3u ?
-    let artistInTitle; // true si l'artiste apparait dans le titre de la chanson
+    let artistBeforeTitle = options && options.artistBeforeTitle; // comme dans le m3u ?
+    let artistInTitle = options && options.artistInTitle; // true si l'artiste apparait dans le titre de la chanson
     for (let i = 0; i < lines.length; ++i) {
         let line = lines[i].trim();
         if (line === "") continue;
 
-        let parts = rx.exec(line);
-        if (parts) {
-            console.log("newDiscFromVideo:track : Parsing OK de la ligne : "+line);
-            let time = parseTime(parts[2]);
-            let textAfterTime = !!parts[3];
-            let text = textAfterTime ? parts[3] : parts[1];
-
-            // On cherche le séparateur
-            let sepRx = textAfterTime ? sepRxAfter : sepRxBefore;
-            let sepParts = sepRx.exec(text);
-            let sep = sepParts ? sepParts[1] : null;
-            text = sepParts ? sepParts[2] : text;
-
-            // Séparation du texte
-            let title, artist;
-            if (sep && sep.trim()) {
-                let texts = text.split(sep);
-
-                // Deux parties (artiste - title ou title - artiste) ?
-                if (sep.trim() && texts.length > 1) {
-                    if (artistInTitle === undefined) {
-                        artistInTitle = confirm("Le nom de l'artiste apparaît-il dans le texte suivant ?\n"+text);
-                    }
-                    if (!artistInTitle) {
-                        title = text;
-                    } else {
-
-                        if (typeof(artistBeforeTitle) === 'undefined') {
-                            artistBeforeTitle = confirm("Le nom de l'artiste est bien avant le titre dans le texte suivant ?\n" + text);
-                        }
-
-                        if (artistBeforeTitle) {
-                            artist = texts[0];
-                            title = texts[1];
-                        }
-                        else {
-                            title = texts[0];
-                            artist = texts[1];
-                        }
-                    }
-                }
-                else {
-                    title = text;
-                }
-            }
-            else {
-                // sep vide
-                title = text;
-            }
-
-            //let track = disc.newTrack(file.tracks ? (file.tracks.length + 1) : 1, "AUDIO").getCurrentTrack();
-            let track = file.newTrack();
-            _.extend(track, {
-                title: title,
-                performer: artist,
-                indexes: [
-                    new cuesheet.Index(1, time)
-                ]
+        try {
+            const parseRes = ytparser.parseTrack({
+                line: line,
+                lineNumber: i,
+                trackNumber: file.tracks.length + 1,
+                artistBeforeTitle: artistBeforeTitle,
+                artistInTitle: artistInTitle
             });
-        } else {
-            console.warn("newDiscFromVideo:track : Impossible de parser la ligne : "+line);
+            if (parseRes) {
+                console.log("newDiscFromVideo:track : Parsing OK de la ligne : "+line);
+
+                // Infos à garder pour les autres pistes
+                artistBeforeTitle = parseRes.artistBeforeTitle;
+                artistInTitle = parseRes.artistInTitle;
+
+                const track = file.newTrack();
+                _.extend(track, parseRes.track/*{
+                 title: title,
+                 performer: artist,
+                 indexes: [
+                 new cuesheet.Index(1, time)
+                 ]
+                 }*/);
+            } else {
+                console.warn("newDiscFromVideo:track : Impossible de parser la ligne : " + line);
+            }
+        } catch (e) {
+            console.warn("newDiscFromVideo:track : Impossible de parser la ligne : " + line);
         }
+
     }//for
 
     // Vérif si on a au moins trouver une piste
@@ -190,6 +164,170 @@ function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails) {
 
     return disc;
 }
+
+/**
+ * @typedef {Object} ParseResult
+ * @property {string} artistInTitle comme dans le m3u ?
+ * @property {string} artistBeforeTitle true si l'artiste apparait dans le titre de la chanson
+ * @property {cuesheet.Track} track la piste parsée
+ */
+/**
+ * @typedef {Object} ParsedTrack
+ * @property {string} title
+ * @property {string} performer
+ * @property {cuesheet.Index[]} indexes
+ */
+/**
+ *
+ * @param {string} input.line ligne à parser
+ * @param {number} input.lineNumber numéro de la ligne à parser
+ * @param {number} input.trackNumber numéro de la piste à créer
+ * @param {boolean} input.artistInTitle comme dans le m3u ?
+ * @param {boolean} input.artistBeforeTitle true si l'artiste apparait dans le titre de la chanson
+ *
+ * @return {ParseResult}
+ */
+ytparser.parseTrack = function(input) {
+    const line = input.line;
+    let remainingLine = line.trim();
+    const i = input.lineNumber;
+
+    /** @type ParseResult */
+    const output = {
+        artistBeforeTitle: input.artistBeforeTitle,
+        artistInTitle: input.artistInTitle,
+    };
+
+    const rx = /(.+[^\d:])?(\d+(?::\d+)+)([^\d:].+)?/i; // 1:avant time code, 2:timecode, 3:après timecode
+    const sepRxAfter = /^([^\w]+)(\w.+)$/;
+    const sepRxBefore = /^[^\w]*(\w.+)([^\w]+)$/;
+
+    // Ligne préfixée par le numéro de piste ?
+    const REGEX_WITH_TRACK_NUMBER = /^(#?(\d+))[^0-9:]/;
+    let mTrackNumber = REGEX_WITH_TRACK_NUMBER.exec(remainingLine);
+    if (mTrackNumber) {
+        const trackNumber = +mTrackNumber[2];
+        if (trackNumber !== input.trackNumber) {
+            console.warn(`Le numéro de piste ${trackNumber} ne correspond pas à celui attendu : ${input.trackNumber}. Ligne complète : ${line}`);
+        } else {
+            remainingLine = remainingLine.substring(mTrackNumber[1].length).trim()// on retire le numéro de piste de la ligne
+        }
+    }
+
+    // Découpage par timecode "00:00..."
+    const REGEX_SPLIT_BY_TIMECODES = /(\d+(?::\d+)+)/gi; // TODO : constante
+    let splitIndex = 0;
+    let splitRes = undefined;
+    const parts2 = [];
+    let partIndex = 0;
+    let textAfterLastTime = mTrackNumber ? remainingLine : undefined; // on autorise une ligne sans code uniquement si on a détecté un numéro de piste
+    while ((splitRes = REGEX_SPLIT_BY_TIMECODES.exec(remainingLine)) !== null) {
+        let textBeforeTime = remainingLine.substring(splitIndex, splitRes.index).trim();
+        if (textBeforeTime) {
+            parts2.push(textBeforeTime);
+        }
+        parts2.push(parseTime(splitRes[0]));
+        splitIndex = splitRes.index + splitRes[0].length;
+        textAfterLastTime = remainingLine.substring(splitIndex).trim();
+    }
+
+    // Texte après le dernier time
+    if (textAfterLastTime) {
+        parts2.push(textAfterLastTime);
+    }
+
+    const timeParts = parts2.filter(part => part instanceof cuesheet.Time);
+    const textParts = parts2.filter(part => typeof(part)==='string');
+    let time;
+
+    // Formats avec N TIME => 1er : début de la piste
+    if (timeParts.length === 0) {
+        time = TIME_ZERO;
+    } else {
+        time = timeParts[0];
+    }
+
+    // Nettoyage des textes
+    const REGEX_CLEAN_TEXT_PARTS = /[^\w]*(.*)/i; // TODO : constante
+    const REGEX_CLEAN_TEXT_PARTS_END = /(.*)-$/i; // TODO : constante
+    for (let i=0; i<textParts.length; ++i) {
+        let textPart = textParts[i];
+        // On supprime les symboles au début
+        const m = REGEX_CLEAN_TEXT_PARTS.exec(textPart);
+        if (m) {
+            textPart = m[1].trim();
+            if (textPart) {
+                textParts[i] = textPart;
+            } else {
+                textParts.splice(i, 1);
+            }
+        }
+
+
+        // On supprime les symboles à la fin
+        const mEnd = REGEX_CLEAN_TEXT_PARTS_END.exec(textPart);
+        if (mEnd) {
+            textParts[i] = mEnd[1].trim();
+        }
+    }
+
+    // Formats avec 1 TEXT
+    if (textParts.length > 1) {
+        throw new Error("Trop de texte séparés par des timecode dans la ligne "+line);
+    }
+    let sep = " - ";
+    let text = textParts[0];
+    if (!text) {
+        throw new Error("Aucun texte dans la ligne "+line);
+    }
+
+    // Séparation du texte
+    let title, artist;
+    if (sep && sep.trim()) {
+        let texts = text.split(sep);
+
+        // Deux parties (artiste - title ou title - artiste) ?
+        if (sep.trim() && texts.length > 1) {
+            if (typeof(input.artistInTitle) === 'undefined') {
+                output.artistInTitle = confirm("Le nom de l'artiste apparaît-il dans le texte suivant ?\n"+text);
+            }
+            if (!output.artistInTitle) {
+                title = text;
+            } else {
+
+                if (typeof(input.artistBeforeTitle) === 'undefined') {
+                    output.artistBeforeTitle = confirm("Le nom de l'artiste est bien avant le titre dans le texte suivant ?\n" + text);
+                }
+
+                if (output.artistBeforeTitle) {
+                    artist = texts[0];
+                    title = texts[1];
+                }
+                else {
+                    title = texts[0];
+                    artist = texts[1];
+                }
+            }
+        }
+        else {
+            title = text;
+        }
+    }
+    else {
+        // sep vide
+        title = text;
+    }
+
+    output.track = {
+        title: title,
+        performer: artist,
+        indexes: [
+            new cuesheet.Index(input.trackNumber, time)
+        ]
+    };
+
+    return output;
+};
 
 // fonction extraite de cue-parser/lib/cue.js
 /**
