@@ -24,6 +24,7 @@ class Disc
 
     @index = null
     @enabled = true # pour choisir les vidéos à lire
+    @discId = undefined # Disc-ID dans le format cuesheet
 
   # Propriétés directement liées à la cue
   @propertiesOf 'cuesheet', ['title', 'performer']

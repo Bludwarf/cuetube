@@ -70,4 +70,26 @@ describe("Parser réponses YouTube", function() {
         expect(track.title).toBe("22. Making Plains - Gathering the Clans");
     });
 
+    // TEST #49
+    it("should not parse Le Grand Bleu (description without tracklist)", function () {
+        let videoUrl = "https://www.youtube.com/watch?v=Dg0IjOzopYU";
+        let json = readJSON('samples/youtube/videos/LeGrandBleu.json');
+        //const description = "http://www.discogs.com/Eric-Serra-The-Big-Blue-Original-Motion-Picture-Soundtrack/master/74022\n\nFAIR USE NOTICE: This video may contain copyrighted material. Such material is made available for educational purposes only. This constitutes a 'fair use' of any such copyrighted material as provided for in Title 17 U.S.C. section 107 of the US Copyright Law.\n\nIn other words All credits goes to the Magnificent Eric Serra.";
+        expect(() => {
+            let disc = ytparser.newDiscFromVideo(json, videoUrl);
+        }).toThrow(new Error("Aucune piste n'a été trouvée dans la description de la vidéo"/* : "+description*/));
+    });
+
+    // TEST #49
+    it("should parse Un indien dans la ville", function () {
+        const videoUrl = "https://www.youtube.com/watch?v=g4hleRuajmY";
+        const json = readJSON('samples/youtube/videos/UnIndienDansLaVille.json');
+        const disc = ytparser.newDiscFromVideo(json, videoUrl);
+        expect(disc.title).toBe("K.O.D. - Un Indien Dans La Ville Soundtrack (1994) - FULL ALBUM");
+
+        expect(disc.files.length).toBe(1);
+        const file = disc.files[0];
+        expect(file.duration).toBe(3038);
+    });
+
 });

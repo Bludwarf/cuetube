@@ -18,6 +18,7 @@ module.exports = function(config) {
       // Angular
       'bower_components/angular/angular.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
+      'bower_components/moment/moment.js', // FIXME : Karma ne le trouve pas dans client/js !
 
       'client/js/*.js',
       'client/js/controllers/*.js',

@@ -184,6 +184,7 @@ module.exports = {
             const file = cue.files[f];
             
             data += "FILE \""+file.name+"\" "+file.type+EOL;
+            console.log(file);
             
             for (let t = 0; t < file.tracks.length; ++t) {
                 const track = file.tracks[t];

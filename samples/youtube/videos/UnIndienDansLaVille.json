@@ -1,13 +1,14 @@
 {
 	"kind": "youtube#videoListResponse",
-	"etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/GcBE9bsSsoG46J-YzfvlS-icRis\"",
+	"etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/JXGwhTnbQbI5l76uQB95PJGl9nA\"",
 	"pageInfo": {
 		"totalResults": 1,
 		"resultsPerPage": 1
 	},
-	"items": [{
+	"items": [
+		{
 			"kind": "youtube#video",
-			"etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/IHLANZkIRCzkOqagkBSCKvM7Flk\"",
+			"etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/SklJ97LhiVdu91xil33vyQVZXd4\"",
 			"id": "g4hleRuajmY",
 			"snippet": {
 				"publishedAt": "2014-06-26T16:51:52.000Z",
@@ -37,13 +38,37 @@
 					}
 				},
 				"channelTitle": "Tonton Old School",
-				"tags": ["tonton david chacun sa route", "un indian dans la ville soundtrack", "tonton david un indien dans la ville soundtrack", "tonton david un indien dans la ville", "tonton david la misere", "kod chacun sa route", "tonton david sunshine", "princess erika full album", "nuttea full album", "taxi 2 soundtrack", "tonton david full album", "manu katche", "geoffrey oryema", "manu katche un indien dans la ville", "geoffrey oryema un indien dans la ville"],
+				"tags": [
+					"tonton david chacun sa route",
+					"un indian dans la ville soundtrack",
+					"tonton david un indien dans la ville soundtrack",
+					"tonton david un indien dans la ville",
+					"tonton david la misere",
+					"kod chacun sa route",
+					"tonton david sunshine",
+					"princess erika full album",
+					"nuttea full album",
+					"taxi 2 soundtrack",
+					"tonton david full album",
+					"manu katche",
+					"geoffrey oryema",
+					"manu katche un indien dans la ville",
+					"geoffrey oryema un indien dans la ville"
+				],
 				"categoryId": "24",
 				"liveBroadcastContent": "none",
 				"localized": {
 					"title": "K.O.D. - Un Indien Dans La Ville Soundtrack (1994) - FULL ALBUM",
 					"description": "01 Geoffrey Oryema - Un Indien Dans La Ville\n02 Manu Katché, Geoffrey Oryema & Tonton David - Chacun Sa Route 05:14\n03 Manu Katché & Geoffrey Oryema - Mother & Father 08:16\n04 Manu Katché, Geoffrey Oryema & Tonton David - Sunshine 12:03\n05 Hello You 17:13\n06 Manu Katché & Tonton David - La Misére 21:34\n07 Manu Katché & Geoffrey Oryema - You And I 25:45\n08 Douce Enfance 29:57\n09 Innocence 31:29\n10 Manu Katché, Geoffrey Oryema & Tonton David - Veillée 37:50\n11 Manu Katché, Geoffrey Oryema & Tonton David - Chacun Sa Route (Club Remix) 41:37\n12 Tonton David - La Misére (Club Remix) 46:37\n\nK.O.D. is: Manu Katché, Geoffrey Oryema & Tonton David\n\nhttp://musique.fnac.com/a622094/Tonton-David-Un-indien-dans-la-ville-CD-album"
 				}
+			},
+			"contentDetails": {
+				"duration": "PT50M38S",
+				"dimension": "2d",
+				"definition": "sd",
+				"caption": "false",
+				"licensedContent": false,
+				"projection": "rectangular"
 			}
 		}
 	]

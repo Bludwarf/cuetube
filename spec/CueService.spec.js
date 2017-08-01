@@ -33,4 +33,32 @@ describe("Service pour la gestion des fichiers cue", function() {
         });
     });
 
+    it("should parse freedb cuesheets", cb => {
+        CueService.parseCueFile('samples/freedb/410d7214.cue', (err, cue) => {
+            expect(cue.performer).toBe("Eric Serra - Le grand bleu");
+            expect(cue.title).toBe("Le grand bleu (1988)");
+
+            expect(cue.files.length).toBe(1);
+            let file = cue.files[0];
+            expect(file.name).toBe("Eric Serra - Le grand bleu - Le grand bleu (1988).mp3");
+
+            expect(file.tracks.length).toBe(20);
+            let track01 = file.tracks[0];
+            expect(track01.title).toBe("The Big Blue Overture");
+            expect(track01.indexes[0].number).toBe(1);
+            expect(track01.indexes[0].time.min).toBe(0);
+            expect(track01.indexes[0].time.sec).toBe(0);
+            expect(track01.indexes[0].time.frame).toBe(0);
+
+            let track20 = file.tracks[19];
+            expect(track20.title).toBe("My Lady Blue");
+            expect(track20.indexes[0].number).toBe(1);
+            expect(track20.indexes[0].time.min).toBe(52);
+            expect(track20.indexes[0].time.sec).toBe(24);
+            expect(track20.indexes[0].time.frame).toBe(15);
+
+            cb();
+        });
+    });
+
 });

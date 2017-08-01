@@ -1,0 +1,71 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/khheNPQa9mYJNXsP0USt9gjbXWk\"",
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 1
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/S-Uto_gCznCU2OXfCrPQEWq0Lvc\"",
+      "id": "8J5ptf0POnA",
+      "snippet": {
+        "publishedAt": "2012-11-08T01:51:39.000Z",
+        "channelId": "UCLX6EMl4KC8WsxFWmsSO7wA",
+        "title": "Eric Serra - Le Grand Bleu - Soundtrack",
+        "description": "http://www.discogs.com/Eric-Serra-The-Big-Blue-Original-Motion-Picture-Soundtrack/master/74022\n\nFAIR USE NOTICE: This video may contain copyrighted material. Such material is made available for educational purposes only. This constitutes a 'fair use' of any such copyrighted material as provided for in Title 17 U.S.C. section 107 of the US Copyright Law.\n\nIn other words All credits goes to the Magnificent Eric Serra.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/8J5ptf0POnA/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/8J5ptf0POnA/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/8J5ptf0POnA/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          },
+          "standard": {
+            "url": "https://i.ytimg.com/vi/8J5ptf0POnA/sddefault.jpg",
+            "width": 640,
+            "height": 480
+          }
+        },
+        "channelTitle": "OnenessAmbassador",
+        "tags": [
+          "The Big Blue (Film)",
+          "Le Grand Bleu",
+          "Eric Serra",
+          "Album",
+          "Soundtrack",
+          "Luc Besson"
+        ],
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "localized": {
+          "title": "Eric Serra - Le Grand Bleu - Soundtrack",
+          "description": "http://www.discogs.com/Eric-Serra-The-Big-Blue-Original-Motion-Picture-Soundtrack/master/74022\n\nFAIR USE NOTICE: This video may contain copyrighted material. Such material is made available for educational purposes only. This constitutes a 'fair use' of any such copyrighted material as provided for in Title 17 U.S.C. section 107 of the US Copyright Law.\n\nIn other words All credits goes to the Magnificent Eric Serra."
+        }
+      },
+      "contentDetails": {
+        "duration": "PT57M22S",
+        "dimension": "2d",
+        "definition": "sd",
+        "caption": "false",
+        "licensedContent": false,
+        "regionRestriction": {
+          "blocked": [
+            "IT"
+          ]
+        },
+        "projection": "rectangular"
+      }
+    }
+  ]
+}
