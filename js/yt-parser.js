@@ -2,6 +2,8 @@
  * Created by mlavigne on 27/06/2017.
  */
 
+/* require moment.js */
+
 var ytparser = {};
 
 ytparser.newDiscFromPlaylistItems = function(playlistItems, title) {
@@ -55,28 +57,26 @@ ytparser.getVideoUrlFromId = function(id) {
  */
 ytparser.newDiscFromVideo = function(video, videoUrl) {
     const snippet = video.items[0].snippet;
-    return newDiscFromVideoSnippet(snippet, videoUrl);
+    const contentDetails = video.items[0].contentDetails;
+    return newDiscFromVideoSnippet(snippet, videoUrl, contentDetails);
 };
 
 /**
  * Remplace CueService.extractTracks
  * @param json représentation ou objet YouTube Vidéo (snippet)
  */
-ytparser.newDiscFromVideoSnippet = function(snippet, videoUrl) {
-    return newDiscFromVideoSnippet(snippet, videoUrl);
+ytparser.newDiscFromVideoSnippet = function(snippet, videoUrl, contentDetails) {
+    return newDiscFromVideoSnippet(snippet, videoUrl, contentDetails);
 };
-
-function newDiscFromVideo_json(jsonString, videoUrl) {
-    return newDiscFromVideo(JSON.parse(jsonString), videoUrl);
-}
 
 /**
  * 
  * @param snippet video.items[0].snippet dans le JSON d'une vidéo YouTube
  * @param videoUrl $scope.getVideoUrlFromId(videoId)
+ * @param contentDetails? video.items[0].contentDetails dans le JSON d'une vidéo YouTube (facultatif)
  * @returns {Array}
  */
-function newDiscFromVideoSnippet(snippet, videoUrl) {
+function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails) {
     let description = snippet.localized.description || snippet.description;
 
     // Recherche des lignes contenant des timecodes
@@ -88,6 +88,7 @@ function newDiscFromVideoSnippet(snippet, videoUrl) {
         title: snippet.title,
         performer: snippet.channelTitle
     });
+
     console.log("newDiscFromVideo : Parsing de la vidéo : "+disc.title);
 
     // Un seul fichier puisqu'une seule vidéo
@@ -170,6 +171,22 @@ function newDiscFromVideoSnippet(snippet, videoUrl) {
             console.warn("newDiscFromVideo:track : Impossible de parser la ligne : "+line);
         }
     }//for
+
+    // Vérif si on a au moins trouver une piste
+    if (!disc.tracks || !disc.tracks.length) {
+        console.error("Vidéo sans tracklist. Tentez votre chance à cette adresse : http://www.regeert.nl/cuesheet/?str="+encodeURIComponent(disc.title));
+        const error = new Error("Aucune piste n'a été trouvée dans la description de la vidéo"/* : " + description*/);
+        error.disc = disc;
+        error.name = "youtube.notracklist";
+        throw error;
+    }
+
+    // Informations dans le contentDetails (optionnel)
+    if (contentDetails) {
+        _.extend(disc.files[0], {
+            duration: moment.duration(contentDetails.duration).asSeconds()
+        });
+    }
 
     return disc;
 }

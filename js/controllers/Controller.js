@@ -6,7 +6,7 @@
  * @property track.played : nombre de fois joué
  * @param cuetubeConf cf fichier de conf /js/app.conf.js
  */
-function Controller($scope, $http, cuetubeConf) {
+function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     const GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
 
@@ -616,7 +616,7 @@ function Controller($scope, $http, cuetubeConf) {
         $http.get('https://www.googleapis.com/youtube/v3/videos', {
             params: {
                 key: GOOGLE_KEY,
-                part: 'snippet',//'contentDetails',
+                part: 'snippet,contentDetails',//'contentDetails', // contentDetails => durée
                 id: videoId,
                 maxResults: 1
             }
@@ -1098,24 +1098,43 @@ function Controller($scope, $http, cuetubeConf) {
             if (err) return cb(err);
 
             const videoUrl = $scope.getVideoUrlFromId(videoId);
-            let disc = ytparser.newDiscFromVideoSnippet(snippet, videoUrl);
-            enrichDisc(disc, $scope.discs.length);
+            try {
+                let disc = ytparser.newDiscFromVideoSnippet(snippet, videoUrl);
+                enrichDisc(disc, $scope.discs.length);
 
-            console.log("Création du disc...", disc);
+                console.log("Création du disc...", disc);
 
-            // TODO : pouvoir passer le disc en JSON -> problème de circular ref
-            $http.post("/"+videoId+".cue.json", disc.cuesheet).then(res => {
-                if (res.status != 200) return alert("POST createNewDiscFromVideo $http != 200");
-                $scope.createDisc(disc);
-                cb(null, disc);
+                // TODO : pouvoir passer le disc en JSON -> problème de circular ref
+                $http.post("/" + videoId + ".cue.json", disc.cuesheet).then(res => {
+                    if (res.status != 200) return alert("POST createNewDiscFromVideo $http != 200");
+                    $scope.createDisc(disc);
+                    cb(null, disc);
 
-            }, resKO => {
-                alert('Erreur POST createNewDiscFromVideo : '+resKO.data);
-                return cb(resKO.data);
-            });
+                }, resKO => {
+                    alert('Erreur POST createNewDiscFromVideo : ' + resKO.data);
+                    return cb(resKO.data);
+                });
+            } catch (e) {
+                if (e.name === "youtube.notracklist") {
+                    const disc = e.disc;
+                    alert("La description de la vidéo ne contient aucune tracklist, on va faire une recherche sur freedb...");
+                    const win = openInNewTab(`http://www.regeert.nl/cuesheet/?str=${encodeURIComponent(disc.title)}`);
+
+
+
+                } else {
+                    alert("Erreur lors de la création du disque : " + e.message);
+                }
+            }
         });
 
     };
+
+    function openInNewTab(url) {
+        const win = window.open(url, '_blank');
+        win.focus();
+        return win;
+    }
 
     $scope.createNewDiscFromVideoOrPlaylist = function(url, cb) {
 

@@ -1,4 +1,4 @@
-angular.module('cuetube', [])
+angular.module('cuetube', [/*'cp.ngConfirm'*/])
 
     /** https://stackoverflow.com/a/25344423/1655155 */
     .directive('emptyToNull', function () {

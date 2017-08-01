@@ -43,6 +43,7 @@ Disc = (function() {
     }
     this.index = null;
     this.enabled = true;
+    this.discId = void 0;
   }
 
   Disc.propertiesOf('cuesheet', ['title', 'performer']);
