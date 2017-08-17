@@ -55,6 +55,10 @@ Dans l'ordre d'existance :
   - /client/cues/*.cue.txt : copié-collé de la tracklist dans les commentaires Youtube
   - /client/cues/*.cue.json : généré automatiquement à partir du .cue.txt ou du .cue
   - /client/cues/*.cue : généré automatiquement à partir du .cue.json
+  
+## Outils
+
+  * <http://cue.tools/wiki/CUETools_Download>
 
 # Informations YouTube
 
