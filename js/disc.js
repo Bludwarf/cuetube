@@ -188,7 +188,7 @@ Disc.Track = (function() {
     get: function() {
       var time;
       time = this.indexes[this.indexes.length - 1].time;
-      return time.min * 60 + time.sec + time.frame * .75;
+      return time.min * 60 + time.sec + time.frame / 75;
     }
   });
 
