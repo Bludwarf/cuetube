@@ -84,7 +84,11 @@ router
         var options = getOptions(req);
 
         CueService.getCue(req.params.id + ".cue", options, function(err, cue) {
-            if (err) return res.status(500).send(err.message);
+            if (err) {
+                console.dir(err);
+                if (err.code === 'ENOENT') return res.status(404).send(`Cuesheet ${req.params.id} introuvable`);
+                return res.status(500).send(err.message);
+            }
             res.json(cue);
         });
 
