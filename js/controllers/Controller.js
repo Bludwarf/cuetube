@@ -378,10 +378,16 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         let currentStr = localStorage.getItem('current');
         if (currentStr) {
             let current = JSON.parse(currentStr);
-            const disc = _.find($scope.discs, (disc) => disc.id === current.discId);
+            const disc = _.find($scope.discs, (disc) => disc && disc.id === current.discId);
 
             if (!disc) {
                 console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé`);
+                $scope.currentDisc = undefined;
+                $scope.currentDiscIndex = undefined;
+                $scope.currentFile = undefined;
+                $scope.currentFileIndex = undefined;
+                $scope.currentTrack = undefined;
+                $scope.currentTrackIndex = undefined;
             } else {
                 console.log("Chargement de la précédente lecture...", current);
 
@@ -495,8 +501,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
             // Aucun disque jouable ?
             if (!possibleDiscs.length) {
-                console.error("Aucun disque activé (ou sans piste activées)");
-                return;
+                throw new Error("Aucun disque activé (ou sans piste activées)");
             }
 
             const discIndex = possibleDiscs.indexOf(disc);
@@ -532,10 +537,14 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         });
 
         // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
-        const player = $scope.loadCurrentTrack($scope.player);
-        $scope.$apply(() => {
+        if ($scope.currentTrack) {
+          const player = $scope.loadCurrentTrack($scope.player);
+          $scope.$apply(() => {
             $scope.player = player;
-        });
+          });
+        } else {
+            alert("Aucun disque à lire !");
+        }
     };
 
     $scope.previous = function() {
