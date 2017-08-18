@@ -126,7 +126,7 @@ class Disc.Track
   @property 'startSeconds',
     get: ->
       time = @indexes[@indexes.length - 1].time;
-      time.min * 60 + time.sec + time.frame * .75;
+      time.min * 60 + time.sec + time.frame / 75;
   
   @property 'endSeconds',
     get: ->
