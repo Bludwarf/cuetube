@@ -1,0 +1,29 @@
+#EXTM3U
+#EXTINF:301,georgemichaelVEVO - George Michael - Careless Whisper (Official Video)
+#EXTVLCOPT:network-caching=1000
+https://r17---sn-aigllnss.googlevideo.com/videoplayback?itag=43&sparams=clen%2Cdur%2Cei%2Cgcr%2Cgir%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&expire=1502478282&ratebypass=yes&ipbits=0&mime=video%2Fwebm&clen=23545022&requiressl=yes&gir=yes&initcwndbps=892500&lmt=1365594815097340&source=youtube&pl=17&dur=0.000&gcr=fr&mv=m&ei=aauNWarBO8GuWvy8ibgC&id=8b31b00ecad0d5e4&ms=au&mm=31&mn=sn-aigllnss&mt=1502456559&key=yt6&ip=154.52.129.34&signature=8FF5CFBE3E9AFC2056E868C3AF6746B0D6F87A08.6281F3C0B26568949BD376A8A831C183F055B4DF
+
+#EXTINF:222,georgemichaelVEVO - George Michael - Faith (US Version)
+#EXTVLCOPT:network-caching=1000
+#EXTVLCOPT:start-time=14
+#EXTVLCOPT:stop-time=30
+#https://r1---sn-aiglln67.googlevideo.com/videoplayback?gir=yes&mime=video%2Fwebm&requiressl=yes&lmt=1280282595226191&ratebypass=yes&expire=1502478366&pl=17&ip=154.52.129.34&mm=31&mn=sn-aiglln67&initcwndbps=917500&itag=43&ms=au&mt=1502456634&mv=m&dur=0.000&id=96edd54e7826d45d&sparams=clen%2Cdur%2Cei%2Cgcr%2Cgir%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpcm2%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&ipbits=0&ei=vauNWefCO9aNWOeXrKgH&key=yt6&pcm2=no&source=youtube&gcr=fr&clen=35107594&signature=7DF29126219995E6AC3CD5CFE543F27BDAD39419.A35B5308B0665FD7DBF037CDB12471A4C837F8EF
+https://www.youtube.com/watch?v=lu3VTngm1F0
+
+#EXTINF:222,georgemichaelVEVO - George Michael - Faith (US Version) (PART 2)
+#EXTVLCOPT:network-caching=1000
+#EXTVLCOPT:start-time=30
+#https://r1---sn-aiglln67.googlevideo.com/videoplayback?gir=yes&mime=video%2Fwebm&requiressl=yes&lmt=1280282595226191&ratebypass=yes&expire=1502478366&pl=17&ip=154.52.129.34&mm=31&mn=sn-aiglln67&initcwndbps=917500&itag=43&ms=au&mt=1502456634&mv=m&dur=0.000&id=96edd54e7826d45d&sparams=clen%2Cdur%2Cei%2Cgcr%2Cgir%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpcm2%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&ipbits=0&ei=vauNWefCO9aNWOeXrKgH&key=yt6&pcm2=no&source=youtube&gcr=fr&clen=35107594&signature=7DF29126219995E6AC3CD5CFE543F27BDAD39419.A35B5308B0665FD7DBF037CDB12471A4C837F8EF
+https://www.youtube.com/watch?v=lu3VTngm1F0
+
+#EXTINF:240,The Prophecy
+#EXTVLCOPT:network-caching=1000
+#EXTVLCOPT:start-time=5
+#EXTVLCOPT:stop-time=240
+https://www.youtube.com/watch?v=_SBQvd6vY9s
+
+#EXTINF:180,Concerning Hobbits
+#EXTVLCOPT:network-caching=1000
+#EXTVLCOPT:start-time=240
+#EXTVLCOPT:stop-time=420
+https://www.youtube.com/watch?v=_SBQvd6vY9s
