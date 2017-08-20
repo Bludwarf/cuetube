@@ -269,6 +269,15 @@ ytparser.parseTrack = function(input) {
         if (mEnd) {
             textParts[i] = mEnd[1].trim();
         }
+
+        // Suppression de " si seul et à la fin
+        if (textParts[i]) {
+          textPart = textParts[i];
+          const firstQuote = textPart.indexOf("\"");
+          if (firstQuote !== -1 && firstQuote === textPart.length - 1) {
+            textParts[i] = textPart.slice(0, -1);
+          }
+        }
     }
 
     // Formats avec 1 TEXT
