@@ -16,6 +16,8 @@ La durée ne peut être déduite qu’avec lé début de la piste suivante.
 
 # Player
 
+Doc : <https://developers.google.com/youtube/iframe_api_reference?hl=fr>
+
 Exemple de soundsgood :
 
 <div class="big-player-youtube sg-player-youtube-container" ng-show="player.videoVisible &amp;&amp; player.playlist.track.data.platform === 'youtube'" player-video-resizer="" src="sections/player/views/youtube_video.html">

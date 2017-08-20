@@ -47,6 +47,15 @@
             width: 2em;
         }
 
+        .textarea-wrapper {
+            padding-right: 42px
+        }
+
+        textarea {
+            width:100%;
+            resize: vertical;
+        }
+
     </style>
 
     <script type="text/javascript" src="/js/cuesheet.js"></script>
@@ -68,6 +77,10 @@
 
         <fieldset ng-repeat="file in disc.files" class="file">
             <legend><a href="{{file.name}}" target="_blank">videoId</a> <input type="text" name="fileName" value="{{file.videoId}}" size="300"/></legend>
+
+            <div class="textarea-wrapper">
+                <textarea placeholder="Import d'une tracklist YouTube"></textarea>
+            </div>
 
             <fieldset ng-repeat="track in file.tracks"class="track">
                 <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
