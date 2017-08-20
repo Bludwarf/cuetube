@@ -113,6 +113,18 @@ Disc = (function() {
     return this.cuesheet;
   };
 
+  Disc.prototype.getTrackAt = function(time) {
+    var j, len, ref, track;
+    ref = this.tracks;
+    for (j = 0, len = ref.length; j < len; j++) {
+      track = ref[j];
+      if (time <= track.endSeconds) {
+        return track;
+      }
+    }
+    return this.tracks[this.tracks.length - 1];
+  };
+
   return Disc;
 
 })();

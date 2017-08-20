@@ -810,7 +810,15 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     });
 
     $scope.$on("video manual seeked", (event) => {
-        console.log("video manual seeked : TODO");
+        // on cherche la piste courant uniquement pour une vidéo multipiste
+        if ($scope.currentDisc.tracks.length > 1) {
+          const track = $scope.currentDisc.getTrackAt($scope.player.getCurrentTime());
+          if (track) {
+            console.log(`On a sauté manuellement vers la piste #${track.number} ${track.title}`);
+            $scope.currentTrack = track;
+            $scope.currentTrackIndex = track.index;
+          }
+        }
     });
 
     $scope.lastPlayerStates = [];
