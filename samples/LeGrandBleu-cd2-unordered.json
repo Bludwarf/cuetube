@@ -1,0 +1,310 @@
+{
+  "catalog": null,
+  "cdTextFile": null,
+  "files": [
+    {
+      "name": "https://www.youtube.com/watch?v=XiZxPUjc6Ig",
+      "type": "MP3",
+      "tracks": [
+        {
+          "number": 1,
+          "type": "AUDIO",
+          "title": "Let Them Try",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 11,
+                "sec": 11,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "type": "AUDIO",
+          "title": "A Walk in Taormina",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 0,
+                "sec": 0,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "type": "AUDIO",
+          "title": "Watergames",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 28,
+                "sec": 55,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "type": "AUDIO",
+          "title": "Fatal Dive",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 1,
+                "sec": 54,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "type": "AUDIO",
+          "title": "Platform",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 14,
+                "sec": 32,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "type": "AUDIO",
+          "title": "Leaving Peru",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 6,
+                "sec": 0,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 7,
+          "type": "AUDIO",
+          "title": "Virgin Islands",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 26,
+                "sec": 42,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 8,
+          "type": "AUDIO",
+          "title": "Strange Feelings",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 19,
+                "sec": 8,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 9,
+          "type": "AUDIO",
+          "title": "Sicilia",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 17,
+                "sec": 42,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 10,
+          "type": "AUDIO",
+          "title": "Such a Family",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 22,
+                "sec": 28,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 11,
+          "type": "AUDIO",
+          "title": "The Third Dive",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 23,
+                "sec": 55,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 12,
+          "type": "AUDIO",
+          "title": "Do You Like This Place",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 0,
+                "sec": 47,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 13,
+          "type": "AUDIO",
+          "title": "For Enzo",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 3,
+                "sec": 11,
+                "frame": 0
+              }
+            }
+          ]
+        },
+        {
+          "number": 14,
+          "type": "AUDIO",
+          "title": "Leaving the World Behind",
+          "flags": null,
+          "isrc": null,
+          "performer": "Éric Serra",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 7,
+                "sec": 56,
+                "frame": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "performer": "Eric Serra",
+  "songWriter": null,
+  "title": "Le Grand Bleu: Version Integral (1988) 2/2",
+  "rems": null
+}

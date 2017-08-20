@@ -7,6 +7,11 @@ var age2 = new Disc(_.extend(new cuesheet.CueSheet(), {"catalog":null,"cdTextFil
 // Données récupérées du player YouTube
 minecraftFile.duration = 7613.001;
 
+function loadDisc(jsonFile) {
+  const json = readJSON(jsonFile);
+  return new Disc(_.extend(new cuesheet.CueSheet(), json));
+}
+
 describe("Disc mono vidéo", function() {
   
   it("has properties of cuesheet.CueSheet", function() {
@@ -285,6 +290,19 @@ describe("Disc.Track", function() {
   it("has endSeconds", function() {
     expect(track.endSeconds).toEqual(64);
     expect(file.tracks[27].endSeconds).toEqual(7613.001);
+  });
+
+  // Disque dont les pistes ne sont pas ordonnés par startSeconds
+  it("has endSeconds even on tracks non ordered", function() {
+    let disc = loadDisc('samples/LeGrandBleu-cd2-unordered.json');
+    let track = disc.tracks[6];
+    let nextInTime = disc.tracks[2]; // next = Watergames
+
+    // verif de la propriété indexInTime
+    expect(track.indexInTime).toBe(12);
+    expect(nextInTime.indexInTime).toBe(13);
+
+    expect(track.endSeconds).toEqual(nextInTime.startSeconds);
   });
   
 });

@@ -98,6 +98,7 @@ class Disc.File
     cuesheetTrack = @disc.cuesheet.getCurrentTrack()
     track = new Disc.Track @, @.tracks.length, cuesheetTrack
     @.tracks.push track
+    @_tracksInTime = undefined # RAZ du cache pour tracksInTime
     track
 
   # Par défaut : 1ère si avant disque, dernière si après
@@ -106,6 +107,15 @@ class Disc.File
       if (time <= track.endSeconds)
         return track
     return @tracks[@tracks.length - 1]
+
+  # Les pistes ne sont pas toujours triées dans l'ordre chronologique
+  @property 'tracksInTime',
+    get: ->
+      if (!@_tracksInTime)
+        @_tracksInTime = [].concat @tracks
+        @_tracksInTime.sort (t1, t2) ->
+          t1.startSeconds - t2.startSeconds
+      return @_tracksInTime
 
 class Disc.Track
   # Attention index = index dans le fichier et pas dans le disque, utiliser number-1 pour cela
@@ -126,6 +136,14 @@ class Disc.Track
 
   # Propriétés directement liées au track de la cue
   @propertiesOf 'cuesheetTrack', ['number', 'title', 'indexes', 'performer']
+
+  # Index dans file.tracksInTime
+  @property 'indexInTime',
+    get: ->
+      for track, i in @file.tracksInTime
+        if track == @
+          return i
+      return -1
   
   @property 'disc',
     get: -> @file.disc
@@ -137,8 +155,10 @@ class Disc.Track
   
   @property 'endSeconds',
     get: ->
-      if (@index+1 < @file.tracks.length)
-        return @file.tracks[@index+1].startSeconds
+      tracksInTime = @file.tracksInTime
+      indexInTime = @indexInTime
+      if (indexInTime+1 < tracksInTime.length)
+        return tracksInTime[indexInTime+1].startSeconds # TODO perf OK tracks => tracksInTime ?
       else if (@file.duration)
         return @file.duration
       else
