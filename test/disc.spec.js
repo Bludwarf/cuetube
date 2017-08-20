@@ -76,24 +76,6 @@ describe("Disc mono vidéo", function() {
       expect(track1.number).toBe(1);
       expect(disc.disabledTracks.map(function(track) {return track.number})).toEqual([1]);
   });
-
-  it("should find track at time", function() {
-    let track;
-
-    // Par défaut => 1ère
-    track = minecraft.getTrackAt(0);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("Key (Nuance 1)");
-
-    track = minecraft.getTrackAt(1*3600 + 14*60 + 2);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("Taswell (Creative 6)");
-
-    // Par défaut => dernière
-    track = minecraft.getTrackAt(3*3600);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("End");
-  });
 });
 
 describe("Disc multi vidéo", function() {
@@ -217,6 +199,42 @@ describe("Disc.File", function() {
   
   it("has index", function() {
     expect(file.index).toBe(0);
+  });
+
+  it("should find track at time in multitrack video", function() {
+    const file = minecraft.files[0];
+    let track;
+
+    // Par défaut => 1ère
+    track = file.getTrackAt(0);
+    expect(track).not.toBeNull();
+    expect(track.title).toBe("Key (Nuance 1)");
+
+    track = file.getTrackAt(1*3600 + 14*60 + 2);
+    expect(track).not.toBeNull();
+    expect(track.title).toBe("Taswell (Creative 6)");
+
+    // Par défaut => dernière
+    track = file.getTrackAt(3*3600);
+    expect(track).not.toBeNull();
+    expect(track.title).toBe("End");
+  });
+
+  it("should find track at time in multi video disc", function() {
+    const file = age2.files[0];
+    let track, trackBis;
+
+    // Par défaut => 1ère
+    track = file.getTrackAt(0);
+    expect(track).not.toBeNull();
+    expect(track.title).toBe("Main Theme");
+
+    trackBis = file.getTrackAt(50);
+    expect(trackBis).toBe(track);
+
+    // Par défaut => dernière
+    trackBis = file.getTrackAt(3*3600);
+    expect(trackBis).toBe(track);
   });
   
 });
