@@ -1158,6 +1158,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.createNewDiscFromVideoOrPlaylist = function(url, cb) {
 
         url = url || prompt("URL de la vidéo/playlist YouTube");
+        if (!url) return
         const playlistId = getParameterByName('list', url);
         if (playlistId) {
             return $scope.createNewDiscFromPlaylist(playlistId, cb);
