@@ -113,18 +113,6 @@ Disc = (function() {
     return this.cuesheet;
   };
 
-  Disc.prototype.getTrackAt = function(time) {
-    var j, len, ref, track;
-    ref = this.tracks;
-    for (j = 0, len = ref.length; j < len; j++) {
-      track = ref[j];
-      if (time <= track.endSeconds) {
-        return track;
-      }
-    }
-    return this.tracks[this.tracks.length - 1];
-  };
-
   return Disc;
 
 })();
@@ -164,6 +152,18 @@ Disc.File = (function() {
     track = new Disc.Track(this, this.tracks.length, cuesheetTrack);
     this.tracks.push(track);
     return track;
+  };
+
+  File.prototype.getTrackAt = function(time) {
+    var j, len, ref, track;
+    ref = this.tracks;
+    for (j = 0, len = ref.length; j < len; j++) {
+      track = ref[j];
+      if (time <= track.endSeconds) {
+        return track;
+      }
+    }
+    return this.tracks[this.tracks.length - 1];
   };
 
   return File;

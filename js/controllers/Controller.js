@@ -812,7 +812,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.$on("video manual seeked", (event) => {
         // on cherche la piste courant uniquement pour une vidéo multipiste
         if ($scope.currentDisc.tracks.length > 1) {
-          const track = $scope.currentDisc.getTrackAt($scope.player.getCurrentTime());
+          const track = $scope.currentFile.getTrackAt($scope.player.getCurrentTime());
           if (track) {
             console.log(`On a sauté manuellement vers la piste #${track.number} ${track.title}`);
             $scope.currentTrack = track;
@@ -1051,6 +1051,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             disc.index = existingDisc.index;
             $scope.discs[existingDiscIndex] = disc;
             return;
+        } else {
+            disc.index = $scope.discs.length;
         }
 
         $scope.discs.push(disc);
