@@ -73,6 +73,13 @@ class Disc
   toJSON: ->
     @cuesheet
 
+  # Par défaut : 1ère si avant disque, dernière si après
+  getTrackAt: (time) ->
+    for track in @tracks
+      if (time <= track.endSeconds)
+        return track
+    return @tracks[@tracks.length - 1]
+
 class Disc.File
   constructor: (@disc, @index, @cuesheetFile) ->
     if !@cuesheetFile
