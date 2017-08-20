@@ -664,13 +664,13 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
         this.showOnlyPlaylist(this.currentDiscIndex);
 
-        let start = multiTrack ? track.startSeconds : undefined;
-        const end = multiTrack ? track.endSeconds : undefined;
+        let start = multiTrack ? Math.floor(track.startSeconds) : undefined; // YouTube n'accèpte que des entiers
+        const end = multiTrack ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
         if (start || end) console.log("Track from "+start+" to "+end);
 
         // Youtube ne redémarre pas à 0 si on lui indique exactement 0
         if (multiTrack && !start) {
-            start = 0.001;
+            start = 0.001; // FIXME : OK  alors que YouTube n'accèpte que des entiers ?
         }
 
         if (!$scope.player) {
