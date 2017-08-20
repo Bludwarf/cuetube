@@ -151,6 +151,7 @@ Disc.File = (function() {
     cuesheetTrack = this.disc.cuesheet.getCurrentTrack();
     track = new Disc.Track(this, this.tracks.length, cuesheetTrack);
     this.tracks.push(track);
+    this._tracksInTime = void 0;
     return track;
   };
 
@@ -165,6 +166,18 @@ Disc.File = (function() {
     }
     return this.tracks[this.tracks.length - 1];
   };
+
+  File.property('tracksInTime', {
+    get: function() {
+      if (!this._tracksInTime) {
+        this._tracksInTime = [].concat(this.tracks);
+        this._tracksInTime.sort(function(t1, t2) {
+          return t1.startSeconds - t2.startSeconds;
+        });
+      }
+      return this._tracksInTime;
+    }
+  });
 
   return File;
 
@@ -190,6 +203,20 @@ Disc.Track = (function() {
 
   Track.propertiesOf('cuesheetTrack', ['number', 'title', 'indexes', 'performer']);
 
+  Track.property('indexInTime', {
+    get: function() {
+      var i, j, len, ref, track;
+      ref = this.file.tracksInTime;
+      for (i = j = 0, len = ref.length; j < len; i = ++j) {
+        track = ref[i];
+        if (track === this) {
+          return i;
+        }
+      }
+      return -1;
+    }
+  });
+
   Track.property('disc', {
     get: function() {
       return this.file.disc;
@@ -206,8 +233,11 @@ Disc.Track = (function() {
 
   Track.property('endSeconds', {
     get: function() {
-      if (this.index + 1 < this.file.tracks.length) {
-        return this.file.tracks[this.index + 1].startSeconds;
+      var indexInTime, tracksInTime;
+      tracksInTime = this.file.tracksInTime;
+      indexInTime = this.indexInTime;
+      if (indexInTime + 1 < tracksInTime.length) {
+        return tracksInTime[indexInTime + 1].startSeconds;
       } else if (this.file.duration) {
         return this.file.duration;
       } else {
