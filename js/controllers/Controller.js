@@ -1199,6 +1199,52 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         return JSON.parse(string);
     };
 
+  /**
+   *
+   * @param time
+   * @return {string}
+   * @author https://stackoverflow.com/a/6313008
+   */
+  $scope.formatHHMMSS = function(time) {
+    let sec_num = parseInt(time, 10); // don't forget the second param
+    let hours   = Math.floor(sec_num / 3600);
+    let minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    let seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return hours+':'+minutes+':'+seconds;
+  };
+
+  /**
+   *
+   * @param time
+   * @return {string}
+   */
+    $scope.formatMMSS = function(time) {
+        let sec_num = parseInt(time, 10); // don't forget the second param
+        let minutes = Math.floor(sec_num / 60);
+        let seconds = sec_num % 60;
+
+        if (minutes < 10) {minutes = "0"+minutes;}
+        if (seconds < 10) {seconds = "0"+seconds;}
+        return minutes+':'+seconds;
+    };
+
+  /**
+   * L'heure actuelle
+   * @param offset décalage en secondes
+   * @return {string} exemple "12:48"
+   */
+  $scope.getTime = function(offset) {
+        const d = new Date();
+        if (offset) {
+            d.setTime(d.getTime() + offset * 1000);
+        }
+        return d.toTimeString().substring(0, 5);
+    };
+
     // INIT
 
     // Paramètres

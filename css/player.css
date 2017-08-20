@@ -39,7 +39,7 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    top: 388px; /* = #player-wrap.height */
+    top: 357px; /* = #player-wrap.height - qq px (youTube ajoute une marge en bas) */
 }
 
 .disc {
@@ -180,4 +180,32 @@ body {
 .buttons {
     margin-bottom: 1em;
     text-align: right;
+}
+
+.track-controls {
+    position: relative;
+}
+
+.track-controls .text {
+    position: absolute;
+    top: 7px;
+    bottom: 0;
+}
+
+.svg-checkbox {
+    cursor: pointer;
+    fill: #444;
+}
+
+.svg-checkbox:hover {
+    cursor: pointer;
+    fill: #555;
+}
+
+.svg-checkbox.active {
+    fill: #FFF;
+}
+
+.svg-checkbox.active:hover {
+    fill: #DDD;
 }
