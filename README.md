@@ -78,6 +78,10 @@ Stockée dans `/client/youtube/*.json`.
 #01. Piste 1 (commentaire) - 00:00
 ```
 
+```
+01. "Piste 1" - 00:00
+```
+
 # DEV
 
 Version NodeJS : [4.6.1](https://nodejs.org/en/blog/release/v4.6.1/)

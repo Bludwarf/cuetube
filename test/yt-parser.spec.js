@@ -217,4 +217,20 @@ describe("Parser réponses YouTube", function() {
         expect(results.track.indexes[0].time.sec).toBe(11);
     });
 
+  // Guardians of the Galaxy : https://www.youtube.com/watch?v=47ScWQ_EA2M
+  it("should parse Star Wars VII tracklist", () => {
+      let results = ytparser.parseTrack({
+        line: "13. \"Kylo Ren Arrives at the Battle\"- 37:56 ",
+        trackNumber: 13,
+        artistInTitle: false
+      });
+        expect(results.artistInTitle).toBe(false);
+        expect(results.artistBeforeTitle).toBeUndefined();
+        expect(results.track.title).toBe("Kylo Ren Arrives at the Battle");
+        expect(results.track.performer).toBeUndefined();
+        expect(results.track.indexes[0].number).toBe(1);
+        expect(results.track.indexes[0].time.min).toBe(37);
+        expect(results.track.indexes[0].time.sec).toBe(56);
+  });
+
 });
