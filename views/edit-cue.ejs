@@ -61,6 +61,7 @@
     <script type="text/javascript" src="/js/cuesheet.js"></script>
     <script type="text/javascript" src="/js/utils.js"></script>
     <script type="text/javascript" src="/js/disc.js"></script>
+    <script type="text/javascript" src="/js/yt-helper.js"></script>
     <script type="text/javascript" src="/js/controllers/EditCue.js"></script>
 </head>
 
@@ -78,16 +79,28 @@
         <fieldset ng-repeat="file in disc.files" class="file">
             <legend><a href="{{file.name}}" target="_blank">videoId</a> <input type="text" name="fileName" value="{{file.videoId}}" size="300"/></legend>
 
-            <div class="textarea-wrapper">
-                <textarea placeholder="Import d'une tracklist YouTube"></textarea>
-            </div>
+            <ul class="nav nav-tabs" ng-show="disc.files.length == 1">
+                <li class="active"><a data-toggle="tab" href="#tracks">Pistes</a></li>
+                <li><a data-toggle="tab" href="#tracklist">Tracklist</a></li>
+            </ul>
 
-            <fieldset ng-repeat="track in file.tracks"class="track">
-                <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
-                <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
-                <input type="text" name="trackTitle" class="title" placeholder="title" ng-model="track.title" />
-                <input type="text" name="trackPerformer" class="performer" placeholder="performer" ng-model="track.performer" empty-to-null />
-            </fieldset>
+            <div class="tab-content">
+                <div id="tracks" class="tab-pane in active">
+                    <fieldset ng-repeat="track in file.tracks" class="track">
+                        <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
+                        <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
+                        <input type="text" name="trackTitle" class="title" placeholder="title" ng-model="track.title" />
+                        <input type="text" name="trackPerformer" class="performer" placeholder="performer" ng-model="track.performer" empty-to-null />
+                    </fieldset>
+                </div>
+
+                <div id="tracklist" class="tab-pane" ng-show="disc.files.length == 1">
+                    <button style="margin-bottom: 1em;" ng-click="prompt(null, getTracklist(file.tracks))">Copier</button>
+                    <div class="textarea-wrapper">
+                        <textarea placeholder="Import d'une tracklist YouTube" readonly>{{getTracklist(file.tracks)}}</textarea>
+                    </div>
+                </div>
+            </div>
 
         </fieldset>
 
