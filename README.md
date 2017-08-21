@@ -90,7 +90,13 @@ Version NodeJS : [4.6.1](https://nodejs.org/en/blog/release/v4.6.1/)
 
 Liste des remarques `REM` utilisées :
 
-  * `REM SRC` : URL importé dans CueTube 
+  * `REM SRC` : URL importé dans CueTube
+  
+Liste des remarques `REM` générées par le plugin cuesheet de MusicBrainz Picard
+  
+  * `REM MUSICBRAINZ_ALBUM_ID`
+  * `REM MUSICBRAINZ_ALBUM_ARTIST_ID`
+  * `REM MUSICBRAINZ_TRACK_ID`
 
 ## Browserify
 

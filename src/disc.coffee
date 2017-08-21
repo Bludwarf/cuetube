@@ -27,7 +27,7 @@ class Disc
     @discId = undefined # Disc-ID dans le format cuesheet
 
   # Propriétés directement liées à la cue
-  @propertiesOf 'cuesheet', ['title', 'performer', 'rems']
+  @propertiesOf 'cuesheet', ['title', 'performer', 'rem']
 
   @property 'id',
     get: -> @videoId
@@ -73,13 +73,27 @@ class Disc
   toJSON: ->
     @cuesheet
 
-  addRem: (key, value) ->
-    if !@rems then @rems = []
-    @rems.push key+" \"" + value + "\""
+  setRem: (key, value) ->
+    if !@rem then @rem = []
+    # Suppr ancien REM pour cette key
+    @rem = @rem.filter (aRem) ->
+      aRem.indexOf(key+" ") != 0
+    @rem.push key+" \"" + value + "\""
+
+  getRem: (key) ->
+     if !@rem then return undefined
+     theRem = @rem.find (aRem) ->
+       aRem.indexOf(key+" ") == 0
+     if (!theRem) then return undefined
+     value = theRem.slice key.length + 1
+     if value.startsWith("\"") and value.endsWith("\"") then value = value.slice 1, -1
+     return value
     
   @property 'src',
+    get: () ->
+      @getRem "SRC" # TODO si NULL et vidéo multipiste alors calculer l'URL YouTube à partir de l'id du disque
     set: (src) ->
-      @addRem "SRC", src
+      @setRem "SRC", src
 
 class Disc.File
   constructor: (@disc, @index, @cuesheetFile) ->

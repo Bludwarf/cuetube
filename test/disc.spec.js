@@ -81,6 +81,24 @@ describe("Disc mono vidéo", function() {
       expect(track1.number).toBe(1);
       expect(disc.disabledTracks.map(function(track) {return track.number})).toEqual([1]);
   });
+
+  it("contains rem", function() {
+    let disc = new Disc();
+    disc.setRem("DATE", "BAD");
+    disc.setRem("DATE", "1970-01-01");
+    expect(disc.rem).toEqual(["DATE \"1970-01-01\""]);
+
+    disc.rems = ["DATE \"1970-01-01\""];
+    expect(disc.getRem("DATE")).toBe("1970-01-01");
+  });
+
+  it("contains rem", function() {
+    let disc = new Disc();
+    expect(disc.src).toBeUndefined();
+
+    disc.src = "value";
+    expect(disc.src).toBe("value");
+  });
 });
 
 describe("Disc multi vidéo", function() {
