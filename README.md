@@ -86,6 +86,12 @@ Stockée dans `/client/youtube/*.json`.
 
 Version NodeJS : [4.6.1](https://nodejs.org/en/blog/release/v4.6.1/)
 
+## cuesheet
+
+Liste des remarques `REM` utilisées :
+
+  * `REM SRC` : URL importé dans CueTube 
+
 ## Browserify
 
 Lancer la commande :

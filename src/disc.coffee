@@ -27,7 +27,7 @@ class Disc
     @discId = undefined # Disc-ID dans le format cuesheet
 
   # Propriétés directement liées à la cue
-  @propertiesOf 'cuesheet', ['title', 'performer']
+  @propertiesOf 'cuesheet', ['title', 'performer', 'rems']
 
   @property 'id',
     get: -> @videoId
@@ -72,6 +72,14 @@ class Disc
   # TODO : Pour éviter le problème : TypeError: Converting circular structure to JSON
   toJSON: ->
     @cuesheet
+
+  addRem: (key, value) ->
+    if !@rems then @rems = []
+    @rems.push key+" \"" + value + "\""
+    
+  @property 'src',
+    set: (src) ->
+      @addRem "SRC", src
 
 class Disc.File
   constructor: (@disc, @index, @cuesheetFile) ->
