@@ -751,8 +751,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         $scope.loadingTrackIndex = $scope.currentTrackIndex;
 
         // Notif
-        notify((track.title || "Track "+track.number) + " - " + disc.title, {
-            tag: 'loadCurrentTrack'
+        notify((track.title || "Track "+track.number), {
+            tag: 'loadCurrentTrack',
+            body: disc.title
         });
 
         // Historique
@@ -911,7 +912,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         const disc = this.discs[this.currentDiscIndex];
         const file = disc.files[this.currentFileIndex];
         const track = file.tracks[this.currentTrackIndex];
-        document.title = disc.title + " - m3u-YouTube"; // comme Youtube
+        document.title = track.title + " - CueTube"; // Youtube affiche : disc.title + " - m3u-YouTube"
 
         // Slider
         //const form = document.getElementById("player-controls-form");
@@ -1079,7 +1080,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         }
     };
 
-    $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl, cb) {
+    $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl, url, cb) {
         const playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
         if (!playlistId) return;
 
@@ -1090,13 +1091,14 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             }
 
             const disc = $scope.newDiscFromPlaylistItems(playlistItems);
+            disc.src = url;
             $http.post("/"+disc.id+".cue.json", disc).then(res => {
                 if (res.status != 200) return alert("POST createNewDiscFromPlaylist $http != 200");
                 $scope.createDisc(disc);
-                cb(null, disc);
+                if (cb) cb(null, disc);
             }, resKO => {
                 alert('Erreur POST createNewDiscFromPlaylist : '+resKO.data);
-                cb(resKO.data);
+                if (cb) cb(resKO.data); // FIXME : throw err ?
             });
         });
     };
@@ -1107,7 +1109,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         }
     });
 
-    $scope.createNewDiscFromVideo = function(videoIdOrUrl, cb) {
+    $scope.createNewDiscFromVideo = function(videoIdOrUrl, url, cb) {
         const videoId = getIdOrUrl(videoIdOrUrl, 'Id ou URL de la vidéo YouTube (multipiste)', 'v');
         if (!videoId) return;
         cb = cb || function(err, disc) {
@@ -1119,6 +1121,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             const videoUrl = $scope.getVideoUrlFromId(videoId);
             try {
                 let disc = ytparser.newDiscFromVideoSnippet(snippet, videoUrl);
+                disc.src = url;
                 enrichDisc(disc, $scope.discs.length);
 
                 console.log("Création du disc...", disc);
@@ -1127,11 +1130,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 $http.post("/" + videoId + ".cue.json", disc.cuesheet).then(res => {
                     if (res.status != 200) return alert("POST createNewDiscFromVideo $http != 200");
                     $scope.createDisc(disc);
-                    cb(null, disc);
-
+                    if (cb) cb(null, disc);
                 }, resKO => {
                     alert('Erreur POST createNewDiscFromVideo : ' + resKO.data);
-                    return cb(resKO.data);
+                    if (cb) cb(resKO.data); // FIXME  throw err ?
                 });
             } catch (e) {
                 if (e.name === "youtube.notracklist") {
@@ -1158,12 +1160,13 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.createNewDiscFromVideoOrPlaylist = function(url, cb) {
 
         url = url || prompt("URL de la vidéo/playlist YouTube");
-        if (!url) return
+        if (!url) return;
         const playlistId = getParameterByName('list', url);
+
         if (playlistId) {
-            return $scope.createNewDiscFromPlaylist(playlistId, cb);
+            return $scope.createNewDiscFromPlaylist(playlistId, url, cb);
         } else {
-            return $scope.createNewDiscFromVideo(url, cb);
+            return $scope.createNewDiscFromVideo(url, url, cb);
         }
     };
 

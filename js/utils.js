@@ -56,11 +56,11 @@ function notify(message, options) {
      * tag : Un identifiant pour une notification donnée qui permet de la récupérer, la remplacer ou la supprimer si besoin.
      * icon : l'URL d'une image à utiliser comme icône par la notification
      */
-    options = {
-        lang: options.lang || 'fr-FR',
-        tag: options.tag || 'm3u-player',
-        icon: options.icon || "https://img.youtube.com/vi/"+getCtrl().getVideoId()+"/default.jpg" //'/img/M3U.png' // http://stackoverflow.com/a/2068371/1655155
-    };
+    options = _.extend({
+      lang: 'fr-FR',
+      tag: 'm3u-player',
+      icon: "https://img.youtube.com/vi/"+getCtrl().getVideoId()+"/default.jpg" //'/img/M3U.png' // http://stackoverflow.com/a/2068371/1655155
+    }, options);
 
     // Voyons si le navigateur supporte les notifications
     if (!("Notification" in window)) {

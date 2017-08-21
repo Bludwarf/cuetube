@@ -46,7 +46,7 @@ Disc = (function() {
     this.discId = void 0;
   }
 
-  Disc.propertiesOf('cuesheet', ['title', 'performer']);
+  Disc.propertiesOf('cuesheet', ['title', 'performer', 'rems']);
 
   Disc.property('id', {
     get: function() {
@@ -112,6 +112,19 @@ Disc = (function() {
   Disc.prototype.toJSON = function() {
     return this.cuesheet;
   };
+
+  Disc.prototype.addRem = function(key, value) {
+    if (!this.rems) {
+      this.rems = [];
+    }
+    return this.rems.push(key + " \"" + value + "\"");
+  };
+
+  Disc.property('src', {
+    set: function(src) {
+      return this.addRem("SRC", src);
+    }
+  });
 
   return Disc;
 
