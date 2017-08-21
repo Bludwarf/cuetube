@@ -46,7 +46,7 @@ Disc = (function() {
     this.discId = void 0;
   }
 
-  Disc.propertiesOf('cuesheet', ['title', 'performer', 'rems']);
+  Disc.propertiesOf('cuesheet', ['title', 'performer', 'rem']);
 
   Disc.property('id', {
     get: function() {
@@ -113,16 +113,40 @@ Disc = (function() {
     return this.cuesheet;
   };
 
-  Disc.prototype.addRem = function(key, value) {
-    if (!this.rems) {
-      this.rems = [];
+  Disc.prototype.setRem = function(key, value) {
+    if (!this.rem) {
+      this.rem = [];
     }
-    return this.rems.push(key + " \"" + value + "\"");
+    this.rem = this.rem.filter(function(aRem) {
+      return aRem.indexOf(key + " ") !== 0;
+    });
+    return this.rem.push(key + " \"" + value + "\"");
+  };
+
+  Disc.prototype.getRem = function(key) {
+    var theRem, value;
+    if (!this.rem) {
+      return void 0;
+    }
+    theRem = this.rem.find(function(aRem) {
+      return aRem.indexOf(key + " ") === 0;
+    });
+    if (!theRem) {
+      return void 0;
+    }
+    value = theRem.slice(key.length + 1);
+    if (value.startsWith("\"") && value.endsWith("\"")) {
+      value = value.slice(1, -1);
+    }
+    return value;
   };
 
   Disc.property('src', {
+    get: function() {
+      return this.getRem("SRC");
+    },
     set: function(src) {
-      return this.addRem("SRC", src);
+      return this.setRem("SRC", src);
     }
   });
 

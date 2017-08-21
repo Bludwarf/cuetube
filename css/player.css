@@ -194,12 +194,12 @@ body {
 
 .svg-checkbox {
     cursor: pointer;
-    fill: #444;
+    fill: #666;
 }
 
 .svg-checkbox:hover {
     cursor: pointer;
-    fill: #555;
+    fill: #777;
 }
 
 .svg-checkbox.active {
@@ -208,4 +208,16 @@ body {
 
 .svg-checkbox.active:hover {
     fill: #DDD;
+}
+
+svg.monochrome path {
+    fill: #666;
+}
+
+svg.monochrome:hover path {
+    fill: #777;
+}
+
+svg.youtube-color-hover:hover path {
+    fill: #e62117;
 }
