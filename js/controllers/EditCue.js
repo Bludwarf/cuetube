@@ -33,6 +33,14 @@ function EditCue($scope, $http) {
             },*/
             data: $scope.disc.cuesheet
         }).success(function () {});
+    };
+
+    $scope.getTracklist = function(tracks) {
+        return yth.getTracklist(tracks);
+    };
+
+    $scope.prompt = function(text, placeholder) {
+        return prompt(text, placeholder);
     }
 
 } // Controller
