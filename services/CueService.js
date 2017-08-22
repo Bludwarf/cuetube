@@ -168,7 +168,14 @@ module.exports = {
             cb(e);
         }
     },
-    
+
+  /**
+   *
+   * @param cueFile
+   * @param cue {cuesheet.CueSheet}
+   * @param cb
+   * @return {*}
+   */
     writeCueFile: function(cueFile, cue, cb) {
         if (!cue.title) return cb(new Error("Impossible de créer une cuesheet sans title"));
         console.info("CueService#writeCueFile : création de la cuesheet "+cue.title);

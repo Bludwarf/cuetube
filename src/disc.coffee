@@ -27,7 +27,7 @@ class Disc
     @discId = undefined # Disc-ID dans le format cuesheet
 
   # Propriétés directement liées à la cue
-  @propertiesOf 'cuesheet', ['title', 'performer', 'rem']
+  @propertiesOf 'cuesheet', ['title', 'performer', 'rems']
 
   @property 'id',
     get: -> @videoId
@@ -74,18 +74,18 @@ class Disc
     @cuesheet
 
   setRem: (key, value) ->
-    if !@rem then @rem = []
+    if !@rems then @rems = []
     # Suppr ancien REM pour cette key
-    @rem = @rem.filter (aRem) ->
-      aRem.indexOf(key+" ") != 0
-    @rem.push key+" \"" + value + "\""
+    @rems = @rems.filter (rem) ->
+      rem.indexOf(key+" ") != 0
+    @rems.push key+" \"" + value + "\""
 
   getRem: (key) ->
-     if !@rem then return undefined
-     theRem = @rem.find (aRem) ->
+     if !@rems then return undefined
+     rem = @rems.find (aRem) ->
        aRem.indexOf(key+" ") == 0
-     if (!theRem) then return undefined
-     value = theRem.slice key.length + 1
+     if (!rem) then return undefined
+     value = rem.slice key.length + 1
      if value.startsWith("\"") and value.endsWith("\"") then value = value.slice 1, -1
      return value
     

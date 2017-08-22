@@ -86,7 +86,7 @@ describe("Disc mono vidéo", function() {
     let disc = new Disc();
     disc.setRem("DATE", "BAD");
     disc.setRem("DATE", "1970-01-01");
-    expect(disc.rem).toEqual(["DATE \"1970-01-01\""]);
+    expect(disc.rems).toEqual(["DATE \"1970-01-01\""]);
 
     disc.rems = ["DATE \"1970-01-01\""];
     expect(disc.getRem("DATE")).toBe("1970-01-01");
