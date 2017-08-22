@@ -30,7 +30,8 @@ class Disc
   @propertiesOf 'cuesheet', ['title', 'performer', 'rems']
 
   @property 'id',
-    get: -> @videoId
+    get: -> if @_id then @_id else @videoId
+    set: (id) -> @_id = id
 
   @property 'videoId',
     get: ->

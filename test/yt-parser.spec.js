@@ -6,6 +6,7 @@ describe("Parser réponses YouTube", function() {
     it("should parse Mario Playlist", function () {
         let json = readJSON('samples/youtube/Mario.PlaylistItems.snippet.json');
         let disc = ytparser.newDiscFromPlaylistItems(json);
+        expect(disc.id).toBe("PL001A1024CB49F661");
         expect(disc.files.length).toBe(30);
 
         let tracks = disc.tracks;
