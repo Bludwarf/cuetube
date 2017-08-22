@@ -46,7 +46,7 @@ Disc = (function() {
     this.discId = void 0;
   }
 
-  Disc.propertiesOf('cuesheet', ['title', 'performer', 'rem']);
+  Disc.propertiesOf('cuesheet', ['title', 'performer', 'rems']);
 
   Disc.property('id', {
     get: function() {
@@ -114,27 +114,27 @@ Disc = (function() {
   };
 
   Disc.prototype.setRem = function(key, value) {
-    if (!this.rem) {
-      this.rem = [];
+    if (!this.rems) {
+      this.rems = [];
     }
-    this.rem = this.rem.filter(function(aRem) {
-      return aRem.indexOf(key + " ") !== 0;
+    this.rems = this.rems.filter(function(rem) {
+      return rem.indexOf(key + " ") !== 0;
     });
-    return this.rem.push(key + " \"" + value + "\"");
+    return this.rems.push(key + " \"" + value + "\"");
   };
 
   Disc.prototype.getRem = function(key) {
-    var theRem, value;
-    if (!this.rem) {
+    var rem, value;
+    if (!this.rems) {
       return void 0;
     }
-    theRem = this.rem.find(function(aRem) {
+    rem = this.rems.find(function(aRem) {
       return aRem.indexOf(key + " ") === 0;
     });
-    if (!theRem) {
+    if (!rem) {
       return void 0;
     }
-    value = theRem.slice(key.length + 1);
+    value = rem.slice(key.length + 1);
     if (value.startsWith("\"") && value.endsWith("\"")) {
       value = value.slice(1, -1);
     }
