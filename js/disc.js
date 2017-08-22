@@ -50,7 +50,14 @@ Disc = (function() {
 
   Disc.property('id', {
     get: function() {
-      return this.videoId;
+      if (this._id) {
+        return this._id;
+      } else {
+        return this.videoId;
+      }
+    },
+    set: function(id) {
+      return this._id = id;
     }
   });
 

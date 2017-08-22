@@ -10,9 +10,10 @@ const TIME_ZERO = parseTime("0:00");
 
 ytparser.newDiscFromPlaylistItems = function(playlistItems, title) {
     playlistItems = playlistItems.items || playlistItems;
+    if (!playlistItems || !playlistItems.length) throw new Error("Aucun élément dans la playlist");
 
-    let disc = new cuesheet.CueSheet();
-    _.extend(disc, {
+    let cue = new cuesheet.CueSheet();
+    _.extend(cue, {
         title: title,//prompt("Nom du disque")
         performer: playlistItems[0].snippet.channelTitle
         /*rems: [
@@ -22,13 +23,13 @@ ytparser.newDiscFromPlaylistItems = function(playlistItems, title) {
 
     for (let i = 0; i < playlistItems.length; ++i) {
         let item = playlistItems[i];
-        let file = disc.newFile().getCurrentFile();
+        let file = cue.newFile().getCurrentFile();
         _.extend(file, {
             name: ytparser.getVideoUrlFromId(item.snippet.resourceId.videoId),
             type: "MP3"
         });
 
-        let track = disc.newTrack().getCurrentTrack();
+        let track = cue.newTrack().getCurrentTrack();
         _.extend(track, {
             number: i + 1,
             title: item.snippet.title,
@@ -46,7 +47,9 @@ ytparser.newDiscFromPlaylistItems = function(playlistItems, title) {
         });
     }
 
-    return new Disc(disc);
+  const disc = new Disc(cue);
+  disc.id = playlistItems[0].snippet.playlistId;
+  return disc;
 };
 
 ytparser.getVideoUrlFromId = function(id) {
