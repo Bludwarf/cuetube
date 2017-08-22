@@ -6,6 +6,7 @@
   "repository": "",
   "author": "Mathieu Lavigne <bludwarf@gmail.com>",
   "dependencies": {
+    "@types/underscore": "^1.8.2",
     "async": "~0.2.8",
     "body-parser": "^1.15.2",
     "bower": "^1.8.0",
