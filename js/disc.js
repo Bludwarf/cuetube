@@ -101,7 +101,11 @@ class Disc {
         return value;
     }
     get src() {
-        return this.getRem("SRC"); // TODO si NULL et vidéo multipiste alors calculer l'URL YouTube à partir de l'id du disque
+        const src = this.getRem("SRC");
+        if (src || this.files.length > 1)
+            return src;
+        // On peut calculer la source pour les vidéos multipistes
+        return this.files[0].name;
     }
     set src(src) {
         this.setRem("SRC", src);
