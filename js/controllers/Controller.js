@@ -308,6 +308,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 _.extend(cue, res.data);
 
                 const disc = new Disc(cue);
+                disc.id = discId;
                 disc.index = discIndex;
                 discs[discIndex] = disc;
                 enrichDisc(disc, discIndex);
