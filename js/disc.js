@@ -104,6 +104,8 @@ class Disc {
         const src = this.getRem("SRC");
         if (src || this.files.length > 1)
             return src;
+        if (!this.files || this.files.length === 0)
+            return undefined;
         // On peut calculer la source pour les vidéos multipistes
         return this.files[0].name;
     }
@@ -261,6 +263,10 @@ class Disc {
                     return nextFile.tracks[0];
             }
             return null;
+        }
+        remove() {
+            const i = this.file.tracks.indexOf(this);
+            this.file.tracks.splice(i, 1);
         }
     }
     Disc.Track = Track;

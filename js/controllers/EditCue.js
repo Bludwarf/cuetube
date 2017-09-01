@@ -8,10 +8,10 @@
 function EditCue($scope, $http) {
 
     $scope.init = function(id, cueData) {
-        var cue = new cuesheet.CueSheet();
+        const cue = new cuesheet.CueSheet();
         _.extend(cue, cueData);
 
-        var disc = new Disc(cue);
+        const disc = new Disc(cue);
         $scope.disc = disc;
         window.disc = disc;
     };
@@ -41,6 +41,6 @@ function EditCue($scope, $http) {
 
     $scope.prompt = function(text, placeholder) {
         return prompt(text, placeholder);
-    }
+    };
 
 } // Controller
