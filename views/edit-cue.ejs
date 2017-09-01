@@ -22,7 +22,7 @@
         }
 
         form {
-            width: 54em;
+            width: 55em;
             margin: auto auto;
         }
 
@@ -54,6 +54,10 @@
         textarea {
             width:100%;
             resize: vertical;
+        }
+
+        .track button {
+            margin-bottom: 10px;
         }
 
     </style>
@@ -91,6 +95,7 @@
                         <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
                         <input type="text" name="trackTitle" class="title" placeholder="title" ng-model="track.title" />
                         <input type="text" name="trackPerformer" class="performer" placeholder="performer" ng-model="track.performer" empty-to-null />
+                        <button ng-click="track.remove()"><span class="icon icon-remove" /></button>
                     </fieldset>
                 </div>
 

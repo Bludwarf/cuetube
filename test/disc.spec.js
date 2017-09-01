@@ -82,7 +82,7 @@ describe("Disc mono vidéo", function() {
       expect(disc.disabledTracks.map(function(track) {return track.number})).toEqual([1]);
   });
 
-  it("contains rem", function() {
+  it("contains rem 1", function() {
     let disc = new Disc();
     disc.setRem("DATE", "BAD");
     disc.setRem("DATE", "1970-01-01");
@@ -92,7 +92,7 @@ describe("Disc mono vidéo", function() {
     expect(disc.getRem("DATE")).toBe("1970-01-01");
   });
 
-  it("contains rem", function() {
+  it("contains rem 2", function() {
     let disc = new Disc();
     expect(disc.src).toBeUndefined();
 
@@ -321,6 +321,29 @@ describe("Disc.Track", function() {
     expect(nextInTime.indexInTime).toBe(13);
 
     expect(track.endSeconds).toEqual(nextInTime.startSeconds);
+  });
+
+  // Disque dont les pistes ne sont pas ordonnés par startSeconds
+  it("remove track", () => {
+    let disc = new Disc();
+    let file1 = disc.newFile();
+    let track1 = file1.newTrack();
+    let track2 = file1.newTrack();
+
+    let file2 = disc.newFile();
+    let track3 = file2.newTrack();
+    let track4 = file2.newTrack();
+    let track5 = file2.newTrack();
+
+    expect(disc.tracks.length).toBe(5);
+    expect(disc.tracks[3]).toBe(track4);
+    expect(disc.tracks[4]).toBe(track5);
+
+    track4.remove();
+
+    expect(disc.tracks.length).toBe(4);
+    expect(disc.tracks[2]).toBe(track3);
+    expect(disc.tracks[3]).toBe(track5);
   });
   
 });
