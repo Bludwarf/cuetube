@@ -12,186 +12,101 @@ function loadDisc(jsonFile) {
   return new Disc(_.extend(new cuesheet.CueSheet(), json));
 }
 
-describe("Disc mono vidéo", function() {
+describe("Disc.Track", function() {
   
-  it("has properties of cuesheet.CueSheet", function() {
-    expect(minecraft.title).toBe("Minecraft FULL SOUNDTRACK (2016)");
-    expect(minecraft.performer).toBe("Luigi");
+  var file = minecraftFile;
+  var track = minecraftTrack;
+  
+  it("has properties of cuesheet.Track", function() {
+    expect(track.number).toBe(1);
+    expect(track.title).toBe("Key (Nuance 1)");
+    
+    // par défaut on a toujours un index
+    expect(track.indexes).toEqual([{
+    	"number": 1,
+    	"time": {
+    		"min": 0,
+    		"sec": 0,
+    		"frame": 0
+    	}
+    }]);
   });
   
-  it("has cuesheet", function() {
-    expect(minecraft.cuesheet).not.toBeNull();
+  it("has index", function() {
+    expect(track.index).toBe(0);
   });
   
-  it("has files", function() {
-    expect(minecraft.files.length).toBe(1);
+  it("has file", function() {
+    expect(track.file).toEqual(file);
   });
   
-  it("has videoId", function() {
-    expect(minecraft.videoId).toBe("Dg0IjOzopYU");
+  it("has disc", function() {
+    expect(track.disc).toEqual(minecraft);
   });
   
-  it("has tracks", function() {
-    expect(minecraft.tracks.length).toBe(28);
+  it("has startSeconds", function() {
+    expect(track.startSeconds).toEqual(0);
+    expect(file.tracks[1].startSeconds).toEqual(64); // 01:04
+    expect(file.tracks[27].startSeconds).toEqual(111*60+48); // 1:51:48 -> 6708 s.
   });
   
-  it("is enabled", function() {
-    expect(minecraft.enabled).toBe(true);
+  it("has next", function() {
+    expect(file.tracks[0].next).toEqual(file.tracks[1]);
+    //expect(file.tracks[26].next).toEqual(file.tracks[1]);
   });
   
-  it("is playable", function() {
-    var disc = new Disc();
-    expect(disc.playable).toBe(false);
-    
-    disc.files = [new Disc.File(disc)];
-    disc.files[0].tracks = [new Disc.Track(disc.files[0])];
-    var track = disc.files[0].tracks[0];
-    track.enabled = false;
-    expect(disc.playable).toBe(false);
-    
-    track.enabled = true;
-    expect(disc.playable).toBe(true);
-    
-    disc.files[0].tracks.push(new Disc.Track(disc.files[0]));
-    var track2 = disc.files[0].tracks[1];
-    
-    track.enabled = false;
-    track2.enabled = false;
-    expect(disc.playable).toBe(false);
-    
-    track.enabled = false;
-    track2.enabled = true;
-    expect(disc.playable).toBe(true);
-    
-    track.enabled = true;
-    track2.enabled = false;
-    expect(disc.playable).toBe(true);
+  it("has endSeconds", function() {
+    expect(track.endSeconds).toEqual(64);
+    expect(file.tracks[27].endSeconds).toEqual(7613.001);
   });
 
-  it("has disabled tracks", function() {
-      var disc = new Disc();
+  // Disque dont les pistes ne sont pas ordonnés par startSeconds
+  it("has endSeconds even on tracks non ordered", function() {
+    let disc = loadDisc('samples/LeGrandBleu-cd2-unordered.json');
+    let track = disc.tracks[6];
+    let nextInTime = disc.tracks[2]; // next = Watergames
 
-      let file = disc.newFile();
-      let track1 = file.newTrack();
-      let track2 = file.newTrack();
+    // verif de la propriété indexInTime
+    expect(track.indexInTime).toBe(12);
+    expect(nextInTime.indexInTime).toBe(13);
 
-      expect(disc.disabledTracks.length).toBe(0);
-
-      track1.enabled = false;
-      expect(track1.number).toBe(1);
-      expect(disc.disabledTracks.map(function(track) {return track.number})).toEqual([1]);
+    expect(track.endSeconds).toEqual(nextInTime.startSeconds);
   });
 
-  it("contains rem 1", function() {
+  it("remove", () => {
     let disc = new Disc();
-    disc.setRem("DATE", "BAD");
-    disc.setRem("DATE", "1970-01-01");
-    expect(disc.rems).toEqual(["DATE \"1970-01-01\""]);
+    let file1 = disc.newFile();
+    let track1 = file1.newTrack();
+    let track2 = file1.newTrack();
 
-    disc.rems = ["DATE \"1970-01-01\""];
-    expect(disc.getRem("DATE")).toBe("1970-01-01");
-  });
+    let file2 = disc.newFile();
+    let track3 = file2.newTrack();
+    let track4 = file2.newTrack();
+    let track5 = file2.newTrack();
 
-  it("contains rem 2", function() {
-    let disc = new Disc();
-    expect(disc.src).toBeUndefined();
+    expect(disc.tracks.length).toBe(5);
+    expect(disc.tracks[3]).toBe(track4);
+    expect(disc.tracks[3].number).toBe(4);
+    expect(disc.tracks[4]).toBe(track5);
+    expect(disc.tracks[4].number).toBe(5);
 
-    disc.src = "value";
-    expect(disc.src).toBe("value");
-  });
-});
+    track4.remove();
 
-describe("Disc multi vidéo", function() {
-  
-  it("has properties of cuesheet.CueSheet", function() {
-    expect(age2.title).toBe("Age of Empires 2: Age of Kings");
-    expect(age2.performer).toBe("Gamegroove");
+    expect(disc.tracks.length).toBe(4);
+    expect(disc.tracks[2]).toBe(track3);
+    expect(disc.tracks[2].number).toBe(3);
+    expect(disc.tracks[3]).toBe(track5);
+    expect(disc.tracks[3].number).toBe(4);
+
+    // Suppression jusqu'à supprimer file2
+
+    track3.remove();
+    track5.remove();
+
+    expect(disc.tracks.length).toBe(2);
+    expect(disc.files.length).toBe(1);
+    expect(disc.files[0]).toBe(file1);
+
   });
   
-  it("has cuesheet", function() {
-    expect(age2.cuesheet).not.toBeNull();
-  });
-  
-  it("has files", function() {
-    expect(age2.files.length).toBe(15);
-  });
-  
-  it("has videoId", function() {
-    expect(age2.videoId).toBe("RRtlWfi6jiM");
-  });
-  
-  it("has tracks", function() {
-    expect(age2.tracks.length).toBe(15);
-  });
-  
-  it("is enabled", function() {
-    expect(age2.enabled).toBe(true);
-  });
-  
-  it("has newFile constructor + File.newTrack", function() {
-    var disc = new Disc();
-    
-    var file = disc.newFile();
-    expect(file.disc).toEqual(disc);
-    expect(file.index).toBe(0);
-    
-    var file2 = disc.newFile();
-    expect(file2.disc).toEqual(disc);
-    expect(file2.index).toBe(1);
-    
-    var track1 = file.newTrack();
-    track1.title = 'Track 1';
-    expect(track1.title).toBe('Track 1');
-    expect(track1.disc).toEqual(disc);
-    expect(track1.file).toEqual(file);
-    expect(track1.index).toBe(0);
-    
-    var track2 = file.newTrack();
-    track2.title = 'Track 2';
-    expect(track2.title).toBe('Track 2');
-    expect(track2.disc).toEqual(disc);
-    expect(track2.file).toEqual(file);
-    expect(track2.index).toBe(1);
-    
-    var track3 = file2.newTrack();
-    track3.title = 'Track 3';
-    expect(track3.title).toBe('Track 3');
-    expect(track3.disc).toEqual(disc);
-    expect(track3.file).toEqual(file2);
-    expect(track3.index).toBe(0);
-    
-    expect(disc.tracks).toEqual([track1, track2, track3]);
-  });
-  
-  it("is playable", function() {
-    var disc = new Disc();
-    
-    var file1 = disc.newFile();
-    var track1 = file1.newTrack();
-    var track2 = file1.newTrack();
-    
-    var file2 = disc.newFile();
-    var track3 = file2.newTrack();
-    
-    expect(disc.playable).toBe(true);
-    
-    disc.enabled = false
-    expect(disc.playable).toBe(false);
-    
-    disc.enabled = true
-    expect(disc.playable).toBe(true);
-    
-    track3.enabled = false;
-    expect(disc.playable).toBe(true);
-    
-    track1.enabled = false;
-    track3.enabled = true;
-    expect(disc.playable).toBe(true);
-    
-    track3.enabled = false;
-    expect(disc.playable).toBe(true);
-    
-    track2.enabled = false;
-    expect(disc.playable).toBe(false);
-  });
 });
