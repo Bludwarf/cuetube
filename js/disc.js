@@ -147,9 +147,10 @@ class Disc {
             return getParameterByName("v", this.name);
         }
         newTrack() {
-            this.disc.cuesheet.newTrack(this.tracks.length + 1, File.DEFAULT_TYPE);
+            const tracks = this.disc.tracks;
+            this.disc.cuesheet.newTrack(tracks.length + 1, File.DEFAULT_TYPE);
             const cuesheetTrack = this.disc.cuesheet.getCurrentTrack();
-            const track = new Disc.Track(this, this.tracks.length, cuesheetTrack);
+            const track = new Disc.Track(this, tracks.length, cuesheetTrack);
             this.tracks.push(track);
             this._tracksInTime = undefined; // RAZ du cache pour tracksInTime
             return track;
@@ -176,6 +177,21 @@ class Disc {
             this._tracksInTime.sort((t1, t2) => t1.startSeconds - t2.startSeconds);
             return this._tracksInTime;
         }
+        remove() {
+            const files = this.disc.files;
+            const indexInDisc = files.indexOf(this);
+            if (indexInDisc === -1)
+                return;
+            const tracks = this.disc.tracks;
+            files.splice(indexInDisc, 1);
+            const deletedTracks = this.tracks.length;
+            // On décale l'index de toutes les pistes suivantes
+            for (let i = indexInDisc; i < tracks.length; ++i) {
+                const track = tracks[i];
+                track.index -= deletedTracks;
+                track.number -= deletedTracks;
+            }
+        }
     }
     File.DEFAULT_TYPE = "MP3";
     Disc.File = File;
@@ -185,9 +201,10 @@ class Disc {
             this.index = index;
             this.cuesheetTrack = cuesheetTrack;
             if (!this.cuesheetTrack) {
+                console.log(index);
                 this.cuesheetTrack = new cuesheet.Track(undefined, Disc.File.DEFAULT_TYPE); // number doit être setté manuellement
                 _.extend(this.cuesheetTrack, {
-                    number: this.index + 1
+                    number: index + 1
                 });
             }
             else {
@@ -198,6 +215,7 @@ class Disc {
             }
             this.enabled = this.file.disc.enabled;
         }
+        /** Numéro de la piste parmi toutes les pistes du disque (commence à 1) */
         get number() {
             return this.cuesheetTrack.number;
         }
@@ -264,9 +282,24 @@ class Disc {
             }
             return null;
         }
+        /** Si on supprime la dernière piste d'un fichier alors le fichier est supprimé */
         remove() {
-            const i = this.file.tracks.indexOf(this);
-            this.file.tracks.splice(i, 1);
+            const tracks = this.disc.tracks;
+            const indexInDisc = tracks.indexOf(this);
+            if (indexInDisc === -1)
+                return;
+            const indexInFile = this.file.tracks.indexOf(this);
+            this.file.tracks.splice(indexInFile, 1);
+            // On décale l'index de toutes les pistes suivantes
+            for (let i = indexInDisc; i < tracks.length; ++i) {
+                const track = tracks[i];
+                --track.index;
+                --track.number;
+            }
+            // Fichier vide ? => on supprime le fichier
+            if (this.file.tracks.length === 0) {
+                this.file.remove();
+            }
         }
     }
     Disc.Track = Track;
