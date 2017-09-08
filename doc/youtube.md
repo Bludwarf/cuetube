@@ -39,3 +39,8 @@ source :
 		</div>
 	</div>
 
+## Init
+
+Attention le player ne doit pas être exploité tant qu'il n'est pas "Ready".
+A la création du player on lui indique la méthode à appeler lorsqu'il est prêt dans le paramètre `events.onReady`. 
+Rien ne doit être fait tant que cette méthode n'est pas appelée.
