@@ -16,7 +16,7 @@ ytparser.newDiscFromPlaylistItems = function(playlistItems, title) {
     _.extend(cue, {
         title: title,//prompt("Nom du disque")
         performer: playlistItems[0].snippet.channelTitle
-        /*rems: [
+        /*rem: [
          "COMMENT \"Playlist YouTube : https://www.youtube.com/watch?v=RRtlWfi6jiM&list=PL1800E1EFCA1EABE3\""
          ]*/
     });
