@@ -342,6 +342,12 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 prompt('Veuillez ajouter la cuesheet '+discId, discId);
             });
         }
+
+        // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
+        if (discIds.length === 0) {
+            initYT();
+        }
+
     }
 
     $scope.shuffle = true;
