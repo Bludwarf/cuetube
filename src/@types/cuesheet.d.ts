@@ -10,7 +10,7 @@ declare module cuesheet {
         performer: string;
         songWriter: string;
         title;
-        rems: string[];
+        rem: string[];
 
         getCurrentFile(): File;
         getCurrentTrack(): Track;

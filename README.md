@@ -98,17 +98,7 @@ Liste des remarques `REM` générées par le plugin cuesheet de MusicBrainz Pica
   * `REM MUSICBRAINZ_ALBUM_ARTIST_ID`
   * `REM MUSICBRAINZ_TRACK_ID`
   
-Nécessaire de patcher la library (rem doit être rems) :
-
-```
-function parseRem(params, cuesheet) {
-    if (!cuesheet.rems) {
-        cuesheet.rems = [];
-    }
-
-    cuesheet.rems.push(params.join(' '));
-}
-```
+Nécessaire de patcher la library (rems doit être rem) :
 
 ## Browserify
 

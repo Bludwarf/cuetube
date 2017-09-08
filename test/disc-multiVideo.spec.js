@@ -12,97 +12,97 @@ function loadDisc(jsonFile) {
   return new Disc(_.extend(new cuesheet.CueSheet(), json));
 }
 
-describe("Disc.File", function() {
+describe("Disc multi vidéo", function() {
   
-  var file = minecraftFile;
-  
-  it("has cuesheetFile", function() {
-    expect(file.cuesheetFile).not.toBeNull();
+  it("has properties of cuesheet.CueSheet", function() {
+    expect(age2.title).toBe("Age of Empires 2: Age of Kings");
+    expect(age2.performer).toBe("Gamegroove");
   });
   
-  it("has properties of cuesheet.File", function() {
-    expect(minecraftFile.name).toBe("https://www.youtube.com/watch?v=Dg0IjOzopYU");
-    expect(file.type).toBe("MP3");
+  it("has cuesheet", function() {
+    expect(age2.cuesheet).not.toBeNull();
   });
   
-  it("has tracks", function() {
-    expect(file.tracks).not.toBeNull();
-    expect(file.tracks.size).toBe(minecraft.tracks.size);
-    expect(file.tracks[0]).toEqual(minecraft.tracks[0]); // TODO pourquoi toBe => false ?
-    expect(file.tracks[file.tracks.length-1]).toEqual(minecraft.tracks[file.tracks.length-1]); // TODO pourquoi toBe => false ?
+  it("has files", function() {
+    expect(age2.files.length).toBe(15);
   });
   
   it("has videoId", function() {
-    expect(file.videoId).toBe("Dg0IjOzopYU");
+    expect(age2.videoId).toBe("RRtlWfi6jiM");
   });
   
-  it("has index", function() {
+  it("has tracks", function() {
+    expect(age2.tracks.length).toBe(15);
+  });
+  
+  it("is enabled", function() {
+    expect(age2.enabled).toBe(true);
+  });
+  
+  it("has newFile constructor + File.newTrack", function() {
+    var disc = new Disc();
+    
+    var file = disc.newFile();
+    expect(file.disc).toEqual(disc);
     expect(file.index).toBe(0);
-  });
-
-  it("should find track at time in multitrack video", function() {
-    const file = minecraft.files[0];
-    let track;
-
-    // Par défaut => 1ère
-    track = file.getTrackAt(0);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("Key (Nuance 1)");
-
-    track = file.getTrackAt(1*3600 + 14*60 + 2);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("Taswell (Creative 6)");
-
-    // Par défaut => dernière
-    track = file.getTrackAt(3*3600);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("End");
-  });
-
-  it("should find track at time in multi video disc", function() {
-    const file = age2.files[0];
-    let track, trackBis;
-
-    // Par défaut => 1ère
-    track = file.getTrackAt(0);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("Main Theme");
-
-    trackBis = file.getTrackAt(50);
-    expect(trackBis).toBe(track);
-
-    // Par défaut => dernière
-    trackBis = file.getTrackAt(3*3600);
-    expect(trackBis).toBe(track);
-  });
-
-  it("remove", () => {
-    let disc = new Disc();
-    let file1 = disc.newFile();
-    let track1 = file1.newTrack();
-    let track2 = file1.newTrack();
-
-    let file2 = disc.newFile();
-    let track3 = file2.newTrack();
-    let track4 = file2.newTrack();
-
-    let file3 = disc.newFile();
-    let track5 = file3.newTrack();
-    let track6 = file3.newTrack();
-
-    expect(disc.tracks.length).toBe(6);
-    expect(disc.tracks[3]).toBe(track4);
-    expect(disc.tracks[3].number).toBe(4);
-    expect(disc.tracks[4]).toBe(track5);
-    expect(disc.tracks[4].number).toBe(5);
-
-    file2.remove();
-
-    expect(disc.tracks.length).toBe(4);
-    expect(disc.tracks[2]).toBe(track5);
-    expect(disc.tracks[2].number).toBe(3);
-    expect(disc.tracks[3]).toBe(track6);
-    expect(disc.tracks[3].number).toBe(4);
+    
+    var file2 = disc.newFile();
+    expect(file2.disc).toEqual(disc);
+    expect(file2.index).toBe(1);
+    
+    var track1 = file.newTrack();
+    track1.title = 'Track 1';
+    expect(track1.title).toBe('Track 1');
+    expect(track1.disc).toEqual(disc);
+    expect(track1.file).toEqual(file);
+    expect(track1.index).toBe(0);
+    
+    var track2 = file.newTrack();
+    track2.title = 'Track 2';
+    expect(track2.title).toBe('Track 2');
+    expect(track2.disc).toEqual(disc);
+    expect(track2.file).toEqual(file);
+    expect(track2.index).toBe(1);
+    
+    var track3 = file2.newTrack();
+    track3.title = 'Track 3';
+    expect(track3.title).toBe('Track 3');
+    expect(track3.disc).toEqual(disc);
+    expect(track3.file).toEqual(file2);
+    expect(track3.index).toBe(0);
+    
+    expect(disc.tracks).toEqual([track1, track2, track3]);
   });
   
+  it("is playable", function() {
+    var disc = new Disc();
+    
+    var file1 = disc.newFile();
+    var track1 = file1.newTrack();
+    var track2 = file1.newTrack();
+    
+    var file2 = disc.newFile();
+    var track3 = file2.newTrack();
+    
+    expect(disc.playable).toBe(true);
+    
+    disc.enabled = false
+    expect(disc.playable).toBe(false);
+    
+    disc.enabled = true
+    expect(disc.playable).toBe(true);
+    
+    track3.enabled = false;
+    expect(disc.playable).toBe(true);
+    
+    track1.enabled = false;
+    track3.enabled = true;
+    expect(disc.playable).toBe(true);
+    
+    track3.enabled = false;
+    expect(disc.playable).toBe(true);
+    
+    track2.enabled = false;
+    expect(disc.playable).toBe(false);
+  });
 });

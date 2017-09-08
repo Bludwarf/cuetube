@@ -12,97 +12,89 @@ function loadDisc(jsonFile) {
   return new Disc(_.extend(new cuesheet.CueSheet(), json));
 }
 
-describe("Disc.File", function() {
+describe("Disc mono vidéo", function() {
   
-  var file = minecraftFile;
-  
-  it("has cuesheetFile", function() {
-    expect(file.cuesheetFile).not.toBeNull();
+  it("has properties of cuesheet.CueSheet", function() {
+    expect(minecraft.title).toBe("Minecraft FULL SOUNDTRACK (2016)");
+    expect(minecraft.performer).toBe("Luigi");
   });
   
-  it("has properties of cuesheet.File", function() {
-    expect(minecraftFile.name).toBe("https://www.youtube.com/watch?v=Dg0IjOzopYU");
-    expect(file.type).toBe("MP3");
+  it("has cuesheet", function() {
+    expect(minecraft.cuesheet).not.toBeNull();
   });
   
-  it("has tracks", function() {
-    expect(file.tracks).not.toBeNull();
-    expect(file.tracks.size).toBe(minecraft.tracks.size);
-    expect(file.tracks[0]).toEqual(minecraft.tracks[0]); // TODO pourquoi toBe => false ?
-    expect(file.tracks[file.tracks.length-1]).toEqual(minecraft.tracks[file.tracks.length-1]); // TODO pourquoi toBe => false ?
+  it("has files", function() {
+    expect(minecraft.files.length).toBe(1);
   });
   
   it("has videoId", function() {
-    expect(file.videoId).toBe("Dg0IjOzopYU");
+    expect(minecraft.videoId).toBe("Dg0IjOzopYU");
   });
   
-  it("has index", function() {
-    expect(file.index).toBe(0);
+  it("has tracks", function() {
+    expect(minecraft.tracks.length).toBe(28);
+  });
+  
+  it("is enabled", function() {
+    expect(minecraft.enabled).toBe(true);
+  });
+  
+  it("is playable", function() {
+    const disc = new Disc();
+    expect(disc.playable).toBe(false);
+    
+    const file = disc.newFile();
+    const track = file.newTrack();
+    track.enabled = false;
+    expect(disc.playable).toBe(false);
+    
+    track.enabled = true;
+    expect(disc.playable).toBe(true);
+    
+    const track2 = file.newTrack();
+
+    track.enabled = false;
+    track2.enabled = false;
+    expect(disc.playable).toBe(false);
+    
+    track.enabled = false;
+    track2.enabled = true;
+    expect(disc.playable).toBe(true);
+    
+    track.enabled = true;
+    track2.enabled = false;
+    expect(disc.playable).toBe(true);
   });
 
-  it("should find track at time in multitrack video", function() {
-    const file = minecraft.files[0];
-    let track;
+  it("has disabled tracks", function() {
+    const disc = new Disc();
 
-    // Par défaut => 1ère
-    track = file.getTrackAt(0);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("Key (Nuance 1)");
+    let file = disc.newFile();
+      let track1 = file.newTrack();
+      file.newTrack();
 
-    track = file.getTrackAt(1*3600 + 14*60 + 2);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("Taswell (Creative 6)");
+      expect(disc.disabledTracks.length).toBe(0);
 
-    // Par défaut => dernière
-    track = file.getTrackAt(3*3600);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("End");
+      track1.enabled = false;
+      expect(track1.number).toBe(1);
+      expect(disc.disabledTracks.map(function(track) {return track.number})).toEqual([1]);
   });
 
-  it("should find track at time in multi video disc", function() {
-    const file = age2.files[0];
-    let track, trackBis;
-
-    // Par défaut => 1ère
-    track = file.getTrackAt(0);
-    expect(track).not.toBeNull();
-    expect(track.title).toBe("Main Theme");
-
-    trackBis = file.getTrackAt(50);
-    expect(trackBis).toBe(track);
-
-    // Par défaut => dernière
-    trackBis = file.getTrackAt(3*3600);
-    expect(trackBis).toBe(track);
-  });
-
-  it("remove", () => {
+  it("contains rem 1", function() {
     let disc = new Disc();
-    let file1 = disc.newFile();
-    let track1 = file1.newTrack();
-    let track2 = file1.newTrack();
+    disc.setRem("DATE", "BAD");
+    disc.setRem("DATE", "1970-01-01");
+    expect(disc.rem).toEqual(["DATE \"1970-01-01\""]);
 
-    let file2 = disc.newFile();
-    let track3 = file2.newTrack();
-    let track4 = file2.newTrack();
-
-    let file3 = disc.newFile();
-    let track5 = file3.newTrack();
-    let track6 = file3.newTrack();
-
-    expect(disc.tracks.length).toBe(6);
-    expect(disc.tracks[3]).toBe(track4);
-    expect(disc.tracks[3].number).toBe(4);
-    expect(disc.tracks[4]).toBe(track5);
-    expect(disc.tracks[4].number).toBe(5);
-
-    file2.remove();
-
-    expect(disc.tracks.length).toBe(4);
-    expect(disc.tracks[2]).toBe(track5);
-    expect(disc.tracks[2].number).toBe(3);
-    expect(disc.tracks[3]).toBe(track6);
-    expect(disc.tracks[3].number).toBe(4);
+    disc.rem = ["DATE \"1970-01-01\""];
+    expect(disc.getRem("DATE")).toBe("1970-01-01");
   });
-  
+
+  it("contains rem 2", function() {
+    let disc = new Disc();
+    expect(disc.src).toBeUndefined();
+
+    disc.src = "value";
+    expect(disc.src).toBe("value");
+  });
 });

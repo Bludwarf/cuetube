@@ -6,7 +6,7 @@
 
 class Disc {
     cuesheet: cuesheet.CueSheet;
-    files: Disc.File[] = [];
+    _files: Disc.File[] = [];
     index: number = undefined;
     /** pour choisir les vidéos à lire */
     enabled: boolean = true;
@@ -15,7 +15,7 @@ class Disc {
 
     _id: string;
 
-    constructor(srcCuesheet: cuesheet.CueSheet) {
+    constructor(srcCuesheet?: cuesheet.CueSheet) {
         this.cuesheet = srcCuesheet;
         if (!srcCuesheet) {
             this.cuesheet = new cuesheet.CueSheet();
@@ -26,6 +26,14 @@ class Disc {
                 this.files.push(new Disc.File(this, i, cueFile));
             }
         }
+    }
+
+    get files(): Disc.File[] {
+        return this._files;
+    }
+
+    set files(files: Disc.File[]) {
+        throw new Error("Cannot modify files. Use newFile() ou files[i].remove()");
     }
 
     get title(): string {
@@ -42,11 +50,11 @@ class Disc {
         this.cuesheet.performer = value;
     }
 
-    get rems():string [] {
-        return this.cuesheet.rems;
+    get rem():string [] {
+        return this.cuesheet.rem;
     }
-    set rems(value: string[]) {
-        this.cuesheet.rems = value;
+    set rem(value: string[]) {
+        this.cuesheet.rem = value;
     }
 
     get id() {
@@ -102,16 +110,16 @@ class Disc {
     }
 
     setRem(key: string, value: any): void {
-        this.rems = this.rems || [];
+        this.rem = this.rem || [];
         // Suppr ancien REM pour cette key
-        this.rems = this.rems.filter(rem => rem.indexOf(key + " ") != 0);
-        this.rems.push(key + " \"" + value + "\"");
+        this.rem = this.rem.filter(rem => rem.indexOf(key + " ") != 0);
+        this.rem.push(key + " \"" + value + "\"");
     }
 
     getRem(key: string): string {
-        if (!this.rems)
+        if (!this.rem)
             return undefined;
-        const rem = this.rems.find(aRem => aRem.indexOf(key+" ") == 0);
+        const rem = this.rem.find(aRem => aRem.indexOf(key+" ") == 0);
         if (!rem)
             return undefined;
         let value = rem.slice(key.length + 1);
@@ -139,13 +147,18 @@ module Disc {
 
         static DEFAULT_TYPE = "MP3";
 
-        tracks: Track[] = []; // TODO devrait être en lecture seule
+        private _tracks: Track[] = [];
 
         /** Fixé dès qu'on a trouvé la vidéo sur YouTube */
         public duration: number;
 
         private _tracksInTime: Track[] = undefined; // cache pour tracksInTime
 
+        /**
+         * @param {Disc} disc disque parent
+         * @param {number} index index de la piste dans ce fichier
+         * @param {cuesheet.File} cuesheetFile File dans le fichier cue tel que parsé par cue-parser
+         */
         constructor(public disc: Disc, public index: number, public cuesheetFile: cuesheet.File) {
             if (!this.cuesheetFile) {
                 this.cuesheetFile = new cuesheet.File()
@@ -154,9 +167,20 @@ module Disc {
             if (this.cuesheetFile.tracks) {
                 for (let i = 0; i < this.cuesheetFile.tracks.length; ++i) {
                     let cueTrack = this.cuesheetFile.tracks[i];
-                    this.tracks.push(new Disc.Track(this, i, cueTrack));
+                    this.tracks.push(new Disc.Track(this, cueTrack));
                 }
             }
+        }
+
+        /**
+         * @return {Disc.Track[]} piste uniquement présente dans de fichier
+         */
+        get tracks(): Track[] {
+            return this._tracks;
+        }
+
+        set tracks(tracks: Track[]) {
+            throw new Error("Cannot modify tracks. Use newTrack() ou tracks[i].remove()");
         }
 
         get name(): string {
@@ -179,9 +203,10 @@ module Disc {
         
         newTrack() {
             const tracks = this.disc.tracks;
-            this.disc.cuesheet.newTrack(tracks.length+1, File.DEFAULT_TYPE);
+            const number = tracks.length+1;
+            this.disc.cuesheet.newTrack(number, File.DEFAULT_TYPE);
             const cuesheetTrack = this.disc.cuesheet.getCurrentTrack();
-            const track = new Disc.Track (this, tracks.length, cuesheetTrack);
+            const track = new Disc.Track(this, cuesheetTrack);
             this.tracks.push(track);
             this._tracksInTime = undefined; // RAZ du cache pour tracksInTime
             return track;
@@ -233,14 +258,18 @@ module Disc {
     export class Track {
 
         public enabled: boolean;
+        public index: number;
 
-        constructor(public file: File, public index: number, public cuesheetTrack: cuesheet.Track) {
+        /**
+         * @param {Disc.File} file fichier parent
+         * @param {cuesheet.Track} cuesheetTrack piste telle que parsée par cue-parser
+         */
+        constructor(public file: File, public cuesheetTrack: cuesheet.Track) {
+            const fileTracks = this.file.tracks;
+            this.index = fileTracks.length;
+
             if (!this.cuesheetTrack) {
-                console.log(index);
                 this.cuesheetTrack = new cuesheet.Track(undefined, Disc.File.DEFAULT_TYPE); // number doit être setté manuellement
-                _.extend(this.cuesheetTrack, {
-                    number: index + 1
-                });
             } else {
                 // Clean du title si vide pour avoir "Track #" par défaut
                 if (this.cuesheetTrack.title != null && !this.cuesheetTrack.title.trim()) {
