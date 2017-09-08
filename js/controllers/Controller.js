@@ -410,7 +410,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 $scope.currentTrackIndex = track.index;
 
                 // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
-                let player = $scope.loadCurrentTrack($scope.player);
+                let player = $scope.loadCurrentTrack();
                 $scope.$apply(() => {
                     $scope.player = player;
                 });
@@ -660,7 +660,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         return query.v;
     }*/
 
-    $scope.loadCurrentTrack = function(player) {
+    $scope.loadCurrentTrack = function() {
         const disc = this.discs[this.currentDiscIndex];
         const file = disc.files[this.currentFileIndex];
         const track = file.tracks[this.currentTrackIndex];
@@ -693,10 +693,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 },
                 events: {
                     // 4. The API will call this function when the video player is ready.
-                    'onReady': function onPlayerReady(event) {
-                        event.target.playVideo();
-                        $scope.changeVideoIHM();
-                    },
+                    'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange
                 }
             });
@@ -774,6 +771,12 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
         return $scope.player;
     };
+
+    function onPlayerReady(event) {
+        event.target.playVideo();
+        $scope.changeVideoIHM();
+        checkCurrentTime();
+    }
 
     const YT_STATES = [
         "ENDED",
@@ -928,7 +931,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         slider.min = track.startSeconds;
         slider.max = track.endSeconds;
         $scope.fileSlider.max = file.duration;
-        $scope.checkCurrentTime(slider); // fixme : player non actif si pas encore chargé
     };
 
     /**
@@ -977,16 +979,32 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         $scope.fileSlider.value = time;
     };
 
-    $scope.checkCurrentTimeInterval = 1000; // FIXME : mouvement saccadé du slider
-    $scope.checkCurrentTime = function (slider) {
+    let lastCheckedTime = undefined;
+    let nextCheckCurrentTime = undefined;
+    let checkCurrentTimeTimeout = undefined; // prochain appel
+    /**
+     * Actualise l'IHM à chaque changement de seconde ou sur demande (en l'appelant)
+     */
+    function checkCurrentTime() {
+        if (checkCurrentTimeTimeout) clearTimeout(checkCurrentTimeTimeout);
         const time = $scope.player.getCurrentTime();
-        $scope.safeApply(() => { // FIXME : aucune actualisation sans safeApply, erreur "$apply already in progress" si $apply
+
+        function scheduleNextCheckCurrentTime() {
+          nextCheckCurrentTime = (1 - ($scope.player.getCurrentTime() % 1)) *1000; // on actualise qu'au prochain changement de seconde
+          checkCurrentTimeTimeout = setTimeout(checkCurrentTime, nextCheckCurrentTime); // boucle
+        }
+
+        // changement de secondes ?
+        if (!lastCheckedTime || Math.floor(time) !== Math.floor(lastCheckedTime)) {
+          $scope.safeApply(() => { // FIXME : aucune actualisation sans safeApply, erreur "$apply already in progress" si $apply
             $scope.slider.value = time;
             $scope.fileSlider.value = time;
-        });
-
-        setTimeout($scope.checkCurrentTime, $scope.checkCurrentTimeInterval); // boucle
-    };
+            scheduleNextCheckCurrentTime();
+          });
+        } else {
+            scheduleNextCheckCurrentTime();
+        }
+    }
 
     /** src : https://coderwall.com/p/ngisma/safe-apply-in-angular-js */
     $scope.safeApply = function(fn) {

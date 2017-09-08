@@ -148,8 +148,7 @@ class Disc {
         get tracks() {
             return this._tracks;
         }
-        // noinspection JSAnnotator
-      set tracks(tracks) {
+        set tracks(tracks) {
             throw new Error("Cannot modify tracks. Use newTrack() ou tracks[i].remove()");
         }
         get name() {
