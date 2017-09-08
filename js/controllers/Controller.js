@@ -35,7 +35,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     // Collection de disques en paramètre ?
     else if (collectionParam) {
         $http.get("/collection/"+collectionParam+"/discs").then(res => {
-            if (res.status != 200) {
+            if (res.status !== 200) {
                 console.error("Error GET collection != 200");
                 alert("Impossible d'ouvrir la collection : "+collectionParam);
                 history.back();
@@ -76,7 +76,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.lastToggledTracklist = null;
     function toggleTracklist(tracklist, disc) {
         const lastToggledTracklist = $scope.lastToggledTracklist;
-        if (lastToggledTracklist != null && lastToggledTracklist != tracklist) $(lastToggledTracklist).hide();
+        if (lastToggledTracklist !== null && lastToggledTracklist !== tracklist) $(lastToggledTracklist).hide();
 
         $(tracklist).toggle();
 
@@ -126,7 +126,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
             $scope.discs.forEach((disc) => {
                 if (!disc) return;
-                disc.enabled = disc == this;
+                disc.enabled = disc === this;
             });
 
             this.load();
@@ -241,9 +241,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 Object.defineProperties(track, {
                     isCurrent: {
                         get: function() {
-                            return $scope.currentTrackIndex == this.index
-                                && $scope.currentFileIndex  == this.file.index
-                                && $scope.currentDiscIndex  == this.file.disc.index;
+                            return $scope.currentTrackIndex === this.index
+                                && $scope.currentFileIndex  === this.file.index
+                                && $scope.currentDiscIndex  === this.file.disc.index;
                         }
                     }
                 });
@@ -302,7 +302,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
             const discId = discIds[discIndex];
             $http.get("/"+discId+".cue.json").then(res => {
-                if (res.status != 200) return console.error("Error GET cuesheet "+discId+" $http");
+                if (res.status !== 200) return console.error("Error GET cuesheet "+discId+" $http");
 
                 const cue = new cuesheet.CueSheet();
                 _.extend(cue, res.data);
@@ -317,7 +317,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 let savedString = localStorage.getItem('disc.'+disc.id);
                 if (savedString) {
                     let saved = JSON.parse(savedString);
-                    if (saved.enabled != undefined) {
+                    if (saved.enabled !== undefined) {
                         disc.enabled = saved.enabled;
                     }
                     if (saved.disabledTrackIndices) {
@@ -332,11 +332,11 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 }
 
                 // INIT si dernier disque
-                if (--remainingDiscNumber == 0)
+                if (--remainingDiscNumber === 0)
                     initYT();
             }, resKO => {
                 // INIT si dernier disque
-                if (--remainingDiscNumber == 0)
+                if (--remainingDiscNumber === 0)
                     initYT();
                 console.error("Error GET cuesheet "+discId+" via $http : "+resKO.data);
                 prompt('Veuillez ajouter la cuesheet '+discId, discId);
@@ -565,8 +565,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
         const disc = $scope.discs[this.currentDiscIndex];
         $scope.currentDisc = disc;
-        const file = disc.files[this.currentFileIndex];
-        $scope.currentFile = file;
+        $scope.currentFile = disc.files[this.currentFileIndex];
 
         this.history.pop(); // suppression du previous
         this.loadCurrentTrack($scope.player);
@@ -577,7 +576,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         const discs = $("#playlist .disc");
         discs.each(function() {
             const list = $(".disc-list", this);
-            if (this.dataset.index == discIndex)
+            if (this.dataset.index === discIndex)
                 list.show();
             else
                 list.hide();
@@ -693,8 +692,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 },
                 events: {
                     // 4. The API will call this function when the video player is ready.
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
+                    onReady: onPlayerReady,
+                    onStateChange: onPlayerStateChange
                 }
             });
 
@@ -802,7 +801,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         // Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant
         //const slider = document.getElementById("player-controls-form").trackPosition;
         const slider = scope.slider;
-        if (slider && (!slider.max || slider.max == 'undefined')) {
+        if (slider && (!slider.max || slider.max === 'undefined')) {
             console.log("Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant");
             slider.max = file.duration;
         }
@@ -856,14 +855,14 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         // on vérifie lastPlayedVideoIndex car cet évènement est souvent appelé deux fois
         // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
         // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
-        if (state == YT.PlayerState.ENDED && $scope.loadingDiscIndex != $scope.currentDiscIndex && $scope.loadingFileIndex != $scope.currentFileIndex && $scope.loadingTrackIndex != $scope.currentTrackIndex) {
+        if (state === YT.PlayerState.ENDED && $scope.loadingDiscIndex !== $scope.currentDiscIndex && $scope.loadingFileIndex !== $scope.currentFileIndex && $scope.loadingTrackIndex !== $scope.currentTrackIndex) {
             $scope.$emit("video ended");
         }
 
         // Vidéo démarrée
         // vérification pour ne pas appeler deux fois l'évènement "Fin de la vidéo"
         // TODO : ne pas appeler quand on fait un manual seek
-        else if (state == YT.PlayerState.PLAYING) {
+        else if (state === YT.PlayerState.PLAYING) {
             $scope.$emit("video started");
         }
 
@@ -948,15 +947,14 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         const player = $scope.player;
         if (!player) return;
         const state = player.getPlayerState();
-        if (state == YT.PlayerState.PLAYING)
+        if (state === YT.PlayerState.PLAYING)
             player.pauseVideo();
         else
             player.playVideo();
     };
 
     $scope.getCurrentTrack = function() {
-        const track = $scope.currentFile.tracks[this.currentTrackIndex];
-        return track;
+      return $scope.currentFile.tracks[this.currentTrackIndex];
     };
 
     $scope.fileSlider = {
@@ -1009,7 +1007,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     /** src : https://coderwall.com/p/ngisma/safe-apply-in-angular-js */
     $scope.safeApply = function(fn) {
       const phase = this.$root.$$phase;
-      if(phase == '$apply' || phase == '$digest') {
+      if(phase === '$apply' || phase === '$digest') {
         if(fn && (typeof(fn) === 'function')) {
           fn();
         }
@@ -1118,7 +1116,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             const disc = $scope.newDiscFromPlaylistItems(playlistItems);
             disc.src = url;
             $http.post("/"+disc.id+".cue.json", disc).then(res => {
-                if (res.status != 200) return alert("POST createNewDiscFromPlaylist $http != 200");
+                if (res.status !== 200) return alert("POST createNewDiscFromPlaylist $http != 200");
                 $scope.createDisc(disc);
                 if (cb) cb(null, disc);
             }, resKO => {
@@ -1129,7 +1127,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     };
 
     $scope.$watch('currentDisc', function(newDisc, oldDisc) {
-        if (newDisc != oldDisc) {
+        if (newDisc !== oldDisc) {
             document.body.style.backgroundImage = 'url(https://img.youtube.com/vi/'+newDisc.videoId+'/hqdefault.jpg)'
         }
     });
@@ -1153,7 +1151,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
                 // TODO : pouvoir passer le disc en JSON -> problème de circular ref
                 $http.post("/" + videoId + ".cue.json", disc.cuesheet).then(res => {
-                    if (res.status != 200) return alert("POST createNewDiscFromVideo $http != 200");
+                    if (res.status !== 200) return alert("POST createNewDiscFromVideo $http != 200");
                     $scope.createDisc(disc);
                     if (cb) cb(null, disc);
                 }, resKO => {
