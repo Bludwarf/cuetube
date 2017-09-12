@@ -86,6 +86,8 @@ ytparser.newDiscFromVideoSnippet = function(snippet, videoUrl, contentDetails, o
  * @param contentDetails? video.items[0].contentDetails dans le JSON d'une vidéo YouTube (facultatif)
  * @param {boolean} options.artistInTitle comme dans le m3u ?
  * @param {boolean} options.artistBeforeTitle true si l'artiste apparait dans le titre de la chanson
+ * @param {boolean} options.containsDuration true si la durée de la piste apparait dans le texte d'entrée
+ * @param {boolean} options.durationBeforeTime true si la durée apparait avant le temps de début de la piste
  * @returns {Array}
  */
 function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options) {
@@ -110,9 +112,13 @@ function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options) {
         type: "MP3"
     });
 
-    // Parsing de la description
-    let artistBeforeTitle = options && options.artistBeforeTitle; // comme dans le m3u ?
-    let artistInTitle = options && options.artistInTitle; // true si l'artiste apparait dans le titre de la chanson
+    // Parsing de la description (cf parsetrack)
+    let curr = {
+      artistBeforeTitle: options && options.artistBeforeTitle,
+      artistInTitle: options && options.artistInTitle,
+      containsDuration: options && options.containsDuration,
+      durationBeforeTime: options && options.durationBeforeTime
+    };
     for (let i = 0; i < lines.length; ++i) {
         let line = lines[i].trim();
         if (line === "") continue;
@@ -122,15 +128,19 @@ function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options) {
                 line: line,
                 lineNumber: i,
                 trackNumber: file.tracks.length + 1,
-                artistBeforeTitle: artistBeforeTitle,
-                artistInTitle: artistInTitle
+                artistBeforeTitle: curr.artistBeforeTitle,
+                artistInTitle: curr.artistInTitle,
+                containsDuration: curr.containsDuration,
+                durationBeforeTime: curr.durationBeforeTime
             });
             if (parseRes) {
                 console.log("newDiscFromVideo:track : Parsing OK de la ligne : "+line);
 
                 // Infos à garder pour les autres pistes
-                artistBeforeTitle = parseRes.artistBeforeTitle;
-                artistInTitle = parseRes.artistInTitle;
+                curr.artistBeforeTitle = parseRes.artistBeforeTitle;
+                curr.artistInTitle = parseRes.artistInTitle;
+                curr.containsDuration = parseRes.containsDuration;
+                curr.durationBeforeTime = parseRes.durationBeforeTime;
 
                 const track = file.newTrack();
                 _.extend(track, parseRes.track/*{
@@ -144,7 +154,7 @@ function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options) {
                 console.warn("newDiscFromVideo:track : Impossible de parser la ligne : " + line);
             }
         } catch (e) {
-            console.warn("newDiscFromVideo:track : Impossible de parser la ligne : " + line);
+            console.warn("newDiscFromVideo:track : Impossible de parser la ligne : " + line + "\nErreur:"+e);
         }
 
     }//for
@@ -173,6 +183,8 @@ function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options) {
  * @property {string} artistInTitle comme dans le m3u ?
  * @property {string} artistBeforeTitle true si l'artiste apparait dans le titre de la chanson
  * @property {cuesheet.Track} track la piste parsée
+ * @property {boolean} containsDuration true si la durée de la piste apparait dans le texte d'entrée
+ * @property {boolean} durationBeforeTime true si la durée apparait avant le temps de début de la piste
  */
 /**
  * @typedef {Object} ParsedTrack
@@ -187,6 +199,8 @@ function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options) {
  * @param {number} input.trackNumber numéro de la piste à créer
  * @param {boolean} input.artistInTitle comme dans le m3u ?
  * @param {boolean} input.artistBeforeTitle true si l'artiste apparait dans le titre de la chanson
+ * @param {boolean} input.containsDuration true si la durée de la piste apparait dans le texte d'entrée
+ * @param {boolean} input.durationBeforeTime true si la durée apparait avant le temps de début de la piste
  *
  * @return {ParseResult}
  */
@@ -199,6 +213,8 @@ ytparser.parseTrack = function(input) {
     const output = {
         artistBeforeTitle: input.artistBeforeTitle,
         artistInTitle: input.artistInTitle,
+        containsDuration: input.containsDuration,
+        durationBeforeTime: input.durationBeforeTime
     };
 
     const rx = /(.+[^\d:])?(\d+(?::\d+)+)([^\d:].+)?/i; // 1:avant time code, 2:timecode, 3:après timecode
@@ -246,6 +262,18 @@ ytparser.parseTrack = function(input) {
     // Formats avec N TIME => 1er : début de la piste
     if (timeParts.length === 0) {
         time = TIME_ZERO;
+    }
+    // Formats avec durée et time
+    else if (timeParts.length === 2) {
+        if (typeof(output.containsDuration) === 'undefined') {
+          output.containsDuration = confirm("La durée de la piste apparaît-elle dans le texte suivant ?\n"+line);
+          output.durationBeforeTime = confirm("Cette durée est-elle avant le timecode ?\n"+line);
+        }
+        if (output.containsDuration) {
+          time = input.durationBeforeTime ? timeParts[1] : timeParts[0];
+        } else {
+          throw new Error(`Impossible de parser la ligne #${input.lineNumber} ${input.line}`);
+        }
     } else {
         time = timeParts[0];
     }
@@ -285,7 +313,12 @@ ytparser.parseTrack = function(input) {
 
     // Formats avec 1 TEXT
     if (textParts.length > 1) {
-        throw new Error("Trop de texte séparés par des timecode dans la ligne "+line);
+        // Format avec juste un caractère à la fin après les timecode
+        if (textParts.length === 2 && textParts[1].match(/[^w]/)) {
+             // pas une seule lettre
+        } else {
+          throw new Error("Trop de texte séparés par des timecode dans la ligne " + line);
+        }
     }
     let sep = " - ";
     let text = textParts[0];
