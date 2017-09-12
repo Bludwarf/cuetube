@@ -234,4 +234,22 @@ describe("Parser réponses YouTube", function() {
         expect(results.track.indexes[0].time.sec).toBe(56);
   });
 
+  // Guardians of the Galaxy : https://www.youtube.com/watch?v=47ScWQ_EA2M
+  it("should parse Massive Attack 1991 Blue Lines tracklist", () => {
+    let results = ytparser.parseTrack({
+      line: "2. \"One Love\" (featuring. Horace Andy) - 4:49 (@5:19)",
+      trackNumber: 2,
+      artistInTitle: false,
+      containsDuration: true,
+      durationBeforeTime: true
+    });
+    expect(results.artistInTitle).toBe(false);
+    expect(results.artistBeforeTitle).toBeUndefined();
+    expect(results.track.title).toBe("One Love\" (featuring. Horace Andy)");
+    expect(results.track.performer).toBeUndefined();
+    expect(results.track.indexes[0].number).toBe(1);
+    expect(results.track.indexes[0].time.min).toBe(5);
+    expect(results.track.indexes[0].time.sec).toBe(19);
+  });
+
 });
