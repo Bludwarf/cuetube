@@ -25,6 +25,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     let discIds;
     let remainingDiscNumber;
     let discs;
+    $scope.discs = []; // au cas où personne ne l'initialise
 
     // Liste des disque en paramètre ?
     if (discsParam) {
@@ -1162,7 +1163,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                     if (cb) cb(resKO.data); // FIXME  throw err ?
                 });
             } catch (e) {
-                if (e.name === "youtube.notracklist") {
+                    if (e.name === "youtube.notracklist") {
                     const disc = e.disc;
                     alert("La description de la vidéo ne contient aucune tracklist, on va faire une recherche sur freedb...");
                     const win = openInNewTab(`http://www.regeert.nl/cuesheet/?str=${encodeURIComponent(disc.title)}`);
