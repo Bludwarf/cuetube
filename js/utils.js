@@ -149,3 +149,23 @@ function formatMMSS(time) {
   if (seconds < 10) {seconds = "0"+seconds;}
   return minutes+':'+seconds;
 }
+
+/**
+ * Sélectionne un élément parmi une liste en fonction du poids de chaque élément
+ * @param elements {Array<T>}
+ * @param weight {function(T): number} fonction pour calculer le poids de chaque élément
+ * @return T
+ * @template T
+ * @author https://stackoverflow.com/a/8435261
+ */
+function weightedRandom(elements, weight) {
+    const weights = elements.map(element => weight(element));
+    const total = weights.reduce((a, b) => a + b, 0);
+    const r = Math.random() * total;
+    let sum = 0;
+    const i = weights.findIndex(weight => {
+        sum += weight;
+        return r <= sum;
+    });
+    return elements[i];
+}

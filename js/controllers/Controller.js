@@ -494,6 +494,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         $scope.loadCurrentTrack($scope.player);
     };
 
+    /**
+     * Prochaine piste
+     */
     $scope.next = function() {
         $scope.$apply(() => {
             const discs = $scope.discs;
@@ -516,7 +519,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             // Aléatoire ?
             if ($scope.shuffle) {
 
-                $scope.currentDisc = possibleDiscs[Math.floor(Math.random() * possibleDiscs.length)];
+                $scope.currentDisc = weightedRandom(possibleDiscs, disc => disc.tracks.length);
                 disc = $scope.currentDisc;
                 $scope.currentDiscIndex = $scope.currentDisc.index;
 
