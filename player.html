@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fr" ng-app="cuetube">
+
+<head>
+    <meta charset="utf-8" />
+    <title>CueTube</title>
+    <link rel="icon" type="image/png" href="img/favicon_16-vfl8NGn4k-m3u.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" href="css/angular-confirm.min.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/yt-helper.js"></script>
+
+    <link rel="stylesheet" href="css/player.css">
+
+    <script>
+        // exemple : https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fsoundsgood.co&amp;feature=player_embedded&amp;html5=true&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1&amp;showinfo=0&amp;rel=0&amp;autoplay=0&amp;disablekb=1&amp;playsinline=1&amp;widgetid=2
+
+        /* global $, location, yth, YT, angular */
+
+
+    </script>
+
+    <script type="text/javascript" src="js/cuesheet.js"></script>
+    <script type="text/javascript" src="js/utils.js"></script>
+    <script type="text/javascript" src="js/disc.js"></script>
+    <script type="text/javascript" src="js/yt-parser.js"></script>
+    <script type="text/javascript" src="js/controllers/Controller.js"></script>
+</head>
+
+<body>
+
+    <div class="background-overlay"></div>
+
+    <div id="ctrl" ng-controller="Controller">
+
+        <!-- Exemple : https://developers.google.com/youtube/iframe_api_reference?hl=fr#Events -->
+        <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+        <div id="player-div">
+            <div id="player-wrap">
+                <div id="player"></div>
+            </div>
+
+            <div id="player-infos">
+
+                <div id="player-controls">
+                    <form id="player-controls-form">
+                        <!--<input name="fileSlider" ng-model="fileSlider.value" type="range" min="{{fileSlider.min}}" max="{{fileSlider.max}}" readonly/>-->
+                        <!-- TODO : à mettre à disabled tant que la vidéo n'est pas chargée -->
+                        <input name="trackPosition" ng-model="slider.value" type="range" min="{{slider.min}}" max="{{slider.max}}" ng-change="seekTo(slider.value)" ng-readonly="loadingTrackIndex != null" />
+
+                        <div class="track-controls">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="svg-checkbox" viewBox="0 -256 1800 1800" width="32" height="32" ng-class="{active: shuffle}" ng-click="shuffle = !shuffle"><path d="m666 1055q-60-92-137-273-22 45-37 72.5-15 27.5-40.5 63.5-25.5 36-51 56.5-25.5 20.5-63 35Q300 1024 256 1024H32q-14 0-23 9-9 9-9 23v192q0 14 9 23 9 9 23 9h224q250 0 410-225zM1792 256q0-14-9-23L1463-87q-9-9-23-9-13 0-22.5 9.5-9.5 9.5-9.5 22.5v192q-32 0-85-0.5-53-0.5-81-1-28-0.5-73 1-45 1.5-71 5-26 3.5-64 10.5-38 7-63 18.5-25 11.5-58 28.5-33 17-59 40-26 23-55 53.5-29 30.5-56 69.5 59 93 136 273 22-45 37-72.5 15-27.5 40.5-63.5 25.5-36 51-56.5 25.5-20.5 63-35Q1108 384 1152 384h256v192q0 14 9 23 9 9 23 9 12 0 24-10l319-319q9-9 9-23zm0 896q0-14-9-23L1463 809q-9-9-23-9-13 0-22.5 9.5-9.5 9.5-9.5 22.5v192h-256q-48 0-87-15-39-15-69-45Q966 934 945 902.5 924 871 900 825 868 763 822 654 793 588 772.5 543 752 498 718.5 438 685 378 654.5 338 624 298 580.5 255 537 212 490.5 186.5 444 161 384 144.5 324 128 256 128H32q-14 0-23 9-9 9-9 23v192q0 14 9 23 9 9 23 9h224q48 0 87 15 39 15 69 45 30 30 51 61.5 21 31.5 45 77.5 32 62 78 171 29 66 49.5 111 20.5 45 54 105 33.5 60 64 100 30.5 40 74 83 43.5 43 90 68.5 46.5 25.5 106.5 42 60 16.5 128 16.5h256v192q0 14 9 23 9 9 23 9 12 0 24-10l319-319q9-9 9-23z" class="svg-fill"/></svg>
+
+                            <div class="text" style="left: 40px;"><span>{{formatHMSS(slider.value - slider.min)}}</span> / <span>{{formatHMSS(slider.max - slider.min)}}</span></div>
+                            <div class="text" style="right: 0;"><span>{{getTime()}}</span> / <span>{{getTime(slider.max - slider.value)}}</span></div>
+                        </div>
+                    </form>
+                </div>
+
+                <h3 id="player-track-name">{{currentTrack.title}}</h3><!-- TODO : "Track X" si title vide -->
+                <h4 id="player-track-performer">{{currentTrack.performer}}</h4>
+                <h2 id="player-disc-name">
+                    {{currentDisc.title}}
+                    <a ng-href="{{currentDisc.src}}" ng-show="currentDisc.src" title="Voir sur YouTube"><svg class="monochrome youtube-color-hover" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="M94.98,28.84c0,0-0.94-6.6-3.81-9.5c-3.64-3.81-7.72-3.83-9.59-4.05c-13.4-0.97-33.52-0.85-33.52-0.85s-20.12-0.12-33.52,0.85c-1.87,0.22-5.95,0.24-9.59,4.05c-2.87,2.9-3.81,9.5-3.81,9.5S0.18,36.58,0,44.33v7.26c0.18,7.75,1.14,15.49,1.14,15.49s0.93,6.6,3.81,9.5c3.64,3.81,8.43,3.69,10.56,4.09c7.53,0.72,31.7,0.89,32.54,0.9c0.01,0,20.14,0.03,33.54-0.94c1.87-0.22,5.95-0.24,9.59-4.05c2.87-2.9,3.81-9.5,3.81-9.5s0.96-7.75,1.02-15.49v-7.26C95.94,36.58,94.98,28.84,94.98,28.84z M38.28,61.41v-27l25.74,13.5L38.28,61.41z"/></svg></a>
+                </h2>
+
+                <!-- TODO : tracklist courante -->
+                <div ng-model="currentDisc" class="columns">
+                    <ol class="disc-list">
+                        <div ng-repeat="file in currentDisc.files">
+                            <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index)">
+                                <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
+                                <span>{{track.title || "Track "+track.number}}</span>
+                            </li>
+                        </div>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div id="remain-div">
+
+            <div class="buttons">
+                <!--<button ng-click="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
+                <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
+                <button ng-click="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist</button></a>
+            </div>
+
+            <div class="discs">
+
+                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex], inTracklist: disc == discInTracklist}">
+                    <div class="disc-thumb" ng-click="disc.clickThumb($event)" ng-dblclick="disc.doubleClickThumb($event)" title="{{disc.title}}">
+                        <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" />
+                        <div class="disabled-video-cache" ng-hide="disc.enabled"></div>
+                        <img class="" ng-src="https://img.youtube.com/vi/{{disc.videoId}}/default.jpg" />
+                    </div>
+                    <div class="tracklist" ng-click="stopPropagation($event)">
+                        <h2 class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" ng-click="disc.load()">{{disc.title}}</h2>
+
+                        <a href="edit/{{disc.id}}.cue" target="_blank">Éditer</a>
+                        &nbsp;
+                        <a ng-href="{{disc.src}}" title="Voir sur YouTube" ng-show="disc.src"><svg class="monochrome youtube-color-hover" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="M94.98,28.84c0,0-0.94-6.6-3.81-9.5c-3.64-3.81-7.72-3.83-9.59-4.05c-13.4-0.97-33.52-0.85-33.52-0.85s-20.12-0.12-33.52,0.85c-1.87,0.22-5.95,0.24-9.59,4.05c-2.87,2.9-3.81,9.5-3.81,9.5S0.18,36.58,0,44.33v7.26c0.18,7.75,1.14,15.49,1.14,15.49s0.93,6.6,3.81,9.5c3.64,3.81,8.43,3.69,10.56,4.09c7.53,0.72,31.7,0.89,32.54,0.9c0.01,0,20.14,0.03,33.54-0.94c1.87-0.22,5.95-0.24,9.59-4.05c2.87-2.9,3.81-9.5,3.81-9.5s0.96-7.75,1.02-15.49v-7.26C95.94,36.58,94.98,28.84,94.98,28.84z M38.28,61.41v-27l25.74,13.5L38.28,61.41z"/></svg></a>
+                        <div class="columns">
+                            <ol class="disc-list">
+                                <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
+                                <div ng-repeat="file in disc.files">
+                                    <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
+                                        <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
+                                        <span>{{track.title || "Track "+track.number}}</span>
+                                    </li>
+                                </div>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* global $, location, yth, YT, angular */
+
+        // 3. This function creates an <iframe> (and YouTube player)
+        //    after the API code downloads.
+        // Appelé automatiquement par l'IFRAME YouTube
+        function onYouTubeIframeAPIReady() {
+            getCtrl().onYouTubeIframeAPIReady();
+        }
+
+        // Raccourcis clavier
+        window.onkeypress = function(event) {
+            var code = event.code;
+            switch (code) {
+                case 'Space':
+                    getCtrl().playPause();
+                    event.stopPropagation();
+                    event.preventDefault();
+                    break;
+            }
+        };
+
+        window.onkeydown = function(event) {
+          var code = event.code;
+          switch(code) {
+            case 'ArrowUp':
+                  getCtrl().previous();
+                  break;
+            case 'ArrowDown':
+                  getCtrl().next();
+                  break;
+            case 'ArrowLeft':
+                  // ...
+                  break;
+            case 'ArrowRight':
+                  // ...
+                  break;
+            default:
+                return;
+          }
+          event.stopPropagation();
+          event.preventDefault();
+        };
+
+        // Avant fermeture de la page
+        window.onbeforeunload = function(e) {
+            console.log("Sauvegarde avant fermeture...");
+            getCtrl().save();
+        };
+
+        function toggleDiscList(discListElement) {
+            $(discListElement).toggle();
+        }
+
+    </script>
+    <!--<script src="socket.io/socket.io.js"></script>-->
+    <script src="js/underscore-min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="js/angular-confirm.min.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/app.conf.js"></script>
+
+    <!-- Gestion des thumbs des disques -->
+    <script>
+
+        // Fermeture de la tracklist ouverte si click ailleurs
+        document.addEventListener('click', function(e) {
+            var lastToggled = getCtrl().lastToggledTracklist;
+            if (lastToggled != null) $(lastToggled).hide();
+        });
+
+    </script>
+</body>
+
+</html>
