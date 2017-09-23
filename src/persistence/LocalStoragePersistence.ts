@@ -42,7 +42,7 @@ class LocalStoragePersistence extends Persistence {
 
     public postDisc(discId: string, disc): Promise<any> {
         return new Promise((resolve, reject) => {
-            localStorage.setItem(`disc.${discId}.cuesheet`, disc.toJSON());
+            localStorage.setItem(`disc.${discId}.cuesheet`, JSON.stringify(disc.cuesheet));
             resolve(disc);
         });
     }
