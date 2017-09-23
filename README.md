@@ -105,3 +105,16 @@ Nécessaire de patcher la library (rems doit être rem) :
 Lancer la commande :
 
     browserify node_modules/cue-parser/lib/cuesheet.js --standalone cuesheet -o client/js/cuesheet.js
+
+## Mettre à jour GitHub Pages
+
+Sans changer de branche (très long) :
+
+    git subtree push --prefix client origin gh-pages
+    
+En changeant de branche :
+
+    git checkout gh-pages // go to the gh-pages branch
+    git rebase master // bring gh-pages up to date with master
+    git push origin gh-pages // commit the changes
+    git checkout master // return to the master branch
