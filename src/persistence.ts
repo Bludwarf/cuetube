@@ -5,9 +5,12 @@ abstract class Persistence {
 
     public abstract getCollectionDiscIds(collectionName: string, cb: (err: Error, discIds: string[]) => void): Promise<string[]>;
 
+    public abstract postCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]>;
+
     public abstract getDisc(discId: string, discIndex: number): Promise<Disc>;
 
-    public abstract postDisc(videoId: string, video): Promise<any>;
+    // FIXME : disc devrait être un Disc et Promise une Promise<Disc>
+    public abstract postDisc(discId: string, disc): Promise<any>;
 
     public getVideo(videoId: string, GOOGLE_KEY: string): Promise<GoogleApiYouTubeVideoResource> {
         return new Promise((resolve, reject) => {
@@ -31,6 +34,24 @@ abstract class Persistence {
                     reject(resKO.data);
                 })
         });
+    }
+
+    /**
+     *
+     * @param {string} discId
+     * @param {number} discIndex
+     * @param jsonCuesheet {*} un objet JSON contenant la cuesheet à créér
+     * @return {Disc}
+     */
+    protected createDisc(discId: string, discIndex: number, jsonCuesheet: any): Disc {
+        const cue = new cuesheet.CueSheet();
+        _.extend(cue, jsonCuesheet);
+
+        const disc = new Disc(cue);
+        disc.id = discId;
+        disc.index = discIndex;
+
+        return disc;
     }
 
     public getPlaylistItems(playlistId: string, GOOGLE_KEY: string): Promise<GoogleApiYouTubePlaylistItemResource[]> {
