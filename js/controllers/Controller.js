@@ -1086,7 +1086,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             const disc = $scope.newDiscFromPlaylistItems(playlistItems);
             disc.src = url;
             persistence.postDisc(disc.id, disc).then(res => {
-                if (res.status !== 200) return alert("POST createNewDiscFromPlaylist $http != 200");
                 $scope.createDisc(disc);
                 if (cb) cb(null, disc);
             }, resKO => {
