@@ -1120,7 +1120,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 console.log("Création du disc...", disc);
 
                 // TODO : pouvoir passer le disc en JSON -> problème de circular ref
-                persistence.postDisc(videoId, disc.cuesheet).then(createdDisc => {
+                persistence.postDisc(videoId, disc).then(createdDisc => {
                     $scope.createDisc(disc);
                     if (cb) cb(null, disc);
                 }, resKO => {
