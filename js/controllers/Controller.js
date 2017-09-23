@@ -10,6 +10,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     const GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
 
+    const persistence = new LocalServerPersistence($scope, $http);
+
     //const socket = io.connect();
     //socket.emit('getVideo', $scope.text);
 
@@ -35,19 +37,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     // Collection de disques en paramètre ?
     else if (collectionParam) {
-        $http.get("/collection/"+collectionParam+"/discs").then(res => {
-            if (res.status !== 200) {
-                console.error("Error GET collection != 200");
-                alert("Impossible d'ouvrir la collection : "+collectionParam);
-                history.back();
-                return;
-            }
-
-            discIds = res.data;
+        persistence.getCollectionDiscIds(collectionParam).then(discIds => {
             loadDiscs(discIds);
-
-        }, resKO => {
-            console.error("Error GET collection : "+resKO.data);
+        }, err => {
             alert("Impossible d'ouvrir la collection : "+collectionParam);
             history.back();
         });
@@ -302,15 +294,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         for (let discIndex = 0; discIndex < discIds.length; ++discIndex) {
 
             const discId = discIds[discIndex];
-            $http.get("/"+discId+".cue.json").then(res => {
-                if (res.status !== 200) return console.error("Error GET cuesheet "+discId+" $http");
-
-                const cue = new cuesheet.CueSheet();
-                _.extend(cue, res.data);
-
-                const disc = new Disc(cue);
-                disc.id = discId;
-                disc.index = discIndex;
+            persistence.getDisc(discId, discIndex).then(disc => {
                 discs[discIndex] = disc;
                 enrichDisc(disc, discIndex);
 
@@ -607,7 +591,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         // Annulé ?
         if (!video.snippet.title || !video.snippet.channelTitle || !video.contentDetails.duration) return;
 
-        $http.post("/"+videoId+".json", video).then(() => {
+        persistence.postDisc(videoId, video).then(() => {
             // POST OK
             alert('POST OK');
         }, () => {
@@ -630,24 +614,14 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     };
 
 
-    /** @return https://developers.google.com/youtube/v3/docs/videos#resource */
+    /** @return Promise https://developers.google.com/youtube/v3/docs/videos#resource */
     $scope.getVideoSnippet = function(videoId, cb) {
-        $http.get('https://www.googleapis.com/youtube/v3/videos', {
-            params: {
-                key: GOOGLE_KEY,
-                part: 'snippet,contentDetails',//'contentDetails', // contentDetails => durée
-                id: videoId,
-                maxResults: 1
-            }
-        })
-        .success(function(data) {
-            if (!data.items || data.items.length !== 1) return cb(new Error("Items not found for videoId "+videoId));
-            $scope.debugData.getVideoSnippet = data;
-            cb(null, data.items[0].snippet);
-        })
-        .error(function(data) {
-            cb(data);
-        })
+        // TODO comment recréer une Promise par dessus le promise de getVideo .
+        persistence.getVideo(videoId, GOOGLE_KEY).then(video => {
+            cb(null, video.snippet);
+        }).catch(err => {
+            cb(err);
+        });
     };
 
     $scope.debugData = {
@@ -1021,22 +995,13 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     };
 
     /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
-    $scope.getPlaylistItems = function(playlistId, cb) {
-        $http.get('https://www.googleapis.com/youtube/v3/playlistItems', {
-                params: {
-                    key: GOOGLE_KEY,
-                    part: 'snippet',//'contentDetails',
-                    playlistId: playlistId,
-                    maxResults: 50 // TODO : YouTube n'autorise pas plus que 50
-                }
-            })
-            .success(function(data) {
-                if (data.pageInfo && data.pageInfo.totalResults > data.pageInfo.resultsPerPage) return cb(new Error("Too much results (> 50)"));
-                cb(null, data);
-            })
-            .error(function(data) {
-                cb(data);
-            })
+    // TODO : convertir en promise
+    $scope.getPlaylistItems = function (playlistId, cb) {
+        persistence.getPlaylistItems(playlistId, GOOGLE_KEY).then(data => {
+            cb(null, data);
+        }).catch(err => {
+            cb(err);
+        })
     };
 
     /**
@@ -1089,7 +1054,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         if (collectionParam) {
             console.log("Ajout du disque dans la collection "+collectionParam);
             const discIds = $scope.discs.map(disc => disc.id);
-            $http.post(`/collection/${collectionParam}/discs`, discIds).then(res => {
+            persistence.postCollectionDiscIds(collectionParam, discIds).then(discIds => {
                 console.log("Disque ajouté avec succès dans la collection "+collectionParam);
             }, resKO => {
                 alert("Erreur lors de l'ajout du disque dans la collection " + collectionParam);
@@ -1119,7 +1084,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
             const disc = $scope.newDiscFromPlaylistItems(playlistItems);
             disc.src = url;
-            $http.post("/"+disc.id+".cue.json", disc).then(res => {
+            persistence.postDisc(disc.id, disc).then(res => {
                 if (res.status !== 200) return alert("POST createNewDiscFromPlaylist $http != 200");
                 $scope.createDisc(disc);
                 if (cb) cb(null, disc);
@@ -1136,6 +1101,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         }
     });
 
+    // TODO : cb => Promise
     $scope.createNewDiscFromVideo = function(videoIdOrUrl, url, cb) {
         const videoId = getIdOrUrl(videoIdOrUrl, 'Id ou URL de la vidéo YouTube (multipiste)', 'v');
         if (!videoId) return;
@@ -1154,13 +1120,12 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 console.log("Création du disc...", disc);
 
                 // TODO : pouvoir passer le disc en JSON -> problème de circular ref
-                $http.post("/" + videoId + ".cue.json", disc.cuesheet).then(res => {
-                    if (res.status !== 200) return alert("POST createNewDiscFromVideo $http != 200");
+                persistence.postDisc(videoId, disc.cuesheet).then(createdDisc => {
                     $scope.createDisc(disc);
                     if (cb) cb(null, disc);
                 }, resKO => {
                     alert('Erreur POST createNewDiscFromVideo : ' + resKO.data);
-                    if (cb) cb(resKO.data); // FIXME  throw err ?
+                    if (cb) cb(resKO.data);
                 });
             } catch (e) {
                     if (e.name === "youtube.notracklist") {
@@ -1187,6 +1152,12 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.createNewDiscFromVideoOrPlaylist = function(url, cb) {
 
         url = url || prompt("URL de la vidéo/playlist YouTube");
+        cb = cb || (err => {
+            if (err) {
+                console.error(err);
+                alert(err);
+            }
+        });
         if (!url) return;
         const playlistId = getParameterByName('list', url);
 
