@@ -6,6 +6,8 @@
   "repository": "",
   "author": "Mathieu Lavigne <bludwarf@gmail.com>",
   "dependencies": {
+    "@types/angular": "^1.6.32",
+    "@types/gapi.youtube": "^3.0.32",
     "@types/underscore": "^1.8.2",
     "@types/youtube": "0.0.31",
     "async": "~0.2.8",

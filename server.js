@@ -155,7 +155,8 @@ router
      *   - collection : id d'un fichier /client/collections/*.cues contenant une liste d'ids de disques
      */
     .get("/player", function(req, res) {
-        res.render("player.ejs");
+        //res.render("player.ejs");
+        res.sendFile(path.resolve(__dirname, 'client', 'player.html'));
     })
 
     .get("/discs", function(req, res) {
