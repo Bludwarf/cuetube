@@ -32,19 +32,15 @@ class LocalServerPersistence extends Persistence {
                 if (res.status !== 200) {
                     return reject(res.status);
                 }
-                const cue = new cuesheet.CueSheet();
-                _.extend(cue, res.data);
-                const disc = new Disc(cue);
-                disc.id = discId;
-                disc.index = discIndex;
+                const disc = super.createDisc(discId, discIndex, res.data);
                 resolve(disc);
             }, reject);
         });
     }
     // TODO : renvoyer plutôt le disc que le résultat du post
-    postDisc(videoId, video) {
+    postDisc(discId, disc) {
         return new Promise((resolve, reject) => {
-            this.$http.post(`/${videoId}.json`, video).then(resolve, reject);
+            this.$http.post(`/${discId}.json`, disc).then(resolve, reject);
         });
     }
 }

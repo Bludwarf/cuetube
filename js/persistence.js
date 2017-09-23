@@ -25,6 +25,21 @@ class Persistence {
             });
         });
     }
+    /**
+     *
+     * @param {string} discId
+     * @param {number} discIndex
+     * @param jsonCuesheet {*} un objet JSON contenant la cuesheet à créér
+     * @return {Disc}
+     */
+    createDisc(discId, discIndex, jsonCuesheet) {
+        const cue = new cuesheet.CueSheet();
+        _.extend(cue, jsonCuesheet);
+        const disc = new Disc(cue);
+        disc.id = discId;
+        disc.index = discIndex;
+        return disc;
+    }
     getPlaylistItems(playlistId, GOOGLE_KEY) {
         return new Promise((resolve, reject) => {
             // TODO : à mettre dans ytparser plutôt non ?
