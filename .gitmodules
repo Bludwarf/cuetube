@@ -1,0 +1,4 @@
+[submodule "cues"]
+	path = cues
+	url = https://github.com/Bludwarf/cuetube.git
+	branch = cues
