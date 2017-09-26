@@ -9,9 +9,7 @@
 function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     const GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
-
-    //const persistence = new LocalServerPersistence($scope, $http);
-    const persistence = new LocalStoragePersistence($scope, $http);
+    const persistence = window.location.host === "bludwarf.github.io" ? new LocalStoragePersistence($scope, $http) : new LocalServerPersistence($scope, $http);
 
     //const socket = io.connect();
     //socket.emit('getVideo', $scope.text);
