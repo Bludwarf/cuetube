@@ -12,6 +12,17 @@ function getParameterByName(name, url) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
+function setParameterByName(name, value, url) {
+    if (!url) {
+        url = window.location.href;
+    }
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("([?&])" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results || !results[3]) return url;
+    return url.replace(results[0], `${results[1]}${name}=${value}`);
+}
+
 /**
  * @author https://stackoverflow.com/a/2450976/1655155
  */
