@@ -200,6 +200,10 @@ module Disc {
         get videoId() {
             return getParameterByName("v", this.name);
         }
+
+        set videoId(value: string) {
+            this.name = setParameterByName("v", value, this.name);
+        }
         
         newTrack() {
             const tracks = this.disc.tracks;
@@ -244,6 +248,7 @@ module Disc {
             const tracks = this.disc.tracks;
 
             files.splice(indexInDisc, 1);
+            this.disc.cuesheet.files.splice(indexInDisc, 1);
             const deletedTracks = this.tracks.length;
 
             // On décale l'index de toutes les pistes suivantes
@@ -293,7 +298,12 @@ module Disc {
             this.cuesheetTrack.title = value;
         }
         get indexes(): cuesheet.Index[] {
-            return this.cuesheetTrack.indexes;
+            if (!this.cuesheetTrack.indexes) {
+                const index = new cuesheet.Index(); // FIXME : prendre le temps de début de la piste précédente
+                index.number = 1;
+                this.cuesheetTrack.indexes = [index];
+            }
+            return this.cuesheetTrack.indexes; // FIXME : time.frame arrive à undfined dans CueService.writeCueFile
         }
         set indexes(value: cuesheet.Index[]) {
             this.cuesheetTrack.indexes = value;
@@ -321,8 +331,20 @@ module Disc {
 
         get startSeconds(): number {
             const time = this.indexes[this.indexes.length - 1].time;
+            if (!time) return 0; // FIXME : prendre la valeur de la piste précédente
             return time.min * 60 + time.sec + time.frame / 75;
         }
+
+        /*set startSeconds(value: number) {
+            if (!this.indexes) {
+                this.indexes = [];
+            }
+            if (!this.indexes.length) {
+                this.indexes.push(new cuesheet.Index());
+            }
+            const index = this.indexes[0];
+            index.time = new cuesheet.Time(Math.floor(value % 60), Math.floor(value / 60), Math.floor(value % 1 * 75));
+        }*/
 
         get endSeconds(): number {
             const tracksInTime = this.file.tracksInTime;
@@ -359,6 +381,7 @@ module Disc {
 
             const indexInFile = this.file.tracks.indexOf(this);
             this.file.tracks.splice(indexInFile, 1);
+            this.file.cuesheetFile.tracks.splice(indexInFile, 1);
 
             // On décale l'index de toutes les pistes suivantes
             for (let i = indexInDisc; i < tracks.length; ++i) {

@@ -48,5 +48,7 @@ declare module cuesheet {
         min: number;
         sec: number;
         frame: number;
+
+        constructor(min: number, sec: number, frame: number);
     }
 }

@@ -22,12 +22,29 @@
         }
 
         form {
-            width: 55em;
+            width: 67em;
             margin: auto auto;
         }
 
         fieldset.file {
             text-indent: 1em;
+        }
+
+        div.file {
+            margin-bottom: 10px;
+        }
+
+        div.file:hover {
+            background: #EEE;
+        }
+
+        .file img {
+            float: left;
+            margin-right: 1em;
+        }
+
+        .file legend {
+            margin-bottom: 10px;
         }
 
         fieldset.track {
@@ -78,36 +95,47 @@
         <label>title: <input type="text" name="title" class="title" ng-model="disc.title" /></label>
         <label>performer: <input type="text" name="performer" ng-model="disc.performer" /></label>
 
-        <button type="button" ng-click="save()">Sauvegarder</button>
+        <button type="button" ng-click="save()" style="margin-bottom: 1em;">Sauvegarder</button>
 
-        <fieldset ng-repeat="file in disc.files" class="file">
-            <legend><a href="{{file.name}}" target="_blank">videoId</a> <input type="text" name="fileName" value="{{file.videoId}}" size="300"/></legend>
+        <label>source : <input type="text" name="source" ng-model="disc.src" style="width: 40em;"></label>
 
-            <ul class="nav nav-tabs" ng-show="disc.files.length == 1">
-                <li class="active"><a data-toggle="tab" href="#tracks">Pistes</a></li>
-                <li><a data-toggle="tab" href="#tracklist">Tracklist</a></li>
-            </ul>
+        <div class="file" ng-repeat="file in disc.files">
+            <a href="{{file.name}}" target="_blank">
+                <img ng-src="https://img.youtube.com/vi/{{file.videoId}}/default.jpg" />
+            </a>
+            <fieldset>
+                <legend>
+                    <input type="text" name="fileName" ng-model="file.videoId" size="300"/>
+                </legend>
 
-            <div class="tab-content">
-                <div id="tracks" class="tab-pane in active">
-                    <fieldset ng-repeat="track in file.tracks" class="track">
-                        <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
-                        <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
-                        <input type="text" name="trackTitle" class="title" placeholder="title" ng-model="track.title" />
-                        <input type="text" name="trackPerformer" class="performer" placeholder="performer" ng-model="track.performer" empty-to-null />
-                        <button ng-click="track.remove()"><span class="icon icon-remove" /></button>
-                    </fieldset>
-                </div>
+                <ul class="nav nav-tabs" ng-show="disc.files.length == 1">
+                    <li class="active"><a data-toggle="tab" href="#tracks">Pistes</a></li>
+                    <li><a data-toggle="tab" href="#tracklist">Tracklist</a></li>
+                </ul>
 
-                <div id="tracklist" class="tab-pane" ng-show="disc.files.length == 1">
-                    <button style="margin-bottom: 1em;" ng-click="prompt(null, getTracklist(file.tracks))">Copier</button>
-                    <div class="textarea-wrapper">
-                        <textarea placeholder="Import d'une tracklist YouTube" readonly>{{getTracklist(file.tracks)}}</textarea>
+                <div class="tab-content">
+                    <div id="tracks" class="tab-pane in active">
+                        <fieldset ng-repeat="track in file.tracks" class="track">
+                            <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
+                            <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
+                            <input type="text" name="trackTitle" class="title" placeholder="title" ng-model="track.title" />
+                            <input type="text" name="trackPerformer" class="performer" placeholder="performer" ng-model="track.performer" empty-to-null />
+                            <button ng-click="track.remove()" title="Supprimer cette piste"><span class="icon icon-remove" style="color: #600700;"></span></button>
+                            <!-- TODO : pouvoir insérer une piste après n'importe quelle piste (et pas seulement la dernière -->
+                            <button ng-click="file.newTrack()" title="Ajouter une piste"><span class="icon icon-plus"></span></button>
+                        </fieldset>
+                    </div>
+
+                    <div id="tracklist" class="tab-pane" ng-show="disc.files.length == 1">
+                        <button style="margin-bottom: 1em;" ng-click="prompt(null, getTracklist(file.tracks))">Copier</button>
+                        <div class="textarea-wrapper">
+                            <textarea placeholder="Import d'une tracklist YouTube" readonly>{{getTracklist(file.tracks)}}</textarea>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-        </fieldset>
+            </fieldset>
+        </div>
 
         <button type="button" ng-click="save()">Sauvegarder</button>
 

@@ -123,7 +123,7 @@ router
     .post("/:id.cue.json", function(req, res) {
         var id = req.params.id;
         var disc = req.body;
-        var cueFile = path.resolve(__dirname, 'client/cues/'+id+'.cue');
+        var cueFile = CueService.getPath(id+'.cue');
         CueService.writeCueFile(cueFile, disc, (err) => {
             if (err) return res.status(500).send(err.message);
             return res.end();

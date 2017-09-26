@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, "..");
 const dir = root + "/client/cues/";
 
 function pad2(i) {
+    if (!i) return "00";
     return (i < 10 ? "0" : "") + i;
 }
 
