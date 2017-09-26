@@ -1,6 +1,5 @@
 const path = require("path");
 const fs = require('fs');
-const converter = require("../maquette/m3u-convert");
 const packageInfos = require("../package.json");
 
 const root = path.resolve(__dirname, "..");
