@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require('fs');
 const packageInfos = require("../package.json");
+const mkdirp = require('mkdirp');
 
 const root = path.resolve(__dirname, "..");
 const dir = root + "/client/cues/";
@@ -38,10 +39,19 @@ function saveJsonCue(cue, jsonFile) {
     });
 }
 
+function encode(char) {
+    return char.toUpperCase();
+}
+
 /** Objets CueSheet parsés, rangés par cueName */
 let cueSheets = {};
 
 module.exports = {
+
+    getPath: function(filename) {
+        const outDir = path.join(dir, encode(filename[0]), encode(filename[1]), encode(filename[2]));
+        return path.join(outDir, filename);
+    },
     
     /**
      * @param cueName avec extension ".cue" : exemple "Dg0IjOzopYU.cue"
@@ -55,7 +65,7 @@ module.exports = {
             return cb(null, cueSheets[cueName]);
         
         // Si un fichier cue existe on l'utilise
-        const cueFile = dir + cueName;
+        const cueFile = this.getPath(cueName);
         try {
             fs.access(cueFile, fs.R_OK, (err) => {
                 if (!err) 
@@ -217,7 +227,8 @@ module.exports = {
 
         // cache
         cueSheets[path.basename(cueFile)] = cue;
-        
+
+        mkdirp.sync(path.dirname(cueFile));
         fs.writeFile(cueFile, data, 'utf-8', (err) => {
             if (err)
                 console.error("CueService#writeCueFile : KO");
@@ -272,7 +283,7 @@ module.exports = {
      * @param cb : function(Error, targetFile)
      */
     getCueFile: function(cueName, options, cb) {
-        const targetFile = dir + cueName;
+        const targetFile = this.getPath(cueName);
         
         // Fichier déjà existant ?
         fs.access(targetFile, fs.R_OK, (err) => {
@@ -295,7 +306,8 @@ module.exports = {
                         + '    TITLE "'+track.title+'"\n'
                         + '    INDEX 01 '+track.index + '\n';
                 }
-                
+
+                mkdirp.sync(path.dirname(targetFile));
                 fs.writeFile(targetFile, cueFileContent, function(err) {
                     if (err) return cb(err);
                     return cb(null, targetFile);
