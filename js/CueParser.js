@@ -138,6 +138,7 @@
                 var lineParser
                     , cuesheet = new CueSheet()
                     , lines;
+                options = options || {};
 
                 lines = cuesheetContent.replace(/\r\n/, '\n').split('\n');
 

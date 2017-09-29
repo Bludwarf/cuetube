@@ -52,7 +52,7 @@ CueSheet.prototype.getCurrentFile = function() {
     } else {
         return null;
     }
-}
+};
 
 CueSheet.prototype.getCurrentTrack = function() {
     var file = this.getCurrentFile();
@@ -89,5 +89,11 @@ CueSheet.prototype.newTrack = function(number, type) {
 
     return this;
 };
+
+    // Convert Object to cuesheet text
+    Track.prototype.toString = function() {
+        return print();
+    };
+
 },{}]},{},[1])(1)
 });

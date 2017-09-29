@@ -180,3 +180,8 @@ function weightedRandom(elements, weight) {
     });
     return elements[i];
 }
+
+function pad2(i) {
+    if (!i) return "00";
+    return (i < 10 ? "0" : "") + i;
+}
