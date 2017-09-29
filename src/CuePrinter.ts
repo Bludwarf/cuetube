@@ -1,7 +1,7 @@
 /** Using same format than MusicBrainz Picard */
 
 class CuePrinter {
-    print(cue: cuesheet.CueSheet): string {
+    static print(cue: cuesheet.CueSheet): string {
         const PAD = "  ";
         const EOL = "\n";
 
@@ -9,6 +9,7 @@ class CuePrinter {
 
         if (cue.performer) data += "PERFORMER "+stringValue(cue.performer)+""+EOL;
         data += "TITLE \""+cue.title+"\""+EOL;
+        // FIXME : le format exact doit être 'REM IDENTIFIANT_SANS_ESPACE VALEUR AVEC ESPACE'
         if (cue.rem) {
             cue.rem.forEach(rem => {
                 data += "REM "+rem+EOL;
@@ -20,12 +21,12 @@ class CuePrinter {
             const file = cue.files[f];
 
             if (file.name) {
-                data += "FILE \"" + file.name + "\" " + file.type + EOL;
+                data += "FILE \"" + file.name + "\" " + (file.type || 'MP3') + EOL;
             }
 
             for (let t = 0; t < file.tracks.length; ++t) {
                 const track = file.tracks[t];
-                data += PAD+"TRACK "+pad2(track.number)+" "+track.type+EOL;
+                data += PAD+"TRACK "+pad2(track.number)+" "+(track.type||'AUDIO')+EOL;
 
                 // performer
                 if (track.performer) {
