@@ -1,0 +1,371 @@
+{
+  "catalog": null,
+  "cdTextFile": null,
+  "files": [
+    {
+      "name": null,
+      "type": null,
+      "tracks": [
+        {
+          "number": 1,
+          "type": "AUDIO",
+          "title": "Don't Know Why",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 0,
+                "sec": 0,
+                "frame": 0
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 478382f6-9fb9-3eea-b29d-80e26985f733",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 2,
+          "type": "AUDIO",
+          "title": "Seven Years",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 3,
+                "sec": 7,
+                "frame": 0
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID eed8a3fb-ad8d-3c35-adfb-395581987d91",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 3,
+          "type": "AUDIO",
+          "title": "Cold Cold Heart",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 5,
+                "sec": 31,
+                "frame": 74
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 19c13994-8e0b-3617-944c-ccd157727588",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 4,
+          "type": "AUDIO",
+          "title": "Feelin' the Same Way",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 9,
+                "sec": 9,
+                "frame": 74
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID f1f3b7b4-2ef2-376a-aef0-3a304cf2835c",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 5,
+          "type": "AUDIO",
+          "title": "Come Away With Me",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 12,
+                "sec": 9,
+                "frame": 29
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 8f1b3cdc-239e-3c45-b7b7-f5f5c7340917",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 6,
+          "type": "AUDIO",
+          "title": "Shoot the Moon",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 15,
+                "sec": 26,
+                "frame": 29
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 6e8c602e-14b0-3056-8f86-fc040a75761d",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 7,
+          "type": "AUDIO",
+          "title": "Turn Me On",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 19,
+                "sec": 23,
+                "frame": 30
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 0ce1e174-d605-3921-ab8f-d49c535629e1",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 8,
+          "type": "AUDIO",
+          "title": "Lonestar",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 21,
+                "sec": 58,
+                "frame": 30
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 28dacf37-bfaa-3790-b3ad-32f0a6ba826a",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 9,
+          "type": "AUDIO",
+          "title": "I've Got to See You Again",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 25,
+                "sec": 4,
+                "frame": 30
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 009a3923-bbd5-37b6-8805-1304a309b8d3",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 10,
+          "type": "AUDIO",
+          "title": "Painter Song",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 29,
+                "sec": 18,
+                "frame": 30
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 9546f580-7488-35b9-ab8a-f3b1c071550d",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 11,
+          "type": "AUDIO",
+          "title": "One Flight Down",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 31,
+                "sec": 59,
+                "frame": 30
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 6a56ea49-389d-34a6-9f29-e3dad0e7f06c",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 12,
+          "type": "AUDIO",
+          "title": "Nightingale",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 35,
+                "sec": 5,
+                "frame": 30
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 68d9ed3e-d8e6-3099-9864-ac78513eb8fe",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 13,
+          "type": "AUDIO",
+          "title": "The Long Day Is Over",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 39,
+                "sec": 17,
+                "frame": 29
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID 0efe6550-9e47-36ac-bb82-fb62bb2f1dd9",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        },
+        {
+          "number": 14,
+          "type": "AUDIO",
+          "title": "The Nearness of You",
+          "flags": null,
+          "isrc": null,
+          "performer": "Norah Jones",
+          "songWriter": null,
+          "pregap": null,
+          "postgap": null,
+          "indexes": [
+            {
+              "number": 1,
+              "time": {
+                "min": 42,
+                "sec": 3,
+                "frame": 29
+              }
+            }
+          ],
+          "rem": [
+            "MUSICBRAINZ_TRACK_ID c6eeaa80-b0f7-387a-99c7-c4f95d1df190",
+            "MUSICBRAINZ_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9"
+          ]
+        }
+      ]
+    }
+  ],
+  "performer": "Norah Jones",
+  "songWriter": null,
+  "title": "Come Away With Me",
+  "rems": null,
+  "rem": [
+    "MUSICBRAINZ_ALBUM_ID 4c6f6712-1ca0-46c9-9484-f24bc1ef83f5",
+    "MUSICBRAINZ_ALBUM_ARTIST_ID 985c709c-7771-4de3-9024-7bda29ebe3f9",
+    "DATE 2013"
+  ]
+}

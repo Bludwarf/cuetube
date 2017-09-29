@@ -22,6 +22,7 @@ declare module cuesheet {
         name: string;
         type: string;
         tracks: Track[]
+        rem: string[];
     }
 
     class Track {
@@ -35,6 +36,7 @@ declare module cuesheet {
         pregap;
         postgap;
         indexes: Index[];
+        rem: string[];
 
         constructor(number: number, type: string);
     }
