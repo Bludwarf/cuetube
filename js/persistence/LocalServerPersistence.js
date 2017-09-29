@@ -40,7 +40,7 @@ class LocalServerPersistence extends Persistence {
     // TODO : renvoyer plutôt le disc que le résultat du post
     postDisc(discId, disc) {
         return new Promise((resolve, reject) => {
-            this.$http.post(`/${discId}.json`, disc).then(resolve, reject);
+            this.$http.post(`/${discId}.cue.json`, disc).then(resolve, reject);
         });
     }
 }
