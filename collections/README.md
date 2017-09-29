@@ -1,1 +1,0 @@
-Tous les noms de fichiers doivent être en **minuscule**.
