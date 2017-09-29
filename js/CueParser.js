@@ -144,9 +144,13 @@
                 // TODO : how to pass options in a clean way ?
                 cuesheet.options = options;
 
-                lines.forEach(function (line) {
+                // Get last occurence of commands (line number)
+                options.lastOccurrences = {};
+
+                lines.forEach(function (line, lineNumber) {
                     if (!line.match(/^\s*$/)) {
                         lineParser = parseCommand(line);
+                        options.lastOccurrences[lineParser.command] = lineNumber;
                         commandMap[lineParser.command](lineParser.params, cuesheet);
                     }
                 });
@@ -276,11 +280,25 @@
             }
 
             function parseRem(params, cuesheet) {
-                if (!cuesheet.rem) {
-                    cuesheet.rem = [];
+
+                // Store the remark considering the last occurrence of FILE/TRACK command
+                var lastOccurrences = cuesheet.options.lastOccurrences;
+                var remTarget;
+                if (lastOccurrences && (lastOccurrences['FILE'] || lastOccurrences['TRACK'])) {
+                    if (!lastOccurrences['FILE'] || lastOccurrences['FILE'] < lastOccurrences['TRACK']) {
+                        remTarget = cuesheet.getCurrentTrack();
+                    } else {
+                        remTarget = cuesheet.getCurrentFile();
+                    }
+                } else {
+                    remTarget = cuesheet;
                 }
 
-                cuesheet.rem.push(params.join(' '));
+                if (!remTarget.rem) {
+                    remTarget.rem = [];
+                }
+
+                remTarget.rem.push(params.join(' '));
             }
 
             function parseSongWriter(params, cuesheet) {
