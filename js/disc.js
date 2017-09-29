@@ -44,11 +44,21 @@ class Disc {
         this.cuesheet.rem = value;
     }
     get id() {
+        // Dans le cas d'une playlist on prend le paramètre "list" au lieu de l'id de la 1ère vidéo
+        // si disponible
+        if (this.files && this.files.length > 1) {
+            const src = this.src;
+            const listId = getParameterByName("list", src);
+            if (listId) {
+                return listId;
+            }
+        }
         return this._id ? this._id : this.videoId;
     }
     set id(value) {
         this._id = value;
     }
+    /** @return l'id de la 1ère vidéo */
     get videoId() {
         if (!this.files || !this.files.length)
             return undefined;
@@ -151,6 +161,7 @@ class Disc {
         set tracks(tracks) {
             throw new Error("Cannot modify tracks. Use newTrack() ou tracks[i].remove()");
         }
+        /** Exemple `https://www.youtube.com/watch?v=0NiJ4_pPO8o` */
         get name() {
             return this.cuesheetFile.name;
         }
