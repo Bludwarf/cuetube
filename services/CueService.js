@@ -49,6 +49,7 @@ let cueSheets = {};
 
 module.exports = {
 
+    // TODO : à factoriser dans une méthode cliente
     getPath: function(filename) {
         const outDir = path.join(dir, encode(filename[0]), encode(filename[1]), encode(filename[2]));
         return path.join(outDir, filename);
