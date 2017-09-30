@@ -41,8 +41,7 @@ class LocalStoragePersistence extends Persistence {
     postCollectionDiscIds(collectionName, discIds) {
         return __awaiter(this, void 0, void 0, function* () {
             const collection = (yield this.getCollection(collectionName)) || new Collection();
-            collection.discIds = collection.discIds || [];
-            collection.discIds = collection.discIds.concat(discIds);
+            collection.discIds = discIds;
             this.postCollection(collection);
             return collection.discIds;
         });
