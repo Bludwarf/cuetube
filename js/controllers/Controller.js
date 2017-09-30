@@ -1024,7 +1024,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
      */
     $scope.newDiscFromPlaylistItems = function(playlistItems) {
         playlistItems = playlistItems.items || playlistItems;
-        let disc = ytparser.newDiscFromPlaylistItems(playlistItems, prompt("Nom du disque"));
+        let disc = ytparser.newDiscFromPlaylistItems(playlistItems, prompt("Nom du disque", playlistItems[0].snippet.title));
         return enrichDisc(disc, $scope.discs.length);
     };
 
