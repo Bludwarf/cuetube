@@ -9,7 +9,8 @@
 function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     const GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
-    const persistence = window.location.host === "bludwarf.github.io" ? new LocalStoragePersistence($scope, $http) : new LocalServerPersistence($scope, $http);
+    const persistence = (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? new LocalStoragePersistence($scope, $http) : new LocalServerPersistence($scope, $http);
+    const DEFAULT_COLLECTION = '_DEFAULT_';
 
     //const socket = io.connect();
     //socket.emit('getVideo', $scope.text);
@@ -19,7 +20,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     })*/
 
     const discsParam = getParameterByName("discs", document.location.search);
-    const collectionParam = getParameterByName("collection", document.location.search);
+
+    // Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
+    const collectionParam = getParameterByName("collection", document.location.search) || DEFAULT_COLLECTION;
 
     // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
@@ -39,7 +42,11 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         persistence.getCollectionDiscIds(collectionParam).then(discIds => {
             loadDiscs(discIds);
         }).catch(err => {
-            alert("Impossible d'ouvrir la collection : "+collectionParam+" : "+err);
+            if (collectionParam === DEFAULT_COLLECTION) {
+                alert("Pour lancer du gros son veuillez ajouter un album avec le bouton en haut à droite. Enjoy !");
+            } else {
+                alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
+            }
             //history.back();
         });
     }
