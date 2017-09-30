@@ -30,8 +30,7 @@ class LocalStoragePersistence extends Persistence {
     }
     public async postCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
         const collection: Collection = await this.getCollection(collectionName) || new Collection();
-        collection.discIds = collection.discIds || [];
-        collection.discIds = collection.discIds.concat(discIds);
+        collection.discIds = discIds;
         this.postCollection(collection);
         return collection.discIds;
     }

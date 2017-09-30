@@ -9,7 +9,7 @@ abstract class Persistence {
 
     /**
      * @param {string} collectionName
-     * @param {string[]} discIds id des disque à ajouter à la collection (ne remplace pas ceux déjà existants non mentionnés)
+     * @param {string[]} discIds id des disques présents dans cette collection, annule et remplace les précédents
      * @return {Promise<string[]>}
      */
     public abstract postCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]>;
