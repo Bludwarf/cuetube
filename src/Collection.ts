@@ -1,3 +1,7 @@
 class Collection {
-    public discIds: string[];
+    public discIds: string[] = [];
+
+    constructor(public name?: string) {
+
+    }
 }

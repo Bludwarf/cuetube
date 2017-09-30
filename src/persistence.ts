@@ -3,8 +3,15 @@ abstract class Persistence {
     constructor(protected $scope: IPlayerScope, protected $http: ng.IHttpService) {
     }
 
+    public abstract postCollection(collection: Collection): Promise<Collection>;
+
     public abstract getCollectionDiscIds(collectionName: string, cb: (err: Error, discIds: string[]) => void): Promise<string[]>;
 
+    /**
+     * @param {string} collectionName
+     * @param {string[]} discIds id des disque à ajouter à la collection (ne remplace pas ceux déjà existants non mentionnés)
+     * @return {Promise<string[]>}
+     */
     public abstract postCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]>;
 
     public abstract getDisc(discId: string, discIndex: number): Promise<Disc>;

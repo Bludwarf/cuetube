@@ -6,6 +6,14 @@ class LocalServerPersistence extends Persistence {
         super($scope, $http);
     }
 
+    public async getCollection(collectionName: string): Promise<Collection> {
+        throw new Error("Not implemented");
+    }
+
+    public async postCollection(collection: Collection): Promise<Collection> {
+        throw new Error("Not implemented");
+    }
+
     public getCollectionDiscIds(collectionName: string): Promise<string[]> {
 
         return new Promise((resolve, reject) => {
