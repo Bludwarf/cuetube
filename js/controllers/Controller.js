@@ -42,11 +42,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         persistence.getCollectionDiscIds(collectionParam).then(discIds => {
             loadDiscs(discIds);
         }).catch(err => {
-            if (collectionParam === DEFAULT_COLLECTION) {
-                alert("Pour lancer du gros son veuillez ajouter un album avec le bouton en haut à droite. Enjoy !");
-            } else {
-                alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
-            }
+            alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
             //history.back();
         });
     }
@@ -408,6 +404,19 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
                 return;
             }
+        }
+
+        // Premier lancement ...
+        if ((!$scope.discs || !$scope.discs.length)) {
+            // ... de l'application
+            if (collectionParam === DEFAULT_COLLECTION) {
+                alert("Bienvenue sur CueTube mec ! Pour lancer du gros son ajoute un album avec le bouton en haut à droite. Enjoy !");
+            }
+            // ... de la collection
+            else {
+                alert("Cette collection est vide pour le moment. Ajoute un disque et fais péter les watts.");
+            }
+            return;
         }
 
         getCtrl().next();
