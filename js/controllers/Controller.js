@@ -1051,7 +1051,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
         const existingDiscIndex = existingIds.indexOf(disc.id);
         if (existingDiscIndex !== -1) {
-            if (!confirm("Ce disque est déjà dans le lecteur. Voulez-vous l'écraser ?")) {
+            if (!confirm("Ce disque est déjà dans le lecteur. Voulez-vous le remplacer ?")) {
                 console.log("Création du disque annulée");
                 return;
             }
@@ -1089,23 +1089,16 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     $scope.createNewDiscFromPlaylist = function(playlistIdOrUrl, url, cb) {
         const playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
-        if (!playlistId) return;
+        if (!playlistId) return cb("Aucun id de playlist");
 
         $scope.getPlaylistItems(playlistId, (err, playlistItems) => {
             if (err) {
-                alert('Erreur createNewDiscFromPlaylist : '+err.message);
-                return;
+                return cb('Erreur createNewDiscFromPlaylist : '+err.message);
             }
 
             const disc = $scope.newDiscFromPlaylistItems(playlistItems);
             disc.src = url;
-            persistence.postDisc(disc.id, disc).then(res => {
-                $scope.createDisc(disc);
-                if (cb) cb(null, disc);
-            }, resKO => {
-                alert('Erreur POST createNewDiscFromPlaylist : '+resKO.data);
-                if (cb) cb(resKO.data); // FIXME : throw err ?
-            });
+            $scope.importDisc(disc, cb);
         });
     };
 
@@ -1129,32 +1122,32 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             try {
                 let disc = ytparser.newDiscFromVideoSnippet(snippet, videoUrl);
                 disc.src = url;
-                enrichDisc(disc, $scope.discs.length);
-
-                console.log("Création du disc...", disc);
-
-                // TODO : pouvoir passer le disc en JSON -> problème de circular ref
-                persistence.postDisc(videoId, disc).then(createdDisc => {
-                    $scope.createDisc(disc);
-                    if (cb) cb(null, disc);
-                }, resKO => {
-                    alert('Erreur POST createNewDiscFromVideo : ' + resKO.data);
-                    if (cb) cb(resKO.data);
-                });
+                $scope.importDisc(disc, cb);
             } catch (e) {
-                    if (e.name === "youtube.notracklist") {
+                if (e.name === "youtube.notracklist") {
                     const disc = e.disc;
                     alert("La description de la vidéo ne contient aucune tracklist, on va faire une recherche sur freedb...");
                     const win = openInNewTab(`http://www.regeert.nl/cuesheet/?str=${encodeURIComponent(disc.title)}`);
-
-
-
                 } else {
                     alert("Erreur lors de la création du disque : " + e.message);
                 }
             }
         });
 
+    };
+
+    $scope.importDisc = function(disc, cb) {
+        enrichDisc(disc, $scope.discs.length);
+
+        console.log("Création du disc...", disc);
+        // TODO : pouvoir passer le disc en JSON -> problème de circular ref
+        persistence.postDisc(disc.id, disc).then(createdDisc => {
+            $scope.createDisc(disc);
+            if (cb) cb(null, disc);
+        }, resKO => {
+            alert('Erreur postDisc : '+resKO.data);
+            if (cb) cb(resKO.data);
+        });
     };
 
     function openInNewTab(url) {
@@ -1174,11 +1167,35 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         });
         if (!url) return;
         const playlistId = getParameterByName('list', url);
+        const videoId = getParameterByName('v', url);
 
-        if (playlistId) {
-            return $scope.createNewDiscFromPlaylist(playlistId, url, cb);
+        // Si la cue n'est pas connue de CueTube/cues
+        function fallback() {
+            if (playlistId) {
+                return $scope.createNewDiscFromPlaylist(playlistId, url, cb);
+            } else {
+                return $scope.createNewDiscFromVideo(url, url, cb);
+            }
+        }
+
+        // Vidéo déjà connue sur CueTube/cues ?
+        if (playlistId || videoId) {
+            const id = playlistId || videoId;
+            console.log("On recherche si "+id+" n'est pas déjà connu de CueTube...");
+            $scope.getCueService().getCueFromCueTube(id).then(cue => {
+                if (confirm("La vidéo/playlist existe déjà dans CueTube. L'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.")) {
+                    const disc = new Disc(cue);
+                    disc.src = url;
+                    $scope.importDisc(disc, cb);
+                } else {
+                    fallback();
+                }
+            }).catch(err => {
+                console.error("Erreur lors de la récupération dans CueTube : "+err);
+                fallback();
+            });
         } else {
-            return $scope.createNewDiscFromVideo(url, url, cb);
+            fallback();
         }
     };
 
@@ -1270,5 +1287,11 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     // Paramètres
     $scope.shuffle = $scope.restore('shuffle', true);
+
+    // TODO : comment déclarer des services avec Angular ?
+    $scope.getCueService = function() {
+        if (!$scope.cueService) $scope.cueService = new CueService($http);
+        return $scope.cueService;
+    }
 
 } // Controller
