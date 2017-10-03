@@ -76,7 +76,8 @@
                 </h2>
 
                 <!-- TODO : tracklist courante -->
-                <div ng-model="currentDisc" class="columns">
+                <!-- On teste pour voir si c'est plus pratique de n'afficher les pistes que dans la liste des disques... -->
+                <!--<div ng-model="currentDisc" class="columns">
                     <ol class="disc-list">
                         <div ng-repeat="file in currentDisc.files">
                             <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index)">
@@ -85,7 +86,7 @@
                             </li>
                         </div>
                     </ol>
-                </div>
+                </div>-->
             </div>
         </div>
 
