@@ -1020,15 +1020,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     };
 
     /**
-     * Crée un disque à partir d'une playlist contenant uniquement des vidéos avec une seule piste
-     */
-    $scope.newDiscFromPlaylistItems = function(playlistItems) {
-        playlistItems = playlistItems.items || playlistItems;
-        let disc = ytparser.newDiscFromPlaylistItems(playlistItems, prompt("Nom du disque", playlistItems[0].snippet.title));
-        return enrichDisc(disc, $scope.discs.length);
-    };
-
-    /**
      * @param promptMessage message à afficher si on doit demander d'entrer une valeur pour idOrUrl
      * @param urlParam nom du paramètre contenant l'id à récupérer dans le cas d'une URL passée en argument
      * @return l'id à partir d'un ID ou d'une URL
@@ -1096,7 +1087,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 return cb('Erreur createNewDiscFromPlaylist : '+err.message);
             }
 
-            const disc = $scope.newDiscFromPlaylistItems(playlistItems);
+            playlistItems = playlistItems.items || playlistItems;
+            const disc = ytparser.newDiscFromPlaylistItems(playlistItems, prompt("Nom du disque", playlistItems[0].snippet.title));
             disc.src = url;
             $scope.importDisc(disc, cb);
         });
