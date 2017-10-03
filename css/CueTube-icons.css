@@ -9,7 +9,7 @@
     font-weight: normal;
     font-style: normal;
 }
-[class*='icon-']:before{
+[class*='glyphter-']:before{
 	display: inline-block;
    font-family: 'CueTube icons';
    font-style: normal;
@@ -18,5 +18,6 @@
    -webkit-font-smoothing: antialiased;
    -moz-osx-font-smoothing: grayscale
 }
-.icon-bin:before{content:'\0042';}
-.icon-random:before{content:'\0052';}
+.glyphter-bin:before{content:'\0042';}
+.glyphter-random:before{content:'\0052';}
+.glyphter-YouTube_Play_Button:before{content:'\0079';}

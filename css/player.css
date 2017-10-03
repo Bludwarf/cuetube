@@ -194,30 +194,37 @@ body {
 
 .svg-checkbox {
     cursor: pointer;
+    color: #666;
     fill: #666;
 }
 
 .svg-checkbox:hover {
     cursor: pointer;
+    color: #777;
     fill: #777;
 }
 
 .svg-checkbox.active {
+    color: #FFF;
     fill: #FFF;
 }
 
 .svg-checkbox.active:hover {
+    color: #DDD;
     fill: #DDD;
 }
 
-svg.monochrome path {
+.monochrome, .monochrome path {
+    color: #666;
     fill: #666;
 }
 
-svg.monochrome:hover path {
+.monochrome:hover, .monochrome:hover path {
+    color: #777;
     fill: #777;
 }
 
-svg.youtube-color-hover:hover path {
+.youtube-color-hover:hover, .youtube-color-hover:hover path {
+    color: #e62117;
     fill: #e62117;
 }
