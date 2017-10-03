@@ -1284,6 +1284,14 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.getCueService = function() {
         if (!$scope.cueService) $scope.cueService = new CueService($http);
         return $scope.cueService;
+    };
+
+    $scope.removeDisc = function(disc) {
+        if (!confirm(`Voulez-vous vraiment retirer le disque\n${disc.title}\nde la collection "${collectionParam}" ?`)) return;
+        const index = $scope.discs.indexOf(disc);
+        if (index === -1) return;
+        $scope.discs.splice(index, 1);
+        persistence.postCollectionDiscIds(collectionParam, $scope.discs.map(disc => disc.id));
     }
 
 } // Controller
