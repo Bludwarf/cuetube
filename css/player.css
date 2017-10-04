@@ -276,24 +276,28 @@ body {
     bottom: 0;
 }
 
-.svg-checkbox {
+.svg-checkbox
+{
     cursor: pointer;
     color: #666;
     fill: #666;
 }
 
-.svg-checkbox:hover {
+.svg-checkbox:hover,
+[class~="glyphicon"][ng-click]:hover {
     cursor: pointer;
     color: #777;
     fill: #777;
 }
 
-.svg-checkbox.active {
+.svg-checkbox.active,
+[class~="glyphicon"][ng-click] {
     color: #FFF;
     fill: #FFF;
 }
 
-.svg-checkbox.active:hover {
+.svg-checkbox.active:hover,
+[class~="glyphicon"][ng-click]:hover {
     color: #DDD;
     fill: #DDD;
 }

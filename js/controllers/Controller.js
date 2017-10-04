@@ -523,60 +523,55 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
      * Prochaine piste
      */
     $scope.next = function() {
-        $scope.$apply(() => {
-            const discs = $scope.discs;
-            let disc = $scope.currentDisc;
-            let track = $scope.currentTrack;
+        const discs = $scope.discs;
+        let disc = $scope.currentDisc;
+        let track = $scope.currentTrack;
 
-            const possibleDiscs = [];
-            for (let i = 0; i < discs.length; ++i) {
-                let disc = discs[i];
-                if (disc && disc.enabled && disc.playable) possibleDiscs.push(disc);
-            }
+        const possibleDiscs = [];
+        for (let i = 0; i < discs.length; ++i) {
+            let disc = discs[i];
+            if (disc && disc.enabled && disc.playable) possibleDiscs.push(disc);
+        }
 
-            // Aucun disque jouable ?
-            if (!possibleDiscs.length) {
-                throw new Error("Aucun disque activé (ou sans piste activées)");
-            }
+        // Aucun disque jouable ?
+        if (!possibleDiscs.length) {
+            throw new Error("Aucun disque activé (ou sans piste activées)");
+        }
 
-            const discIndex = possibleDiscs.indexOf(disc);
+        const discIndex = possibleDiscs.indexOf(disc);
 
-            // Aléatoire ?
-            if ($scope.shuffle) {
+        // Aléatoire ?
+        if ($scope.shuffle) {
 
-                $scope.currentDisc = weightedRandom(possibleDiscs, disc => disc.tracks.length);
-                disc = $scope.currentDisc;
-                $scope.currentDiscIndex = $scope.currentDisc.index;
+            $scope.currentDisc = weightedRandom(possibleDiscs, disc => disc.tracks.length);
+            disc = $scope.currentDisc;
+            $scope.currentDiscIndex = $scope.currentDisc.index;
 
-                track = disc.nextTrack($scope.shuffle); // FIXME : arrêter la lecture si plus aucune piste
-            }
+            track = disc.nextTrack($scope.shuffle); // FIXME : arrêter la lecture si plus aucune piste
+        }
 
-            else {
+        else {
 
-                // prochaine piste ou 1ère du prochain disque
-                do {
-                    track = track.next;
-                    if (!track) {
-                        disc = discIndex < possibleDiscs.length - 1 ? possibleDiscs[discIndex + 1] : possibleDiscs[0];
-                        track = disc.tracks[0];
-                    }
-                } while (!track.enabled);
-            }
+            // prochaine piste ou 1ère du prochain disque
+            do {
+                track = track.next;
+                if (!track) {
+                    disc = discIndex < possibleDiscs.length - 1 ? possibleDiscs[discIndex + 1] : possibleDiscs[0];
+                    track = disc.tracks[0];
+                }
+            } while (!track.enabled);
+        }
 
-            $scope.currentTrackIndex = track.index;
-            $scope.currentTrack = track;
-            $scope.currentFileIndex = track.file.index;
-            $scope.currentFile = track.file;
-            $scope.currentDiscIndex = track.file.disc.index;
-            $scope.currentDisc = track.file.disc;
-        });
+        $scope.currentTrackIndex = track.index;
+        $scope.currentTrack = track;
+        $scope.currentFileIndex = track.file.index;
+        $scope.currentFile = track.file;
+        $scope.currentDiscIndex = track.file.disc.index;
+        $scope.currentDisc = track.file.disc;
 
         // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
         if ($scope.currentTrack) {
-          const player = $scope.loadCurrentTrack($scope.player);
-          $scope.$apply(() => {
-            $scope.player = player;
-          });
+            $scope.player = $scope.loadCurrentTrack($scope.player);
         } else {
             alert("Aucun disque à lire !");
         }
@@ -827,6 +822,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         }
         scope.fileSlider.max = file.duration;
 
+        $scope.isPlaying = true;
         scope.changeVideoIHM(); // au cas ou on a déplacé le curseur
 
         // Incrémentation du nombre de lectures de la piste courante
@@ -962,19 +958,27 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
        });*/
     }
 
+    /** latence si on passe par $scope.player.getPlayerStat() */
+    $scope.isPlaying = undefined;
 
-    $scope.playPause = function() {
+    $scope.playPause = function(skipForeground) {
         const player = $scope.player;
         if (!player) return;
         const state = player.getPlayerState();
         if (state === YT.PlayerState.PLAYING) {
             player.pauseVideo();
-            $foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
-            $foreground.show();
+            if (!skipForeground) {
+                $foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
+                $foreground.show();
+            }
+            $scope.isPlaying = false;
         } else {
-            $foregroundIcon.html("<span class='glyphicon glyphicon-play'></span>");
-            $foreground.hide();
+            if (!skipForeground) {
+                $foregroundIcon.html("<span class='glyphicon glyphicon-play'></span>");
+                $foreground.hide();
+            }
             player.playVideo();
+            $scope.isPlaying = true;
         }
     };
 

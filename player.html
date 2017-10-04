@@ -139,6 +139,10 @@
                 <div id="player-controls">
                     <form id="player-controls-form">
                         <div class="track-controls">
+                            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-play active" ng-click="playPause(true)" ng-show="isPlaying != undefined && !isPlaying" title="(Re)Démarre la lecture"></span>
+                            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-pause active" ng-click="playPause(true)" ng-show="isPlaying == undefined || isPlaying" title="Met en pause la lecture. Raccourci clavier : Espace"></span>
+                            <span style="font-size: 32px;" class="glyphicon glyphicon-step-backward" ng-click="previous()" title="Piste précédente. Raccourci clavier : haut"></span>
+                            <span style="font-size: 32px;" class="glyphicon glyphicon-step-forward" ng-click="next()" title="Piste suivante. Raccourci clavier : bas"></span>
                             <span style="font-size: 32px;" class="svg-checkbox glyphter-random" ng-class="{active: shuffle}" ng-click="shuffle = !shuffle"></span>
                         </div>
                     </form>
