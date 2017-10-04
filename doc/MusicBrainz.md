@@ -6,6 +6,14 @@ Un `release-group` est un groupe de parutions concernant le même album.
 
 Une `release` est une parution précise d'un album (pays, année, version, etc...).
 
+# Plugin cuesheet
+
+Liste des remarques `REM` générées par le plugin cuesheet de MusicBrainz Picard
+  
+  * `REM MUSICBRAINZ_ALBUM_ID`
+  * `REM MUSICBRAINZ_ALBUM_ARTIST_ID`
+  * `REM MUSICBRAINZ_TRACK_ID`
+
 # Lien MusicBrainz vers YouTube
 
 | MusicBrainz   | YouTube                 | MusicBrainz (FR)   |

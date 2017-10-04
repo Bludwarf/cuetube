@@ -180,6 +180,20 @@ router
         })
     })
 
+    .get("/collectionNames", function(req, res) {
+        CollectionService.getCollectionNames((err, names) => {
+            if (err) return res.status(500).send(err.message);
+            res.json(names);
+        })
+    })
+
+    .post("/collectionNames", function(req, res) {
+        CollectionService.setCollectionNames(req.body, (err) => {
+            if (err) return res.status(500).send(err.message);
+            res.end();
+        })
+    })
+
     .get("/collections", function(req, res) {
         CollectionService.getCollectionsIds((err, ids) => {
             if (err) return res.status(500).send(err.message);

@@ -3,6 +3,15 @@ abstract class Persistence {
     constructor(protected $scope: IPlayerScope, protected $http: ng.IHttpService) {
     }
 
+    public abstract getCollectionNames(): Promise<string[]>;
+
+    /**
+     *
+     * @param {string[]} collectionsNames
+     * @return {Promise<string[]>} ne doit pas ressortir la collection '_default_'
+     */
+    public abstract setCollectionNames(collectionsNames: string[]): Promise<string[]>;
+
     public abstract postCollection(collection: Collection): Promise<Collection>;
 
     public abstract getCollectionDiscIds(collectionName: string, cb: (err: Error, discIds: string[]) => void): Promise<string[]>;

@@ -44,4 +44,24 @@ module.exports = {
         const content = discIds.join("\n");
         fs.writeFile(collectionFile, content, cb);
     },
+
+    getCollectionNames: function(cb) {
+        const rx = /^(.+)\.cues$/;
+        const collectionNames = [];
+        fs.readdir(dir, (err, filenames) => {
+            filenames.forEach(filename => {
+                const m = rx.exec(filename);
+                if (m) {
+                    const name = m[1];
+                    if (name !== '_default_') {
+                        collectionNames.push(name);
+                    }
+                }
+            });
+            collectionNames.sort((a, b) => {
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            });
+            cb(null, collectionNames);
+        });
+    },
 };

@@ -6,12 +6,38 @@ class LocalServerPersistence extends Persistence {
         super($scope, $http);
     }
 
+    public getCollectionNames(): Promise<string[]> {
+        return new Promise((resolve, reject) => {
+            this.$http.get<string[]>(`/collectionNames`).then(res => {
+                if (res.status !== 200) {
+                    console.error("Error GET collectionNames != 200");
+                    return reject(res.status);
+                }
+                const collectionNames: string[] = res.data;
+                resolve(collectionNames);
+            }, resKO => {
+                return reject(resKO);
+            });
+        });
+    }
+
+    public setCollectionNames(collectionsNames: string[]): Promise<string[]> {
+        return new Promise((resolve, reject) => {
+            this.$http.post<string[]>(`/collectionNames`, collectionsNames).then(res => {
+                resolve(collectionsNames);
+            }, resKO => {
+                return reject(resKO);
+            });
+        });
+    }
+
     public async getCollection(collectionName: string): Promise<Collection> {
         throw new Error("Not implemented");
     }
 
     public async postCollection(collection: Collection): Promise<Collection> {
         throw new Error("Not implemented");
+        // TODO : ne pas oublier de mettre à jour setCollectionNames
     }
 
     public getCollectionDiscIds(collectionName: string): Promise<string[]> {
