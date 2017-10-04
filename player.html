@@ -65,8 +65,8 @@
                                 </div>
                                 <div id="collapseOne" class="panel-collapse collapse in">
                                     <ul class="list-group">
-                                        <li class="list-group-item"><i><a ng-href="?">Collection par défaut</a></i></li>
-                                        <li class="list-group-item" ng-repeat="collectionName in collectionNames"><a ng-href="?collection={{collectionName}}">{{collectionName}}</a></li>
+                                        <li class="list-group-item" ng-class="{active: isDefaultCollection}"><i><a ng-href="?">Collection par défaut</a></i></li>
+                                        <li class="list-group-item" ng-repeat="collectionNameI in collectionNames" ng-class="{active: collectionNameI == collectionName}"><a ng-href="?collection={{collectionNameI}}">{{collectionNameI}}</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -78,7 +78,7 @@
                         <div id="remain-div">
 
                             <div id="header">
-                                <h1 ng-show="collectionName">{{collectionName}}</h1>
+                                <h1>{{collectionName}}</h1>
                                 <div class="buttons">
                                     <!--<button ng-click="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
                                     <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->

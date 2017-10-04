@@ -40,7 +40,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     // Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
     const collectionParam = getParameterByName("collection", document.location.search) || DEFAULT_COLLECTION;
-    $scope.collectionName = collectionParam;
+
+    $scope.isDefaultCollection = collectionParam.toLocaleLowerCase() === DEFAULT_COLLECTION.toLocaleLowerCase();
+    /** Nom de la collection affiché à l'écran */
+    $scope.collectionName = !$scope.isDefaultCollection ? collectionParam : 'Collection par défaut';
 
     // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
