@@ -202,16 +202,10 @@ router
     })
 
     .get("/edit/:id.cue", function(req, res) {
-
-        getCue(req, function(err, cue) {
-            if (err) {
-                return res.status(500).send(err.message);
-            }
-            res.render("edit-cue.ejs", {
-                req: req,
-                cueData: cue
-            });
-        });
+        res.redirect("/edit-cue?id="+req.params.id);
+    })
+    .get("/edit-cue", function(req, res) {
+        res.sendFile(path.resolve(__dirname, 'client', 'edit-cue.html'));
     })
 
 ;
