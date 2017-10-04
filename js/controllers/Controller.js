@@ -23,6 +23,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     // Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
     const collectionParam = getParameterByName("collection", document.location.search) || DEFAULT_COLLECTION;
+    $scope.collectionName = collectionParam;
 
     // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
@@ -674,9 +675,11 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
         if (!$scope.player) {
             // On peut récupérer cette variable a posteriori avec : YT.get("player")
+            const aspect = 16/9;
+            const height = 180;
             $scope.player = new YT.Player('player', {
-                height: '360',
-                width: '640',
+                height: height,
+                width: height*aspect,
                 videoId: this.getVideoId(),
                 playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
                     autoplay: 1,
@@ -1280,6 +1283,13 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     // Paramètres
     $scope.shuffle = $scope.restore('shuffle', true);
 
+    // Collections
+    persistence.getCollectionNames().then((collectionNames => {
+        $scope.collectionNames = collectionNames;
+    })).catch(e => {
+        console.error("Erreur lors du chargement de la liste des collections :", e);
+    });
+
     // TODO : comment déclarer des services avec Angular ?
     $scope.getCueService = function() {
         if (!$scope.cueService) $scope.cueService = new CueService($http);
@@ -1292,6 +1302,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         if (index === -1) return;
         $scope.discs.splice(index, 1);
         persistence.postCollectionDiscIds(collectionParam, $scope.discs.map(disc => disc.id));
-    }
+    };
 
 } // Controller

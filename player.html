@@ -6,7 +6,10 @@
     <title>CueTube</title>
     <link rel="icon" type="image/png" href="img/favicon_16-vfl8NGn4k-m3u.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap.css"><!-- TODO : à garder ? -->
+    <link rel="stylesheet" href="css/angular.css">
+    <!--<link rel="stylesheet" href="css/bootstrap-theme.css">-->
+    <link rel="stylesheet" href="css/bootstrap-slate.min.css">
     <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
     <link rel="stylesheet" href="css/angular-confirm.min.css">
     <link rel="stylesheet" href="css/cuetube.css">
@@ -36,99 +39,150 @@
     <script type="text/javascript" src="js/persistence/LocalServerPersistence.js"></script>
     <script type="text/javascript" src="js/persistence/LocalStoragePersistence.js"></script>
     <script type="text/javascript" src="js/controllers/Controller.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js"></script>
 </head>
 
 <body>
 
     <div class="background-overlay"></div>
 
-    <div id="ctrl" ng-controller="Controller">
+    <div id="ctrl" ng-controller="Controller" ng-cloak>
+
+        <div id="remain-container">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-2 col-md-2">
+                        <div class="panel-group" id="menu">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#menu" href="#collapseOne"><span class="glyphicon glyphicon-folder-close"></span>Collections</a>
+                                    </h4>
+                                </div>
+                                <div id="collapseOne" class="panel-collapse collapse in">
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><i><a ng-href="?">Collection par défaut</a></i></li>
+                                        <li class="list-group-item" ng-repeat="collectionName in collectionNames"><a ng-href="?collection={{collectionName}}">{{collectionName}}</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-10 col-md-10">
+
+                        <div id="remain-div">
+
+                            <div id="header">
+                                <h1 ng-show="collectionName">{{collectionName}}</h1>
+                                <div class="buttons">
+                                    <!--<button ng-click="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
+                                    <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
+                                    <button class="btn btn-default" ng-click="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist</button></a>
+                                </div>
+                            </div>
+
+                            <div class="discs">
+
+                                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex], inTracklist: disc == discInTracklist}">
+                                    <div class="disc-thumb" ng-click="disc.clickThumb($event)" ng-dblclick="disc.doubleClickThumb($event)" title="{{disc.title}}">
+                                        <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" />
+                                        <div class="disabled-video-cache" ng-hide="disc.enabled"></div>
+                                        <img class="" ng-src="https://img.youtube.com/vi/{{disc.videoId}}/default.jpg" />
+                                    </div>
+                                    <div class="tracklist" ng-click="stopPropagation($event)">
+                                        <h2 class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" ng-click="disc.load()">{{disc.title}}</h2>
+
+                                        <a href="edit/{{disc.id}}.cue" target="_blank">Éditer</a>
+                                        <a href="#" class="hover-red" ng-click="removeDisc(disc)" title="Retirer le disque de cette collection"><span class="glyphter-bin"></span></a>
+                                        &nbsp;
+                                        <a ng-href="{{disc.src}}" title="Voir sur YouTube" ng-show="disc.src"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
+                                        <div class="columns">
+                                            <ol class="disc-list">
+                                                <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
+                                                <div ng-repeat="file in disc.files">
+                                                    <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
+                                                        <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
+                                                        <span>{{track.title || "Track "+track.number}}</span>
+                                                    </li>
+                                                </div>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div><!-- row -->
+            </div><!-- container -->
+        </div><!-- remain-container -->
+
+
 
         <!-- Exemple : https://developers.google.com/youtube/iframe_api_reference?hl=fr#Events -->
         <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
         <div id="player-div">
+
             <div id="player-wrap">
                 <div id="player"></div>
             </div>
 
-            <div id="player-infos">
+            <div id="player-others">
 
                 <div id="player-controls">
                     <form id="player-controls-form">
-                        <!--<input name="fileSlider" ng-model="fileSlider.value" type="range" min="{{fileSlider.min}}" max="{{fileSlider.max}}" readonly/>-->
-                        <!-- TODO : à mettre à disabled tant que la vidéo n'est pas chargée -->
-                        <input name="trackPosition" ng-model="slider.value" type="range" min="{{slider.min}}" max="{{slider.max}}" ng-change="seekTo(slider.value)" ng-readonly="loadingTrackIndex != null" />
-
                         <div class="track-controls">
                             <span style="font-size: 32px;" class="svg-checkbox glyphter-random" ng-class="{active: shuffle}" ng-click="shuffle = !shuffle"></span>
-
-                            <div class="text" style="left: 40px;"><span>{{formatHMSS(slider.value - slider.min)}}</span> / <span>{{formatHMSS(slider.max - slider.min)}}</span></div>
-                            <div class="text" style="right: 0;"><span>{{getTime()}}</span> / <span>{{getTime(slider.max - slider.value)}}</span></div>
                         </div>
                     </form>
                 </div>
 
-                <h3 id="player-track-name">{{currentTrack.title}}</h3><!-- TODO : "Track X" si title vide -->
-                <h4 id="player-track-performer">{{currentTrack.performer}}</h4>
-                <h2 id="player-disc-name">
-                    {{currentDisc.title}}
-                    <a ng-href="{{currentDisc.src}}" ng-show="currentDisc.src" title="Voir sur YouTube"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
-                </h2>
+                <div id="player-position">
 
-                <!-- TODO : tracklist courante -->
-                <!-- On teste pour voir si c'est plus pratique de n'afficher les pistes que dans la liste des disques... -->
-                <!--<div ng-model="currentDisc" class="columns">
-                    <ol class="disc-list">
-                        <div ng-repeat="file in currentDisc.files">
-                            <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index)">
-                                <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
-                                <span>{{track.title || "Track "+track.number}}</span>
-                            </li>
-                        </div>
-                    </ol>
-                </div>-->
-            </div>
-        </div>
-
-        <div id="remain-div">
-
-            <div class="buttons">
-                <!--<button ng-click="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
-                <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
-                <button ng-click="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist</button></a>
-            </div>
-
-            <div class="discs">
-
-                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex], inTracklist: disc == discInTracklist}">
-                    <div class="disc-thumb" ng-click="disc.clickThumb($event)" ng-dblclick="disc.doubleClickThumb($event)" title="{{disc.title}}">
-                        <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" />
-                        <div class="disabled-video-cache" ng-hide="disc.enabled"></div>
-                        <img class="" ng-src="https://img.youtube.com/vi/{{disc.videoId}}/default.jpg" />
+                    <div id="player-position-start" class="text">
+                        <span>{{formatHMSS(slider.value - slider.min)}}</span> / <span>{{formatHMSS(slider.max - slider.min)}}</span>
                     </div>
-                    <div class="tracklist" ng-click="stopPropagation($event)">
-                        <h2 class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" ng-click="disc.load()">{{disc.title}}</h2>
 
-                        <a href="edit/{{disc.id}}.cue" target="_blank">Éditer</a>
-                        <a href="#" class="hover-red" ng-click="removeDisc(disc)" title="Retirer le disque de cette collection"><span class="glyphter-bin"></span></a>
-                        &nbsp;
-                        <a ng-href="{{disc.src}}" title="Voir sur YouTube" ng-show="disc.src"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
-                        <div class="columns">
-                            <ol class="disc-list">
-                                <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
-                                <div ng-repeat="file in disc.files">
-                                    <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
-                                        <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
-                                        <span>{{track.title || "Track "+track.number}}</span>
-                                    </li>
-                                </div>
-                            </ol>
-                        </div>
+                    <div id="player-position-slider">
+                        <!--<input name="fileSlider" ng-model="fileSlider.value" type="range" min="{{fileSlider.min}}" max="{{fileSlider.max}}" readonly/>-->
+                        <!-- TODO : à mettre à disabled tant que la vidéo n'est pas chargée -->
+                        <input name="trackPosition" ng-model="slider.value" type="range" min="{{slider.min}}" max="{{slider.max}}" ng-change="seekTo(slider.value)" ng-readonly="loadingTrackIndex != null" />
+                    </div>
+
+                    <div id="player-position-end" class="text" style="right: 0;">
+                        <span>{{getTime()}}</span> / <span>{{getTime(slider.max - slider.value)}}</span>
                     </div>
                 </div>
 
+                <div id="player-infos">
+
+                    <h2 id="player-disc-name">
+                        {{currentDisc.title}}
+                        <a ng-href="{{currentDisc.src}}" ng-show="currentDisc.src" title="Voir sur YouTube"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
+                    </h2>
+                    <h3 id="player-track-name"><span class="track-number">{{currentTrack.number}}.</span> {{currentTrack.title}}</h3><!-- TODO : "Track X" si title vide -->
+                    <h4 id="player-track-performer">{{currentTrack.performer}}</h4>
+
+                    <!-- TODO : tracklist courante -->
+                    <!--
+                    <div ng-model="currentDisc" class="columns">
+                        <ol class="disc-list">
+                            <div ng-repeat="file in currentDisc.files">
+                                <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index)">
+                                    <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
+                                    <span>{{track.title || "Track "+track.number}}</span>
+                                </li>
+                            </div>
+                        </ol>
+                    </div>
+                    -->
+                </div>
             </div>
         </div>
+
     </div>
 
     <script>

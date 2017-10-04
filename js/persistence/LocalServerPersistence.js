@@ -11,6 +11,29 @@ class LocalServerPersistence extends Persistence {
     constructor($scope, $http) {
         super($scope, $http);
     }
+    getCollectionNames() {
+        return new Promise((resolve, reject) => {
+            this.$http.get(`/collectionNames`).then(res => {
+                if (res.status !== 200) {
+                    console.error("Error GET collectionNames != 200");
+                    return reject(res.status);
+                }
+                const collectionNames = res.data;
+                resolve(collectionNames);
+            }, resKO => {
+                return reject(resKO);
+            });
+        });
+    }
+    setCollectionNames(collectionsNames) {
+        return new Promise((resolve, reject) => {
+            this.$http.post(`/collectionNames`, collectionsNames).then(res => {
+                resolve(collectionsNames);
+            }, resKO => {
+                return reject(resKO);
+            });
+        });
+    }
     getCollection(collectionName) {
         return __awaiter(this, void 0, void 0, function* () {
             throw new Error("Not implemented");
@@ -19,6 +42,7 @@ class LocalServerPersistence extends Persistence {
     postCollection(collection) {
         return __awaiter(this, void 0, void 0, function* () {
             throw new Error("Not implemented");
+            // TODO : ne pas oublier de mettre à jour setCollectionNames
         });
     }
     getCollectionDiscIds(collectionName) {

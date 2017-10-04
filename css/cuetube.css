@@ -1,3 +1,18 @@
 .hover-red:hover * {
     color: red;
 }
+.glyphicon {
+    margin-right:10px;
+}
+
+.vertical-scroll {
+    /* position: absolute; */
+    height: 100%;
+    overflow-y: scroll;
+}
+
+.fixed-row {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+}

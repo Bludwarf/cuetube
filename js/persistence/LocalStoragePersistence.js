@@ -10,6 +10,65 @@ class LocalStoragePersistence extends Persistence {
     constructor($scope, $http) {
         super($scope, $http);
     }
+    /**
+     * @param {string} key
+     * @return undefined si item inconnu
+     */
+    getItem(key) {
+        const item = localStorage.getItem(key);
+        if (item) {
+            return JSON.parse(item);
+        }
+        else {
+            return undefined;
+        }
+    }
+    /**
+     *
+     * @param {string} key
+     * @param value si null alors supprime l'item
+     */
+    setItem(key, value) {
+        if (value) {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+        else {
+            localStorage.removeItem(key);
+        }
+    }
+    getCollectionNames() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const knownNames = this.getItem("collectionNames");
+            if (knownNames) {
+                return knownNames;
+            }
+            const rx = /^collection\.(.+)/;
+            const names = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const m = rx.exec(key);
+                if (m) {
+                    const name = m[1];
+                    if (name !== LocalStoragePersistence.DEFAULT_COLLECTION) {
+                        names.push(name);
+                    }
+                }
+            }
+            try {
+                this.setCollectionNames(names);
+            }
+            catch (e) {
+                console.warn("Impossible de sauvegarder la liste des collections. Cause :", e);
+            }
+            return names;
+        });
+    }
+    setCollectionNames(collectionsNames) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.setItem("collectionsNames", collectionsNames);
+            return collectionsNames;
+        });
+    }
     getCollection(collectionName) {
         return __awaiter(this, void 0, void 0, function* () {
             const json = localStorage.getItem(`collection.${collectionName}`);
@@ -24,7 +83,17 @@ class LocalStoragePersistence extends Persistence {
     }
     postCollection(collection) {
         return __awaiter(this, void 0, void 0, function* () {
-            localStorage.setItem(`collection.${collection.name}`, JSON.stringify(collection));
+            this.setItem(`collection.${collection.name}`, collection);
+            const collectionNames = yield this.getCollectionNames();
+            if (collectionNames.indexOf(collection.name) === -1) {
+                collectionNames.push(collection.name);
+                try {
+                    this.setCollectionNames(collectionNames);
+                }
+                catch (e) {
+                    console.warn("Impossible de sauvegarder la liste des collections. Cause :", e);
+                }
+            }
             return collection;
         });
     }
@@ -65,4 +134,5 @@ class LocalStoragePersistence extends Persistence {
         });
     }
 }
+LocalStoragePersistence.DEFAULT_COLLECTION = '_DEFAULT_';
 //# sourceMappingURL=LocalStoragePersistence.js.map
