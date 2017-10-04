@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr" ng-app="cuetube">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Playlist m3u YouTube</title>
+    <link rel="icon" type="image/png" href="img/favicon_16-vfl8NGn4k-m3u.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+
+    <script>
+        // exemple : https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fsoundsgood.co&amp;feature=player_embedded&amp;html5=true&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1&amp;showinfo=0&amp;rel=0&amp;autoplay=0&amp;disablekb=1&amp;playsinline=1&amp;widgetid=2
+
+        /* global $, location, angular */
+    </script>
+
+    <style>
+        body {
+            margin: auto auto;
+        }
+
+        form {
+            width: 67em;
+            margin: auto auto;
+        }
+
+        fieldset.file {
+            text-indent: 1em;
+        }
+
+        div.file {
+            margin-bottom: 10px;
+        }
+
+        div.file:hover {
+            background: #EEE;
+        }
+
+        .file img {
+            float: left;
+            margin-right: 1em;
+        }
+
+        .file legend {
+            margin-bottom: 10px;
+        }
+
+        fieldset.track {
+            text-indent: 2em;
+        }
+
+        input.title {
+            width: 25em;
+        }
+        input.performer {
+            width: 15em;
+        }
+        input.min {
+            width: 2em;
+        }
+        input.sec {
+            width: 2em;
+        }
+
+        .textarea-wrapper {
+            padding-right: 42px
+        }
+
+        textarea {
+            width:100%;
+            resize: vertical;
+        }
+
+        .track button {
+            margin-bottom: 10px;
+        }
+
+    </style>
+
+    <script type="text/javascript" src="js/cuesheet.js"></script>
+    <script type="text/javascript" src="js/utils.js"></script>
+    <script type="text/javascript" src="js/disc.js"></script>
+    <script type="text/javascript" src="js/CueParser.js"></script>
+    <script type="text/javascript" src="js/CuePrinter.js"></script>
+    <script type="text/javascript" src="js/yt-helper.js"></script>
+    <script type="text/javascript" src="js/persistence.js"></script>
+    <script type="text/javascript" src="js/persistence/LocalServerPersistence.js"></script>
+    <script type="text/javascript" src="js/persistence/LocalStoragePersistence.js"></script>
+    <script type="text/javascript" src="js/controllers/EditCue.js"></script>
+</head>
+
+<body id="ctrl" ng-controller="EditCue" style="display: none;" ng-show="disc">
+
+    <form>
+
+        <h1>Modification de {{disc.id}}.cue</h1>
+
+        <label>title: <input type="text" name="title" class="title" ng-model="disc.title" /></label>
+        <label>performer: <input type="text" name="performer" ng-model="disc.performer" /></label>
+
+        <button type="button" ng-click="save()" style="margin-bottom: 1em;">Sauvegarder</button>
+
+        <label>source : <input type="text" name="source" ng-model="disc.src" style="width: 40em;"></label>
+
+        <div class="file" ng-repeat="file in disc.files">
+            <a href="{{file.name}}" target="_blank">
+                <img ng-src="https://img.youtube.com/vi/{{file.videoId}}/default.jpg" />
+            </a>
+            <fieldset>
+                <legend>
+                    <input type="text" name="fileName" ng-model="file.videoId" size="300"/>
+                </legend>
+
+                <ul class="nav nav-tabs" ng-show="disc.files.length == 1">
+                    <li class="active"><a data-toggle="tab" href="#tracks">Pistes</a></li>
+                    <li><a data-toggle="tab" href="#tracklist">Tracklist</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div id="tracks" class="tab-pane in active">
+                        <fieldset ng-repeat="track in file.tracks" class="track">
+                            <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
+                            <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
+                            <input type="text" name="trackTitle" class="title" placeholder="title" ng-model="track.title" />
+                            <input type="text" name="trackPerformer" class="performer" placeholder="performer" ng-model="track.performer" empty-to-null />
+                            <button ng-click="track.remove()" title="Supprimer cette piste"><span class="icon icon-remove" style="color: #600700;"></span></button>
+                            <!-- TODO : pouvoir insérer une piste après n'importe quelle piste (et pas seulement la dernière -->
+                            <button ng-click="file.newTrack()" title="Ajouter une piste"><span class="icon icon-plus"></span></button>
+                        </fieldset>
+                    </div>
+
+                    <div id="tracklist" class="tab-pane" ng-show="disc.files.length == 1">
+                        <button style="margin-bottom: 1em;" ng-click="prompt(null, getTracklist(file.tracks))">Copier</button>
+                        <div class="textarea-wrapper">
+                            <textarea placeholder="Import d'une tracklist YouTube" readonly>{{getTracklist(file.tracks)}}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </fieldset>
+        </div>
+
+        <button type="button" ng-click="save()">Sauvegarder</button>
+
+    </form>
+
+    <script>
+        /* global $, location, angular */
+
+        /**
+         * @author http://stackoverflow.com/a/16737459/1655155
+         */
+        function getCtrl() {
+            if (typeof(angular) === undefined) document.location.reload(); // FIXME
+            return angular.element(document.getElementById('ctrl')).scope();
+        }
+
+    </script>
+    <!--<script src="socket.io/socket.io.js"></script>-->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/underscore-min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/moment.min.js"></script>
+
+    <script type="text/javascript" src="js/app.js"></script>
+</body>
+
+</html>

@@ -7,14 +7,22 @@
  */
 function EditCue($scope, $http) {
 
-    $scope.init = function(id, cueData) {
-        const cue = new cuesheet.CueSheet();
-        _.extend(cue, cueData);
+    const persistence = (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? new LocalStoragePersistence($scope, $http) : new LocalServerPersistence($scope, $http);
 
-        const disc = new Disc(cue);
-        $scope.disc = disc;
-        window.disc = disc;
+    const params = {
+        id: getParameterByName('id')
     };
+    if (!params.id) {
+        alert("Veuillez indiquer l'id du disque à modifier");
+        return;
+    }
+    persistence.getDisc(params.id, 0).then(disc => {
+        $scope.disc = disc;
+        $scope.$apply();
+    }).catch(err => {
+        console.error(err);
+        alert(`Disque ${params.id} introuvable !\n\nErreur technique : ${err.data || err}`);
+    });
 
     $scope.$watch('track.performer', function (newValue, oldValue) {
         if(newValue === "")
@@ -22,17 +30,11 @@ function EditCue($scope, $http) {
     });
 
     $scope.save = function() {
-        $http({
-            method: 'POST',
-            url: '/'+$scope.disc.id+'.cue.json',
-            /*headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            transformRequest: function(disc) {
-                return JSON.stringify(disc, function(key, value) {
-                    console.log(key);
-                });
-            },*/
-            data: $scope.disc.cuesheet
-        }).success(function () {});
+        persistence.postDisc($scope.disc.id, $scope.disc).then(disc => {
+            alert('Disque sauvegardé !');
+        }).catch(err => {
+            alert("Disque non sauvegardé à cause de l'erreur : "+err);
+        });
     };
 
     $scope.getTracklist = function(tracks) {

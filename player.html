@@ -97,7 +97,7 @@
                                     <div class="tracklist" ng-click="stopPropagation($event)">
                                         <h2 class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" ng-click="disc.load()">{{disc.title}}</h2>
 
-                                        <a href="edit/{{disc.id}}.cue" target="_blank">Éditer</a>
+                                        <a href="edit-cue?id={{disc.id}}" target="_blank">Éditer</a>
                                         <a href="#" class="hover-red" ng-click="removeDisc(disc)" title="Retirer le disque de cette collection"><span class="glyphter-bin"></span></a>
                                         &nbsp;
                                         <a ng-href="{{disc.src}}" title="Voir sur YouTube" ng-show="disc.src"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
