@@ -16,3 +16,29 @@
     top: 0;
     bottom: 0;
 }
+
+/* Affichage devant tout le reste de l'écran */
+#foreground-overlay {
+    background: #292929;
+    opacity: 0.9;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    position: fixed;
+    z-index: 1;
+}
+
+.center-parent {
+    position: relative;
+}
+
+.center {
+    text-align: center;
+    margin: auto auto;
+
+    position: absolute;
+    top: 50%; /* poussé de la moitié de hauteur du référent */
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%); /* tiré de la moitié de sa propre hauteur */
+}

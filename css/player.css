@@ -178,7 +178,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    bottom: 180px; /* player-div */
+    bottom: 184px; /* player-div + marge ajoutée 4px */
     overflow: auto;
 }
 

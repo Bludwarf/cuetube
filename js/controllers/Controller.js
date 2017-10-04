@@ -12,6 +12,23 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     const persistence = (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? new LocalStoragePersistence($scope, $http) : new LocalServerPersistence($scope, $http);
     const DEFAULT_COLLECTION = '_DEFAULT_';
 
+    const $foreground = $("#foreground-overlay");
+    const $foregroundIcon = $("#foreground-overlay-icon");
+    const $window = $(window);
+
+    // Ajustement pour le CSS
+    const $fontSize50List = $(".font-size-50p"); // ajuste la taille du texte pour avoir une police qui prend 50% de l'écran
+    // Run the following when the window is resized, and also trigger it once to begin with.
+    $window.resize(() => {
+        // Get the current height of the div and save it as a variable.
+        const height = $window.height()/2;
+        // Set the font-size and line-height of the text within the div according to the current height.
+        $fontSize50List.css({
+            'font-size': (height/2) + 'px',
+            'line-height': height + 'px'
+        });
+    }).trigger('resize');
+
     //const socket = io.connect();
     //socket.emit('getVideo', $scope.text);
 
@@ -368,6 +385,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     }
 
     $scope.onYouTubeIframeAPIReady = function() {
+
+        // On cache le masque
+        $foregroundIcon.html("<span class='glyphicon glyphicon-play'></span>");
+        $foreground.hide();
 
         // Si chargement
         let currentStr = localStorage.getItem('current');
@@ -943,10 +964,15 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         const player = $scope.player;
         if (!player) return;
         const state = player.getPlayerState();
-        if (state === YT.PlayerState.PLAYING)
+        if (state === YT.PlayerState.PLAYING) {
             player.pauseVideo();
-        else
+            $foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
+            $foreground.show();
+        } else {
+            $foregroundIcon.html("<span class='glyphicon glyphicon-play'></span>");
+            $foreground.hide();
             player.playVideo();
+        }
     };
 
     $scope.getCurrentTrack = function() {
