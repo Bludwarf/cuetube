@@ -879,7 +879,12 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         // vérification pour ne pas appeler deux fois l'évènement "Fin de la vidéo"
         // TODO : ne pas appeler quand on fait un manual seek
         else if (state === YT.PlayerState.PLAYING) {
+            $scope.isPlaying = true;
             $scope.$emit("video started");
+        }
+
+        else if (state === YT.PlayerState.PAUSED) {
+            $scope.isPlaying = false;
         }
 
         // FIXME : détection changement manuel de cue
