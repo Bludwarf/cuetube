@@ -971,20 +971,30 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         if (!player) return;
         const state = player.getPlayerState();
         if (state === YT.PlayerState.PLAYING) {
-            player.pauseVideo();
-            if (!skipForeground) {
-                $foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
-                $foreground.show();
-            }
-            $scope.isPlaying = false;
+            $scope.pause();
         } else {
-            if (!skipForeground) {
-                $foregroundIcon.html("<span class='glyphicon glyphicon-play'></span>");
-                $foreground.hide();
-            }
-            player.playVideo();
-            $scope.isPlaying = true;
+            $scope.play(skipForeground);
         }
+    };
+
+    $scope.play = function() {
+        const player = $scope.player;
+        if (!player) return;
+        $foregroundIcon.html("<span class='glyphicon glyphicon-play'></span>");
+        $foreground.hide();
+        player.playVideo();
+        $scope.isPlaying = true;
+    };
+
+    $scope.pause = function(skipForeground) {
+        const player = $scope.player;
+        if (!player) return;
+        player.pauseVideo();
+        if (!skipForeground) {
+            $foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
+            $foreground.show();
+        }
+        $scope.isPlaying = false;
     };
 
     $scope.getCurrentTrack = function() {
