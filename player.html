@@ -96,6 +96,7 @@
                                     </div>
                                     <div class="tracklist" ng-click="stopPropagation($event)">
                                         <h2 class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" ng-click="disc.load()">{{disc.title}}</h2>
+                                        <h3 class="disc-performer" ng-show="disc.performer">{{disc.performer}}</h3>
 
                                         <a href="edit-cue?id={{disc.id}}" target="_blank">Éditer</a>
                                         <a href="#" class="hover-red" ng-click="removeDisc(disc)" title="Retirer le disque de cette collection"><span class="glyphter-bin"></span></a>

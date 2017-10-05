@@ -133,6 +133,11 @@ body {
     text-decoration: inherit;
     color: #09F;
 }
+
+.disc-performer {
+    margin-top: 0.5em;
+}
+
 .track {
     cursor: pointer;
 }
