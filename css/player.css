@@ -222,7 +222,15 @@ body {
 
 .disc-thumb input {
     position: absolute;
+    visibility: hidden;
+    left: 4px;
+    width: 24px;
+    height: 24px;
     /*z-index: 1;*/
+}
+
+.disc-thumb:hover input {
+    visibility: visible;
 }
 
 .disc-thumb img {

@@ -89,8 +89,8 @@
                             <div class="discs">
 
                                 <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex], inTracklist: disc == discInTracklist}">
-                                    <div class="disc-thumb" ng-click="disc.clickThumb($event)" ng-dblclick="disc.doubleClickThumb($event)" title="{{disc.title}}">
-                                        <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" />
+                                    <div class="disc-thumb" ng-click="disc.clickThumb($event)" ng-dblclick="disc.doubleClickThumb($event)" title="{{disc.title}}. Cliquer pour ouvrir la liste des pistes de l'album">
+                                        <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" title="Cocher cette case pour activer/désactiver ce disque. 'Alt' pour inverser la sélection des autres disques. 'Shift' pour sélectionner un ensemble de disques qui se suivent."/>
                                         <div class="disabled-video-cache" ng-hide="disc.enabled"></div>
                                         <img class="" ng-src="https://img.youtube.com/vi/{{disc.videoId}}/default.jpg" />
                                     </div>
@@ -143,7 +143,7 @@
                             <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-pause active" ng-click="pause(true)" ng-show="isPlaying == undefined || isPlaying" title="Met en pause la lecture. Raccourci clavier : Espace"></span>
                             <span style="font-size: 32px;" class="glyphicon glyphicon-step-backward" ng-click="previous()" title="Piste précédente. Raccourci clavier : haut"></span>
                             <span style="font-size: 32px;" class="glyphicon glyphicon-step-forward" ng-click="next()" title="Piste suivante. Raccourci clavier : bas"></span>
-                            <span style="font-size: 32px;" class="svg-checkbox glyphter-random" ng-class="{active: shuffle}" ng-click="shuffle = !shuffle"></span>
+                            <span style="font-size: 32px;" class="svg-checkbox glyphter-random" ng-class="{active: shuffle}" ng-click="shuffle = !shuffle" title="Mode de lecture aléatoire. Une piste ne sera pas rejouée tant que les autres pistes du disque n'ont pas été jouées."></span>
                         </div>
                     </form>
                 </div>
@@ -151,7 +151,7 @@
                 <div id="player-position">
 
                     <div id="player-position-start" class="text">
-                        <span>{{formatHMSS(slider.value - slider.min)}}</span> / <span>{{formatHMSS(slider.max - slider.min)}}</span>
+                        <span title="Durée écoulée depuis le début de la piste">{{formatHMSS(slider.value - slider.min)}}</span> / <span title="Durée totale de la piste">{{formatHMSS(slider.max - slider.min)}}</span>
                     </div>
 
                     <div id="player-position-slider">
@@ -161,7 +161,7 @@
                     </div>
 
                     <div id="player-position-end" class="text" style="right: 0;">
-                        <span>{{getTime()}}</span> / <span>{{getTime(slider.max - slider.value)}}</span>
+                        <span title="Heure actuelle">{{getTime()}}</span> / <span title="Heure qu'il sera à la fin de la piste">{{getTime(slider.max - slider.value)}}</span>
                     </div>
                 </div>
 

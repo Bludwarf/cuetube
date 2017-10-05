@@ -149,9 +149,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         };
 
         disc.afterClickThumbCheckbox = function(e) {
+            const input = e.currentTarget;
+
             // Alt + Click => activer/désactiver tous les autres
             if (e.altKey) {
-                const input = e.currentTarget;
                 // Cochage => on décoche tous les autres
                 // et vice-versa
                 const discs = $scope.discs;
@@ -160,6 +161,23 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                     if (!disc || disc === this) continue;
                     disc.enabled = !input.checked;
                 }
+            }
+
+            // Maj + click => activer/désactiver tous entre les deux
+            if (e.shiftKey) {
+                let last = $scope.lastCheckedDisc;
+                let startIndex = Math.min(last.index, this.index);
+                let endIndex   = Math.max(last.index, this.index);
+                let discs = $scope.discs.slice(startIndex, endIndex + 1);
+                discs.forEach(function(disc) {
+                    if (!disc || disc === this) return;
+                    disc.enabled = input.checked;
+                });
+            }
+
+            // Sauvegarde du dernier click (sans Maj)
+            if (!e.shiftKey) {
+                $scope.lastCheckedDisc = this;
             }
 
             e.stopPropagation();
