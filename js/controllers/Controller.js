@@ -1242,19 +1242,34 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         // Vidéo déjà connue sur CueTube/cues ?
         if (playlistId || videoId) {
             const id = playlistId || videoId;
-            console.log("On recherche si "+id+" n'est pas déjà connu de CueTube...");
-            $scope.getCueService().getCueFromCueTube(id).then(cue => {
-                if (confirm("La vidéo/playlist existe déjà dans CueTube. L'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.")) {
-                    const disc = new Disc(cue);
+            const index = $scope.discs.length;
+
+            console.log(`On recherche si ${id} n'est pas déjà connu localement...`);
+            persistence.getDisc(id, index).then(disc => {
+                if (confirm("La vidéo/playlist existe déjà localement. L'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.")) {
                     disc.src = url;
                     $scope.importDisc(disc, cb);
                 } else {
                     fallback();
                 }
             }).catch(err => {
-                console.error("Erreur lors de la récupération dans CueTube : "+err);
-                fallback();
+                console.error("Erreur lors de la récupération locale : "+err);
+
+                console.log("On recherche si "+id+" n'est pas déjà connu de CueTube...");
+                $scope.getCueService().getCueFromCueTube(id).then(cue => {
+                    if (confirm("La vidéo/playlist existe déjà dans CueTube. L'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.")) {
+                        const disc = new Disc(cue);
+                        disc.src = url;
+                        $scope.importDisc(disc, cb);
+                    } else {
+                        fallback();
+                    }
+                }).catch(err => {
+                    console.error("Erreur lors de la récupération dans CueTube : "+err);
+                    fallback();
+                });
             });
+
         } else {
             fallback();
         }
