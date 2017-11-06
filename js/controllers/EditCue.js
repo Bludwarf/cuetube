@@ -33,7 +33,8 @@ function EditCue($scope, $http) {
         persistence.postDisc($scope.disc.id, $scope.disc).then(disc => {
             alert('Disque sauvegardé !');
         }).catch(err => {
-            alert("Disque non sauvegardé à cause de l'erreur : "+err);
+            console.error(err);
+            alert("Disque non sauvegardé à cause de l'erreur : "+(err && err.message || err));
         });
     };
 
