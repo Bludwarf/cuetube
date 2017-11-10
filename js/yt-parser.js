@@ -113,53 +113,13 @@ function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options) {
     });
 
     // Parsing de la description (cf parsetrack)
-    let curr = {
-      artistBeforeTitle: options && options.artistBeforeTitle,
-      artistInTitle: options && options.artistInTitle,
-      containsDuration: options && options.containsDuration,
-      durationBeforeTime: options && options.durationBeforeTime
-    };
-    for (let i = 0; i < lines.length; ++i) {
-        let line = lines[i].trim();
-        if (line === "") continue;
+    const cueTracks = ytparser.parseTracks(lines, options);
+    cueTracks.forEach(cueTrack => {
+        const track = file.newTrack();
+        _.extend(track, cueTrack);
+    });
 
-        try {
-            const parseRes = ytparser.parseTrack({
-                line: line,
-                lineNumber: i,
-                trackNumber: file.tracks.length + 1,
-                artistBeforeTitle: curr.artistBeforeTitle,
-                artistInTitle: curr.artistInTitle,
-                containsDuration: curr.containsDuration,
-                durationBeforeTime: curr.durationBeforeTime
-            });
-            if (parseRes) {
-                console.log("newDiscFromVideo:track : Parsing OK de la ligne : "+line);
-
-                // Infos à garder pour les autres pistes
-                curr.artistBeforeTitle = parseRes.artistBeforeTitle;
-                curr.artistInTitle = parseRes.artistInTitle;
-                curr.containsDuration = parseRes.containsDuration;
-                curr.durationBeforeTime = parseRes.durationBeforeTime;
-
-                const track = file.newTrack();
-                _.extend(track, parseRes.track/*{
-                 title: title,
-                 performer: artist,
-                 indexes: [
-                 new cuesheet.Index(1, time)
-                 ]
-                 }*/);
-            } else {
-                console.warn("newDiscFromVideo:track : Impossible de parser la ligne : " + line);
-            }
-        } catch (e) {
-            console.warn("newDiscFromVideo:track : Impossible de parser la ligne : " + line + "\nErreur:"+e);
-        }
-
-    }//for
-
-    // Vérif si on a au moins trouver une piste
+    // Vérif si on a au moins trouvé une piste
     if (!disc.tracks || !disc.tracks.length) {
         console.error("Vidéo sans tracklist. Tentez votre chance à cette adresse : http://www.regeert.nl/cuesheet/?str="+encodeURIComponent(disc.title));
         const error = new Error("Aucune piste n'a été trouvée dans la description de la vidéo"/* : " + description*/);
@@ -176,6 +136,108 @@ function newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options) {
     }
 
     return disc;
+}
+
+ytparser.parseTracks = function(lines, options) {
+
+  const tracks = [];
+
+  const curr = {
+    artistBeforeTitle: options && options.artistBeforeTitle,
+    artistInTitle: options && options.artistInTitle,
+    containsDuration: options && options.containsDuration,
+    durationBeforeTime: options && options.durationBeforeTime
+  };
+
+  for (let i = 0; i < lines.length; ++i) {
+    let line = lines[i].trim();
+    if (line === "") continue;
+
+    try {
+      const parseRes = ytparser.parseTrack({
+        line: line,
+        lineNumber: i,
+        trackNumber: tracks.length + 1,
+        artistBeforeTitle: curr.artistBeforeTitle,
+        artistInTitle: curr.artistInTitle,
+        containsDuration: curr.containsDuration,
+        durationBeforeTime: curr.durationBeforeTime
+      });
+      if (parseRes) {
+        console.log("newDiscFromVideo:track : Parsing OK de la ligne : "+line);
+
+        // Infos à garder pour les autres pistes
+        curr.artistBeforeTitle = parseRes.artistBeforeTitle;
+        curr.artistInTitle = parseRes.artistInTitle;
+        curr.containsDuration = parseRes.containsDuration;
+        curr.durationBeforeTime = parseRes.durationBeforeTime;
+
+        tracks.push(parseRes.track);
+      } else {
+        console.warn("newDiscFromVideo:track : Impossible de parser la ligne : " + line);
+      }
+    } catch (e) {
+      console.warn("newDiscFromVideo:track : Impossible de parser la ligne : " + line + "\nErreur:"+e);
+    }
+
+  }//for
+
+  // Vérif si timecode ne sont pas des durées #90
+  if (!ytparser.checkTimecode(tracks)) {
+
+    alert("Visiblement la tracklist indique la durée des pistes au lieu de leur début... à implémenter");
+    let elapsed = new cuesheet.Time(0, 0, 0);
+    for (let i = 0; i < tracks.length; ++i) {
+      let time = tracks[i].indexes[0].time;
+      let savedTime = new cuesheet.Time(time.min, time.sec, time.frame);
+
+      time.min = elapsed.min;
+      time.sec = elapsed.sec;
+      time.frame = elapsed.frame;
+
+      elapsed = this.addTimecode(elapsed, savedTime);
+    }
+  }
+
+  return tracks;
+};
+
+ytparser.addTimecode = function (t1, t2) {
+  let sum = new cuesheet.Time(t1.min + t2.min, t1.sec + t2.sec, t1.frame + t2.frame);
+  sum.sec += Math.floor(sum.frame / 75);
+  sum.frame = sum.frame % 75;
+  sum.min += Math.floor(sum.sec / 60);
+  sum.sec = sum.sec % 60;
+  return sum;
+};
+
+/**
+ * @param tracks
+ * @return {boolean} false si les timecodes ne sont pas rangés dans l'ordre chronologique
+ */
+ytparser.checkTimecode = function (tracks) {
+  for (let i = 1; i < tracks.length; ++i) {
+    let previous = tracks[i - 1];
+    let track = tracks[i];
+    if (compareTimes(previous.indexes[0].time, track.indexes[0].time) > 0) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
+ *
+ * @param t1 {cuesheet.Time}
+ * @param t2 {cuesheet.Time}
+ */
+function compareTimes(t1, t2) {
+  const minDiff = t1.min - t2.min;
+  if (minDiff !== 0) return minDiff;
+  const secDiff = t1.sec - t2.sec;
+  if (secDiff !== 0) return secDiff;
+  const frameDiff = t1.frame - t2.frame;
+  if (frameDiff !== 0) return frameDiff;
 }
 
 /**
