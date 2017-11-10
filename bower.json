@@ -23,6 +23,7 @@
     "moment": "^2.18.1",
     "angular-confirm": "angular1-confirm#^1.1.0",
     "angular": "^1.0.6",
-    "angular-mocks": "^1.0.6"
+    "angular-mocks": "^1.0.6",
+    "karma-read-json": "^1.1.0"
   }
 }

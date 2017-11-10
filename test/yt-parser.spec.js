@@ -155,7 +155,9 @@ describe("Parser réponses YouTube", function() {
     it("should parse Blade Runner tracklist", () => {
         let results = ytparser.parseTrack({
             line: "0:00:00 Prologue And Main Titles 3:54 ",
-            trackNumber: 1
+            trackNumber: 1,
+            containsDuration: true,
+            durationBeforeTime: false
         });
         expect(results.artistInTitle).toBeUndefined();
         expect(results.track.title).toBe("Prologue And Main Titles");
@@ -165,7 +167,9 @@ describe("Parser réponses YouTube", function() {
 
         results = ytparser.parseTrack({
             line: "1:48:37 End Titles 4:06 *",
-            trackNumber: 33
+            trackNumber: 33,
+          containsDuration: true,
+          durationBeforeTime: false
         });
         expect(results.artistInTitle).toBeUndefined();
         expect(results.track.title).toBe("End Titles");
@@ -250,6 +254,38 @@ describe("Parser réponses YouTube", function() {
     expect(results.track.indexes[0].number).toBe(1);
     expect(results.track.indexes[0].time.min).toBe(5);
     expect(results.track.indexes[0].time.sec).toBe(19);
+  });
+
+  // Playlist dans laquelle on affiche la durée de chaque piste au lieu de son début dans la vidéo (format erroné) #90
+  // Exemple : https://www.youtube.com/watch?v=8on0GslsyxM
+  it("should parse tracklist with duration only", () => {
+
+    const lines = [
+      "1. \"Suite Sudarmoricaine\" Shane McGowan 3:24",     // 0:00
+      "2. \"An Dro / Tha Mi Sgìth\" Gillan O’Donovan 3:27", // 3:24
+      "3. \"Ar An Garraig / Telenn Wad\"   2:10"            // 6:51
+    ];
+    const tracks = ytparser.parseTracks(lines);
+    expect(tracks).not.toBeNull();
+    expect(tracks.length).toEqual(3);
+
+    // Track 1
+    expect(tracks[0].title).toEqual("Suite Sudarmoricaine\" Shane McGowan");
+    expect(tracks[0].indexes[0].time.min).toBe(0);
+    expect(tracks[0].indexes[0].time.sec).toBe(0);
+    expect(tracks[0].indexes[0].time.frame).toBe(0);
+
+    // Track 2
+    expect(tracks[1].title).toEqual("An Dro / Tha Mi Sgìth\" Gillan O’Donovan");
+    expect(tracks[1].indexes[0].time.min).toBe(3);
+    expect(tracks[1].indexes[0].time.sec).toBe(24);
+    expect(tracks[1].indexes[0].time.frame).toBe(0);
+
+    // Track 2
+    expect(tracks[2].title).toEqual("Ar An Garraig / Telenn Wad");
+    expect(tracks[2].indexes[0].time.min).toBe(6);
+    expect(tracks[2].indexes[0].time.sec).toBe(51);
+    expect(tracks[2].indexes[0].time.frame).toBe(0);
   });
 
 });
