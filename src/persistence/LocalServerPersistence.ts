@@ -1,3 +1,4 @@
+///<reference path="../../node_modules/@types/angular/index.d.ts"/>
 import CueSheet = cuesheet.CueSheet;
 
 class LocalServerPersistence extends Persistence {
@@ -31,17 +32,7 @@ class LocalServerPersistence extends Persistence {
         });
     }
 
-    public async getCollection(collectionName: string): Promise<Collection> {
-        throw new Error("Not implemented");
-    }
-
-    public async postCollection(collection: Collection): Promise<Collection> {
-        throw new Error("Not implemented");
-        // TODO : ne pas oublier de mettre à jour setCollectionNames
-    }
-
-    public getCollectionDiscIds(collectionName: string): Promise<string[]> {
-
+    public getCollection(collectionName: string): Promise<Collection> {
         return new Promise((resolve, reject) => {
             this.$http.get<string[]>(`/collection/${collectionName}/discs`).then(res => {
                 if (res.status !== 200) {
@@ -49,18 +40,25 @@ class LocalServerPersistence extends Persistence {
                     return reject(res.status);
                 }
                 const discIds: string[] = res.data;
-                resolve(discIds);
+                const collection = {
+                    name: collectionName,
+                    discIds: discIds
+                };
+                resolve(collection);
             }, resKO => {
                 return reject(resKO);
             });
         });
     }
 
-    public postCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
-
+    public postCollection(collection: Collection): Promise<Collection> {
         return new Promise((resolve, reject) => {
-            this.$http.post<string[]>(`/collection/${collectionName}/discs`, discIds).then(res => {
-                resolve(discIds);
+            this.$http.post<Collection>(`/collection/${collection.name}/discs`, collection.discIds).then(res => {
+                if (res.status !== 200) {
+                    console.error("Error POST collection != 200");
+                    return reject(res.status);
+                }
+                return resolve(collection);
             }, resKO => {
                 return reject(resKO);
             });

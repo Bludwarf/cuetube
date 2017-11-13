@@ -12,16 +12,37 @@ abstract class Persistence {
      */
     public abstract setCollectionNames(collectionsNames: string[]): Promise<string[]>;
 
+    public abstract getCollection(collectionName: string): Promise<Collection>;
+
     public abstract postCollection(collection: Collection): Promise<Collection>;
 
-    public abstract getCollectionDiscIds(collectionName: string, cb: (err: Error, discIds: string[]) => void): Promise<string[]>;
+    public async getCollectionDiscIds(collectionName: string, cb: (err: Error, discIds: string[]) => void): Promise<string[]> {
+        let collection: Collection = await this.getCollection(collectionName);
+        if (!collection) {
+            collection = new Collection(collectionName);
+            this.postCollection(collection);
+        }
+        return collection.discIds;
+    }
 
     /**
      * @param {string} collectionName
      * @param {string[]} discIds id des disques présents dans cette collection, annule et remplace les précédents
      * @return {Promise<string[]>}
      */
-    public abstract postCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]>;
+    public async postCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
+        const collection: Collection = await this.getCollection(collectionName) || new Collection();
+        collection.discIds = discIds;
+        this.postCollection(collection);
+        return collection.discIds;
+    }
+
+    public async newCollection(collectionName: string): Promise<Collection> {
+        return this.postCollection({
+            name: collectionName,
+            discIds: []
+        });
+    }
 
     public abstract getDisc(discId: string, discIndex: number): Promise<Disc>;
 
