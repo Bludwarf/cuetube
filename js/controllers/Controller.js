@@ -63,8 +63,15 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         persistence.getCollectionDiscIds(collectionParam).then(discIds => {
             loadDiscs(discIds);
         }).catch(err => {
-            alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
-            //history.back();
+            // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
+          persistence.newCollection(collectionParam).then(collection => {
+            $scope.collectionNames = $scope.collectionNames || [];
+            $scope.collectionNames.push(collectionParam);
+            loadDiscs(collection.discIds);
+          }).catch(err => {
+            alert('Erreur lors de la création de cette collection');
+            history.back();
+          });
         });
     }
 
@@ -1273,6 +1280,17 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         } else {
             fallback();
         }
+    };
+
+    $scope.createCollection = function(name) {
+      name = name || prompt("Nom de la collection à créer");
+      if (name) {
+        this.openCollection(name);
+      }
+    };
+
+    $scope.openCollection = function(name) {
+      window.location.href = setParameterByName('collection', name);
     };
 
     /**

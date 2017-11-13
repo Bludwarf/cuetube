@@ -97,24 +97,6 @@ class LocalStoragePersistence extends Persistence {
             return collection;
         });
     }
-    getCollectionDiscIds(collectionName, cb) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let collection = yield this.getCollection(collectionName);
-            if (!collection) {
-                collection = new Collection(collectionName);
-                this.postCollection(collection);
-            }
-            return collection.discIds;
-        });
-    }
-    postCollectionDiscIds(collectionName, discIds) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const collection = (yield this.getCollection(collectionName)) || new Collection();
-            collection.discIds = discIds;
-            this.postCollection(collection);
-            return collection.discIds;
-        });
-    }
     getDisc(discId, discIndex) {
         const _super = name => super[name];
         return __awaiter(this, void 0, void 0, function* () {

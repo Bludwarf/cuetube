@@ -1,11 +1,4 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+///<reference path="../../node_modules/@types/angular/index.d.ts"/>
 var CueSheet = cuesheet.CueSheet;
 class LocalServerPersistence extends Persistence {
     constructor($scope, $http) {
@@ -35,17 +28,6 @@ class LocalServerPersistence extends Persistence {
         });
     }
     getCollection(collectionName) {
-        return __awaiter(this, void 0, void 0, function* () {
-            throw new Error("Not implemented");
-        });
-    }
-    postCollection(collection) {
-        return __awaiter(this, void 0, void 0, function* () {
-            throw new Error("Not implemented");
-            // TODO : ne pas oublier de mettre à jour setCollectionNames
-        });
-    }
-    getCollectionDiscIds(collectionName) {
         return new Promise((resolve, reject) => {
             this.$http.get(`/collection/${collectionName}/discs`).then(res => {
                 if (res.status !== 200) {
@@ -53,16 +35,24 @@ class LocalServerPersistence extends Persistence {
                     return reject(res.status);
                 }
                 const discIds = res.data;
-                resolve(discIds);
+                const collection = {
+                    name: collectionName,
+                    discIds: discIds
+                };
+                resolve(collection);
             }, resKO => {
                 return reject(resKO);
             });
         });
     }
-    postCollectionDiscIds(collectionName, discIds) {
+    postCollection(collection) {
         return new Promise((resolve, reject) => {
-            this.$http.post(`/collection/${collectionName}/discs`, discIds).then(res => {
-                resolve(discIds);
+            this.$http.post(`/collection/${collection.name}/discs`, collection.discIds).then(res => {
+                if (res.status !== 200) {
+                    console.error("Error POST collection != 200");
+                    return reject(res.status);
+                }
+                return resolve(collection);
             }, resKO => {
                 return reject(resKO);
             });

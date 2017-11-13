@@ -12,6 +12,14 @@ function getParameterByName(name, url) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
+/**
+ * Usage 1 : url2 = setParameterByName('paramName', 'paramValue', url);
+ * Usage 2 : window.location.href = setParameterByName('paramName', 'paramValue');
+ * @param name
+ * @param value
+ * @param url
+ * @return {string}
+ */
 function setParameterByName(name, value, url) {
     if (!url) {
         url = window.location.href;
@@ -19,7 +27,9 @@ function setParameterByName(name, value, url) {
     name = name.replace(/[\[\]]/g, "\\$&");
     var regex = new RegExp("([?&])" + name + "(=([^&#]*)|&|#|$)"),
         results = regex.exec(url);
-    if (!results || !results[3]) return url;
+    if (!results || !results[3]) {
+      return url + (url.indexOf('?') === -1 ? '?' : '&') + `${name}=${value}`;
+    }
     return url.replace(results[0], `${results[1]}${name}=${value}`);
 }
 
