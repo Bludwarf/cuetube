@@ -5,6 +5,10 @@
     margin-right:10px;
 }
 
+.clickable-glyphicon {
+    cursor: pointer;
+}
+
 .vertical-scroll {
     /* position: absolute; */
     height: 100%;
