@@ -128,6 +128,9 @@ class Disc {
     set src(src) {
         this.setRem("SRC", src);
     }
+    get url() {
+        return this.src || `https://www.youtube.com/watch?v=${this.id}`; // TODO : créer une méthode dans yth
+    }
 }
 (function (Disc) {
     class File {
@@ -227,6 +230,12 @@ class Disc {
                 track.index -= deletedTracks;
                 track.number -= deletedTracks;
             }
+        }
+        removeTracks() {
+            let toRemove = [].concat(this.tracks);
+            toRemove.forEach(track => {
+                track.remove(false);
+            });
         }
     }
     File.DEFAULT_TYPE = "MP3";
@@ -336,8 +345,10 @@ class Disc {
             }
             return null;
         }
-        /** Si on supprime la dernière piste d'un fichier alors le fichier est supprimé */
-        remove() {
+        /**
+         * @param cascade Si on supprime la dernière piste d'un fichier alors le fichier est supprimé
+         */
+        remove(cascade = false) {
             const tracks = this.disc.tracks;
             const indexInDisc = tracks.indexOf(this);
             if (indexInDisc === -1)
@@ -352,7 +363,7 @@ class Disc {
                 --track.number;
             }
             // Fichier vide ? => on supprime le fichier
-            if (this.file.tracks.length === 0) {
+            if (cascade && this.file.tracks.length === 0) {
                 this.file.remove();
             }
         }

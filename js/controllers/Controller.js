@@ -9,7 +9,8 @@
 function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     const GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
-    const persistence = (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? new LocalStoragePersistence($scope, $http) : new LocalServerPersistence($scope, $http);
+    const localPersistence = new LocalStoragePersistence($scope, $http);
+    const persistence = (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? localPersistence : new LocalServerPersistence($scope, $http);
     const DEFAULT_COLLECTION = '_DEFAULT_';
 
     const $foreground = $("#foreground-overlay");
@@ -1194,8 +1195,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             } catch (e) {
                 if (e.name === "youtube.notracklist") {
                     const disc = e.disc;
-                    alert("La description de la vidéo ne contient aucune tracklist, on va faire une recherche sur freedb...");
-                    const win = openInNewTab(`http://www.regeert.nl/cuesheet/?str=${encodeURIComponent(disc.title)}`);
+                    localPersistence.setItem("discToCreate", disc);
+                    alert("La description de la vidéo ne contient aucune tracklist, on va commencer la création du disque...");
+                    const win = openInNewTab(`edit-cue?id=${disc.id}`);
                 } else {
                     alert("Erreur lors de la création du disque : " + e.message);
                 }

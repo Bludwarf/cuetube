@@ -84,6 +84,7 @@
     <script type="text/javascript" src="js/disc.js"></script>
     <script type="text/javascript" src="js/CueParser.js"></script>
     <script type="text/javascript" src="js/CuePrinter.js"></script>
+    <script type="text/javascript" src="js/yt-parser.js"></script>
     <script type="text/javascript" src="js/yt-helper.js"></script>
     <script type="text/javascript" src="js/persistence.js"></script>
     <script type="text/javascript" src="js/persistence/LocalServerPersistence.js"></script>
@@ -134,8 +135,9 @@
                     <div id="tracklist" class="tab-pane" ng-show="disc.files.length == 1">
                         <button style="margin-bottom: 1em;" ng-click="prompt(null, getTracklist(file.tracks))">Copier</button>
                         <div class="textarea-wrapper">
-                            <textarea placeholder="Import d'une tracklist YouTube" readonly>{{getTracklist(file.tracks)}}</textarea>
+                            <textarea placeholder="Import d'une tracklist YouTube">{{getTracklist(file.tracks)}}</textarea>
                         </div>
+                        <button style="margin-bottom: 1em;" ng-click="setTracklistFromButton($event, file)">Appliquer</button>
                     </div>
                 </div>
 
