@@ -10,7 +10,7 @@ class LocalStoragePersistence extends Persistence {
      * @param {string} key
      * @return undefined si item inconnu
      */
-    private getItem<T>(key: string): T {
+    public getItem<T>(key: string): T {
         const item = localStorage.getItem(key);
         if (item) {
             return JSON.parse(item);
@@ -24,7 +24,7 @@ class LocalStoragePersistence extends Persistence {
      * @param {string} key
      * @param value si null alors supprime l'item
      */
-    private setItem<T>(key: string, value: T) {
+    public setItem<T>(key: string, value: T) {
         if (value) {
             localStorage.setItem(key, JSON.stringify(value));
         } else {
