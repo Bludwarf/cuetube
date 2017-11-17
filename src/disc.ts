@@ -398,7 +398,7 @@ module Disc {
         /**
          * @param cascade Si on supprime la dernière piste d'un fichier alors le fichier est supprimé
          */
-        remove(cascade: boolean = false): void {
+        remove(cascade: boolean = true): void {
             const tracks = this.disc.tracks;
             const indexInDisc = tracks.indexOf(this);
             if (indexInDisc === -1) return;
@@ -408,7 +408,7 @@ module Disc {
             this.file.cuesheetFile.tracks.splice(indexInFile, 1);
 
             // On décale l'index de toutes les pistes suivantes
-            for (let i = indexInDisc; i < tracks.length; ++i) {
+            for (let i = indexInDisc + 1; i < tracks.length; ++i) {
                 const track = tracks[i];
                 --track.index;
                 --track.number;
