@@ -182,20 +182,28 @@ ytparser.parseTracks = function(lines, options) {
 
   }//for
 
-  // Vérif si timecode ne sont pas des durées #90
-  if (!ytparser.checkTimecode(tracks)) {
+  if (tracks && tracks.length >= 2) {
 
-    alert("Visiblement la tracklist indique la durée des pistes au lieu de leur début... à implémenter");
-    let elapsed = new cuesheet.Time(0, 0, 0);
-    for (let i = 0; i < tracks.length; ++i) {
-      let time = tracks[i].indexes[0].time;
-      let savedTime = new cuesheet.Time(time.min, time.sec, time.frame);
+    // Vérif si les timecode sont présents
+    if (!ytparser.checkTimecodeExists(tracks)) {
+      alert("La tracklist ne comporte pas les timecodes de chaque piste, veuillez les ajouter manuellement...");
+    }
 
-      time.min = elapsed.min;
-      time.sec = elapsed.sec;
-      time.frame = elapsed.frame;
+    // Vérif si timecode ne sont pas des durées #90
+    else if (!ytparser.checkTimecode(tracks)) {
 
-      elapsed = this.addTimecode(elapsed, savedTime);
+      alert("Visiblement la tracklist indique la durée des pistes au lieu de leur début... On a corrigé la cuesheet.");
+      let elapsed = new cuesheet.Time(0, 0, 0);
+      for (let i = 0; i < tracks.length; ++i) {
+        let time = tracks[i].indexes[0].time;
+        let savedTime = new cuesheet.Time(time.min, time.sec, time.frame);
+
+        time.min = elapsed.min;
+        time.sec = elapsed.sec;
+        time.frame = elapsed.frame;
+
+        elapsed = this.addTimecode(elapsed, savedTime);
+      }
     }
   }
 
@@ -236,9 +244,21 @@ function compareTimes(t1, t2) {
   if (minDiff !== 0) return minDiff;
   const secDiff = t1.sec - t2.sec;
   if (secDiff !== 0) return secDiff;
-  const frameDiff = t1.frame - t2.frame;
-  if (frameDiff !== 0) return frameDiff;
+  return t1.frame - t2.frame;
 }
+
+/** @return {boolean} true si tous les timecodes sont présents (au moins 2 tracks) */
+ytparser.checkTimecodeExists = function (tracks) {
+  const first = tracks[0];
+  for (let i = 1; i < tracks.length; ++i) {
+    const track = tracks[i];
+    if (compareTimes(first.indexes[0].time, track.indexes[0].time) === 0) {
+      return false;
+    }
+  }
+  alert('checkTimecodeExists');
+  return true;
+};
 
 /**
  * @typedef {Object} ParseResult

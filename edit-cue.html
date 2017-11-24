@@ -42,8 +42,8 @@
             margin-bottom: 10px;
         }
 
-        div.file:hover {
-            background: #EEE;
+        div.file:hover img {
+            box-shadow: 2px 2px 10px #666;
         }
 
         .file img {
@@ -86,7 +86,8 @@
         }
 
         .textarea-wrapper {
-            padding-right: 42px
+            padding-right: 42px;
+            margin-bottom: 1em;
         }
 
         textarea {
@@ -186,11 +187,11 @@
                     </div>
 
                     <div id="tracklist" class="tab-pane" ng-show="disc.files.length == 1">
-                        <button style="margin-bottom: 1em;" ng-click="prompt(null, getTracklist(file.tracks))">Copier</button>
-                        <div class="textarea-wrapper">
-                            <textarea placeholder="Import d'une tracklist YouTube">{{getTracklist(file.tracks)}}</textarea>
+                        <button class="btn" style="margin-bottom: 1em;" ng-click="prompt(null, getTracklist(file.tracks))">Copier</button>
+                        <div class="textarea-wrapper" style="margin-bottom: 1em;">
+                            <textarea class="form-control" style="width: 100%;" rows="{{file.tracks.length}}" placeholder="Import d'une tracklist YouTube">{{getTracklist(file.tracks)}}</textarea>
                         </div>
-                        <button style="margin-bottom: 1em;" ng-click="setTracklistFromButton($event, file)">Appliquer</button>
+                        <button class="btn btn-primary" style="margin-bottom: 1em;" ng-click="setTracklistFromButton($event, file)">Appliquer</button>
                     </div>
                 </div>
 
