@@ -256,7 +256,6 @@ ytparser.checkTimecodeExists = function (tracks) {
       return false;
     }
   }
-  alert('checkTimecodeExists');
   return true;
 };
 
