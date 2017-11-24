@@ -153,6 +153,13 @@ class Disc {
     get url(): string {
         return this.src || `https://www.youtube.com/watch?v=${this.id}`; // TODO : créer une méthode dans yth
     }
+
+    set date(date: string) {
+        this.setRem("DATE", date);
+    }
+    get date(): string {
+        return this.getRem("DATE");
+    }
 }
 
 module Disc {
