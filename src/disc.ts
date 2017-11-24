@@ -287,6 +287,18 @@ module Disc {
                 track.remove(false);
             })
         }
+
+        /**
+         * Désactive toutes les pistes de ce fichier.
+         * Si toutes les pistes sont désactivées on désactive aussi le disque
+         * @param {boolean} enabled
+         */
+        set enabled(enabled: boolean) {
+            this.tracks.forEach(track => track.enabled = enabled);
+            if (!enabled && this.tracks.length === this.disc.tracks.length) {
+                this.disc.enabled = false;
+            }
+        }
     }
 
     export class Track {
