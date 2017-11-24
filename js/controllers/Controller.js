@@ -552,7 +552,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
       // prochaine piste ou 1ère du prochain disque
       do {
-        track = track.next;
+        if (track) {
+          track = track.next;
+        }
         if (!track) {
           disc = discIndex < possibleDiscs.length - 1 ? possibleDiscs[discIndex + 1] : possibleDiscs[0];
           track = disc.tracks[0];
