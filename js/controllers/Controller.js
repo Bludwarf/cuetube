@@ -68,6 +68,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
           persistence.newCollection(collectionParam).then(collection => {
             $scope.collectionNames = $scope.collectionNames || [];
             $scope.collectionNames.push(collectionParam);
+            $scope.$apply();
             loadDiscs(collection.discIds);
           }).catch(err => {
             alert('Erreur lors de la création de cette collection');
