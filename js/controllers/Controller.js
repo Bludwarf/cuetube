@@ -520,7 +520,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.next = function() {
         const discs = $scope.discs;
         let track = $scope.currentTrack;
-        let disc = track.disc;
+        let disc = track && track.disc;
 
         const possibleDiscs = [];
         for (let i = 0; i < discs.length; ++i) {
