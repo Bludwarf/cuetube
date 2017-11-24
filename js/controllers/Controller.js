@@ -1102,8 +1102,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     };
 
     $scope.$watch('currentTrack', function(newTrack, oldTrack) {
-        const newDisc = newTrack.disc;
-        const oldDisc = oldTrack.disc;
+        const newDisc = newTrack ? newTrack.disc : null;
+        const oldDisc = oldTrack ? oldTrack.disc : null;
         if (newDisc !== oldDisc) {
             document.body.style.backgroundImage = 'url(https://img.youtube.com/vi/'+newDisc.videoId+'/hqdefault.jpg)'
         }
