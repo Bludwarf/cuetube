@@ -808,6 +808,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     });
 
     $scope.$on("video ended", (event) => {
+        console.log("$on(\"video ended\"");
         const scope = event.currentScope;
         scope.next();
     });
@@ -847,10 +848,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         // on vérifie lastPlayedVideoIndex car cet évènement est souvent appelé deux fois
         // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
         // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
-        if (state === YT.PlayerState.ENDED && $scope.loadingTrack &&
+        if (state === YT.PlayerState.ENDED && (!$scope.loadingTrack ||
             $scope.loadingTrack.disc.index  !== $scope.currentTrack.disc.index &&
             $scope.loadingTrack.file.index  !== $scope.currentTrack.file.index &&
-            $scope.loadingTrack.index !== $scope.currentTrack.index) {
+            $scope.loadingTrack.index !== $scope.currentTrack.index)) {
             $scope.$emit("video ended");
         }
 
