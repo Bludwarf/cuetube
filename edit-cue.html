@@ -6,8 +6,12 @@
     <title>Playlist m3u YouTube</title>
     <link rel="icon" type="image/png" href="img/favicon_16-vfl8NGn4k-m3u.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap.css"><!-- TODO : à garder ? -->
+    <!--<link rel="stylesheet" href="css/bootstrap-theme.css">-->
+    <!--<link rel="stylesheet" href="css/bootstrap-slate.min.css">-->
     <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" href="css/angular.css">
+
     <script type="text/javascript" src="js/jquery.min.js"></script>
 
     <script>
@@ -19,6 +23,10 @@
     <style>
         body {
             margin: auto auto;
+        }
+
+        .nav-tabs {
+            margin-bottom: 1em;
         }
 
         form {
@@ -44,7 +52,7 @@
         }
 
         .file legend {
-            margin-bottom: 10px;
+            /*margin-bottom: 10px;*/
         }
 
         fieldset.track {
@@ -52,16 +60,29 @@
         }
 
         input.title {
-            width: 25em;
+            width: 25em !important;
         }
         input.performer {
-            width: 15em;
+            width: 15em !important;
+        }
+
+        input.min,
+        input.sec {
+            padding-left: 0;
+            padding-right: 5px;
+            text-align: right;
         }
         input.min {
-            width: 2em;
+            width: 2em !important;
         }
         input.sec {
-            width: 2em;
+            width: 2em !important;
+        }
+
+        button.save {
+            width: 100%;
+            height: 3em;
+            font-size: large;
         }
 
         .textarea-wrapper {
@@ -73,8 +94,12 @@
             resize: vertical;
         }
 
+        .track {
+            margin-bottom: 0.5em;
+        }
+
         .track button {
-            margin-bottom: 10px;
+            /*margin-bottom: 10px;*/
         }
 
     </style>
@@ -94,16 +119,40 @@
 
 <body id="ctrl" ng-controller="EditCue" style="display: none;" ng-show="disc">
 
-    <form>
+    <form class="form-horizontal">
 
         <h1>Modification de {{disc.id}}.cue</h1>
 
-        <label>title: <input type="text" name="title" class="title" ng-model="disc.title" /></label>
-        <label>performer: <input type="text" name="performer" ng-model="disc.performer" /></label>
+        <div class="form-group">
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="title">title</label>
+                <div class="col-sm-10">
+                    <input id="title" type="text" name="title" class="title form-control" ng-model="disc.title" placeholder="Titre du disque" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="performer">performer</label>
+                <div class="col-sm-10">
+                    <input id="performer" type="text" name="performer" class="form-control" ng-model="disc.performer" placeholder="Interprète du disque" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="date">date</label>
+                <div class="col-sm-10">
+                    <input id="date" type="text" name="date" class="date form-control" ng-model="disc.date" placeholder="Année du parution du disque" />
+                </div>
+            </div>
+        </div>
 
-        <button type="button" ng-click="save()" style="margin-bottom: 1em;">Sauvegarder</button>
+        <button class="save btn btn-primary" type="submit" ng-click="save()" style="margin-bottom: 1em;">Sauvegarder</button>
 
-        <label>source : <input type="text" name="source" ng-model="disc.src" style="width: 40em;"></label>
+    </form>
+    <form class="form-inline">
+
+        <div class="form-group" style="margin-bottom: 1em;">
+            <label class="control-label" for="source">source :</label>
+            <input id="source" type="text" name="source" class="date form-control" ng-model="disc.src" placeholder="Année du parution du disque"  style="width: 50em;"/>
+        </div>
 
         <div class="file" ng-repeat="file in disc.files">
             <a href="{{file.name}}" target="_blank">
@@ -111,7 +160,7 @@
             </a>
             <fieldset>
                 <legend>
-                    <input type="text" name="fileName" ng-model="file.videoId" size="300"/>
+                    <input class="form-control" type="text" name="fileName" ng-model="file.videoId"/>
                 </legend>
 
                 <ul class="nav nav-tabs" ng-show="disc.files.length == 1">
@@ -122,13 +171,17 @@
                 <div class="tab-content">
                     <div id="tracks" class="tab-pane in active">
                         <fieldset ng-repeat="track in file.tracks" class="track">
-                            <input type="text" name="trackTimeMin" class="min" placeholder="MMM" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
-                            <input type="text" name="trackTimeSec" class="sec" placeholder="SS" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
-                            <input type="text" name="trackTitle" class="title" placeholder="title" ng-model="track.title" />
-                            <input type="text" name="trackPerformer" class="performer" placeholder="performer" ng-model="track.performer" empty-to-null />
-                            <button ng-click="track.remove()" title="Supprimer cette piste"><span class="icon icon-remove" style="color: #600700;"></span></button>
+                            <input type="text" name="trackTimeMin" class="form-control min" placeholder="MMM" ng-model="track.indexes[0].time.min" ng-maxlength="3" /> :
+                            <input type="text" name="trackTimeSec" class="form-control sec" placeholder="SS" ng-model="track.indexes[0].time.sec" ng-maxlength="2" /> -
+                            <input type="text" name="trackTitle" class="form-control title" placeholder="title" ng-model="track.title" />
+                            <input type="text" name="trackPerformer" class="form-control performer" placeholder="performer" ng-model="track.performer" empty-to-null />
+                            <button class="btn" ng-click="track.remove()" title="Supprimer cette piste">
+                                <span class="glyphicon glyphicon-remove" style="color: #600700;"></span>
+                            </button>
                             <!-- TODO : pouvoir insérer une piste après n'importe quelle piste (et pas seulement la dernière -->
-                            <button ng-click="file.newTrack()" title="Ajouter une piste"><span class="icon icon-plus"></span></button>
+                            <button class="btn" ng-click="file.newTrack()" title="Ajouter une piste">
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </button>
                         </fieldset>
                     </div>
 
@@ -144,7 +197,9 @@
             </fieldset>
         </div>
 
-        <button type="button" ng-click="save()">Sauvegarder</button>
+        <div style="margin-bottom: 1em;">
+            <button class="save btn btn-primary" type="submit" ng-click="save()">Sauvegarder</button>
+        </div>
 
     </form>
 

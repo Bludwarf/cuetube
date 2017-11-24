@@ -131,6 +131,12 @@ class Disc {
     get url() {
         return this.src || `https://www.youtube.com/watch?v=${this.id}`; // TODO : créer une méthode dans yth
     }
+    set date(date) {
+        this.setRem("DATE", date);
+    }
+    get date() {
+        return this.getRem("DATE");
+    }
 }
 (function (Disc) {
     class File {
