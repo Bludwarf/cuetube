@@ -198,10 +198,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         };
 
         disc.load = function() {
-            $scope.currentDiscIndex = discIndex === undefined ? this.index : discIndex;
-            $scope.currentDisc = this;
             this.enabled = true;
-            this.nextTrack($scope.shuffle);
+            this.nextTrack($scope.shuffle, this);
             $scope.loadCurrentTrack($scope.player);
         };
 
@@ -264,11 +262,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 }
             }
 
-            // TODO : à changer en playTrack() ou setTrack()
-            $scope.currentTrackIndex = track.index;
             $scope.currentTrack = track;
-            $scope.currentFileIndex = track.file.index;
-            $scope.currentFile = track.file;
 
             return track;
         };
@@ -283,9 +277,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
                 Object.defineProperties(track, {
                     isCurrent: {
                         get: function() {
-                            return $scope.currentTrackIndex === this.index
-                                && $scope.currentFileIndex  === this.file.index
-                                && $scope.currentDiscIndex  === this.file.disc.index;
+                            return $scope.currentTrack &&
+                                $scope.currentTrack.index === this.index &&
+                                $scope.currentTrack.file.index  === this.file.index &&
+                                $scope.currentTrack.disc.index  === this.file.disc.index;
                         }
                     }
                 });
@@ -386,18 +381,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     $scope.shuffle = true;
     $scope.history = [];
-
-    $scope.currentDiscIndex = 0;
-    $scope.currentDisc = null;
-    $scope.currentFileIndex = 0;
-    $scope.currentFile = null;
-    $scope.currentTrackIndex = 0;
-
-    $scope.loadingDiscIndex = null;
-    $scope.loadingFileIndex = null;
-    $scope.loadingTrackIndex = null;
-
-
+    $scope.currentTrack = null;
+    $scope.loadingTrack = null;
 
     function initYT() {
 
@@ -427,25 +412,13 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
             if (!disc) {
                 console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé`);
-                $scope.currentDisc = undefined;
-                $scope.currentDiscIndex = undefined;
-                $scope.currentFile = undefined;
-                $scope.currentFileIndex = undefined;
                 $scope.currentTrack = undefined;
-                $scope.currentTrackIndex = undefined;
             } else {
                 console.log("Chargement de la précédente lecture...", current);
 
-                $scope.currentDisc = disc;
-                $scope.currentDiscIndex = disc.index;
-
                 let file = disc.files[current.fileIndex];
-                $scope.currentFile = file;
-                $scope.currentFileIndex = file.index;
-
                 let track = file.tracks[current.trackIndex];
                 $scope.currentTrack = track;
-                $scope.currentTrackIndex = track.index;
 
                 // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
                 let player = $scope.loadCurrentTrack();
@@ -473,37 +446,17 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         getCtrl().next();
     };
 
-    //@deprecated
-    $scope.setDiscIndex = function(discIndex) {
-        $scope.$apply(() => {
-            $scope.currentDiscIndex = discIndex;
-        });
-    };
-
-    //@deprecated
-    $scope.setTrackIndex = function(trackIndex) {
-        $scope.$apply(() => {
-          $scope.currentTrackIndex = trackIndex;
-        });
-    };
-
     // @deprecated
     $scope.loadDiscIndex = function(discIndex) {
-        this.currentDiscIndex = discIndex;
         const disc = $scope.discs[discIndex];
-        $scope.currentDisc = disc;
 
         // Next file
         const fileIndex = $scope.shuffle ? Math.floor(Math.random() * disc.files.length) : 0;
         const file = disc.files[fileIndex];
-        this.currentFileIndex = fileIndex;
-        $scope.currentFile = file;
 
         // Next track
         const trackIndex = $scope.shuffle ? Math.floor(Math.random() * file.tracks.length) : 0;
-        this.currentTrackIndex = trackIndex;
-
-        this.loadTrackIndex(trackIndex);
+        this.loadTrack(track);
     };
 
     function defaults(value, defaultValue) {
@@ -516,18 +469,12 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
      */
     $scope.loadTrackIndex = function(trackIndex, fileIndex, discIndex) {
 
-        trackIndex = defaults(trackIndex, $scope.currentTrackIndex);
-        fileIndex  = defaults(fileIndex, $scope.currentFileIndex);
-        discIndex  = defaults(discIndex, $scope.currentDiscIndex);
-
-        $scope.currentTrackIndex = trackIndex;
-        $scope.currentFileIndex  = fileIndex;
-        $scope.currentDiscIndex  = discIndex;
+        trackIndex = defaults(trackIndex, $scope.currentTrack.index);
+        fileIndex  = defaults(fileIndex, $scope.currentTrack.file.index);
+        discIndex  = defaults(discIndex, $scope.currentTrack.disc.index);
 
         const disc = $scope.discs[discIndex];
-        $scope.currentDisc = disc;
         const file = disc.files[fileIndex];
-        $scope.currentFile = file;
         const track = file.tracks[trackIndex];
         $scope.currentTrack = track;
 
@@ -537,7 +484,29 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
         // Suppression dans la liste des suivants auto
         if ($scope.shuffle) {
-            let nextTracks = $scope.currentDisc.nextTracks;
+            let nextTracks = disc.nextTracks;
+            let i = nextTracks.indexOf(track.number);
+            nextTracks.splice(i, 1); // on supprime que celui-ci
+        }
+
+        $scope.loadCurrentTrack($scope.player);
+    };
+
+    /**
+     * @param track
+     */
+    $scope.loadTrack = function(track) {
+
+        const disc = file.disc;
+        $scope.currentTrack = track;
+
+        // On active automatiquement cette piste et ce disque
+        disc.enabled = true;
+        track.enabled = true;
+
+        // Suppression dans la liste des suivants auto
+        if ($scope.shuffle) {
+            let nextTracks = disc.nextTracks;
             let i = nextTracks.indexOf(track.number);
             nextTracks.splice(i, 1); // on supprime que celui-ci
         }
@@ -550,8 +519,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
      */
     $scope.next = function() {
         const discs = $scope.discs;
-        let disc = $scope.currentDisc;
         let track = $scope.currentTrack;
+        let disc = track.disc;
 
         const possibleDiscs = [];
         for (let i = 0; i < discs.length; ++i) {
@@ -568,11 +537,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
         // Aléatoire ?
         if ($scope.shuffle) {
-
-            $scope.currentDisc = weightedRandom(possibleDiscs, disc => disc.tracks.length);
-            disc = $scope.currentDisc;
-            $scope.currentDiscIndex = $scope.currentDisc.index;
-
+            disc = weightedRandom(possibleDiscs, disc => disc.tracks.length);
             track = disc.nextTrack($scope.shuffle); // FIXME : arrêter la lecture si plus aucune piste
         }
 
@@ -588,12 +553,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             } while (!track.enabled);
         }
 
-        $scope.currentTrackIndex = track.index;
         $scope.currentTrack = track;
-        $scope.currentFileIndex = track.file.index;
-        $scope.currentFile = track.file;
-        $scope.currentDiscIndex = track.file.disc.index;
-        $scope.currentDisc = track.file.disc;
 
         // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
         if ($scope.currentTrack) {
@@ -608,13 +568,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         const previousEntry = this.history.length && this.history[this.history.length - 2];
         if (!previousEntry) return;
 
-        this.currentDiscIndex = previousEntry.discIndex;
-        this.currentFileIndex = previousEntry.fileIndex;
-        this.currentTrackIndex = previousEntry.trackIndex;
-
-        const disc = $scope.discs[this.currentDiscIndex];
-        $scope.currentDisc = disc;
-        $scope.currentFile = disc.files[this.currentFileIndex];
+        const disc = $scope.discs[previousEntry.discIndex];
+        const file = disc.files[previousEntry.fileIndex];
+        $scope.currentTrack = file.tracks[previousEntry.trackIndex];
 
         this.history.pop(); // suppression du previous
         this.loadCurrentTrack($scope.player);
@@ -661,13 +617,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         });
     };
 
-    // TODO : mettre un getter dans l'objet Cue.File
     $scope.getVideoId = function() {
-        const disc = this.discs[this.currentDiscIndex];
-        const file = disc.files[this.currentFileIndex];
         //return getVideoIdFromUrl(file.name);
         //return getParameterByName("v", file.name);
-        return file.videoId;
+        return this.currentTrack.file.videoId;
     };
 
     $scope.getVideoUrlFromId = function(id) {
@@ -699,15 +652,15 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     }*/
 
     $scope.loadCurrentTrack = function() {
-        const disc = this.discs[this.currentDiscIndex];
-        const file = disc.files[this.currentFileIndex];
-        const track = file.tracks[this.currentTrackIndex];
+        const track = this.currentTrack;
+        const file = track.file;
+        const disc = file.disc;
         const multiTrack = file.tracks.length > 1;
 
         disc.enabled = true;
         track.enabled = true;
 
-        this.showOnlyPlaylist(this.currentDiscIndex);
+        this.showOnlyPlaylist(disc.index);
 
         let start = multiTrack ? Math.floor(track.startSeconds) : undefined; // YouTube n'accèpte que des entiers
         const end = multiTrack ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
@@ -790,9 +743,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             //}
         }
 
-        $scope.loadingDiscIndex = $scope.currentDiscIndex;
-        $scope.loadingFileIndex = $scope.currentFileIndex;
-        $scope.loadingTrackIndex = $scope.currentTrackIndex;
+        $scope.loadingTrack = $scope.currentTrack;
 
         // Notif
         notify((track.title || "Track "+track.number), {
@@ -803,9 +754,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         // Historique
         this.history.push({
             discId: disc.discId,
-            discIndex: this.currentDiscIndex,
-            fileIndex: this.currentFileIndex,
-            trackIndex: this.currentTrackIndex,
+            discIndex: this.currentTrack.disc.index,
+            fileIndex: this.currentTrack.file.index,
+            trackIndex: this.currentTrack.index,
             date: new Date()
         });
 
@@ -832,10 +783,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         const player = scope.player;
         scope.loadingDiscIndex = null;
         scope.loadingFileIndex = null;
-        scope.loadingTrackIndex = null;
+        scope.loadingTrack = null;
 
         // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
-        const file = scope.currentFile;
+        const file = scope.currentTrack.file;
         if (!file.duration) file.duration = player.getDuration();
         // TODO : on pourrait stocker cette information sur le serveur
 
@@ -852,7 +803,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         scope.changeVideoIHM(); // au cas ou on a déplacé le curseur
 
         // Incrémentation du nombre de lectures de la piste courante
-        const track = $scope.getCurrentTrack();
+        const track = $scope.currentTrack;
         ++track.played;
     });
 
@@ -863,12 +814,11 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     $scope.$on("video manual seeked", (event) => {
         // on cherche la piste courant uniquement pour une vidéo multipiste
-        if ($scope.currentDisc.tracks.length > 1) {
-          const track = $scope.currentFile.getTrackAt($scope.player.getCurrentTime());
+        if ($scope.currentTrack.disc.tracks.length > 1) {
+          const track = $scope.currentTrack.file.getTrackAt($scope.player.getCurrentTime());
           if (track) {
             console.log(`On a sauté manuellement vers la piste #${track.number} ${track.title}`);
             $scope.currentTrack = track;
-            $scope.currentTrackIndex = track.index;
           }
         }
     });
@@ -897,7 +847,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         // on vérifie lastPlayedVideoIndex car cet évènement est souvent appelé deux fois
         // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
         // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
-        if (state === YT.PlayerState.ENDED && $scope.loadingDiscIndex !== $scope.currentDiscIndex && $scope.loadingFileIndex !== $scope.currentFileIndex && $scope.loadingTrackIndex !== $scope.currentTrackIndex) {
+        if (state === YT.PlayerState.ENDED && $scope.loadingTrack &&
+            $scope.loadingTrack.disc.index  !== $scope.currentTrack.disc.index &&
+            $scope.loadingTrack.file.index  !== $scope.currentTrack.file.index &&
+            $scope.loadingTrack.index !== $scope.currentTrack.index) {
             $scope.$emit("video ended");
         }
 
@@ -912,25 +865,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         else if (state === YT.PlayerState.PAUSED) {
             $scope.isPlaying = false;
         }
-
-        // FIXME : détection changement manuel de cue
-        /*else if (event.data = YT.PlayerState.PAUSED && loadingFileIndex == null && loadingTrackIndex == null) {
-          console.log("Pause at : "+player.getCurrentTime());
-          const cueIndex = getCueIndexAt(videos[currentDiscIndex], player.getCurrentTime());
-          console.log("Pause at cue :", cueIndex);
-
-          if (cueIndex != -1 && cueIndex != currentTrackIndex) {
-            console.log("Changement de cue manuel");
-            const video = videos[currentDiscIndex];
-            player.loadVideoById({
-              videoId: video.videoId,
-              startSeconds: video.cues[cueIndex].startSeconds,
-              endSeconds: (cueIndex + 1 < video.cues.length ? video.cues[cueIndex+1].startSeconds : video.endSeconds)
-            });
-            loadingFileIndex = currentDiscIndex;
-            loadingTrackIndex = cueIndex;
-          }
-        }*/
 
         if ($scope.lastPlayerStates.length >= 10) $scope.lastPlayerStates.shift();
         $scope.lastPlayerStates.push(state);
@@ -965,9 +899,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     }*/
 
     $scope.changeVideoIHM = function() {
-        const disc = this.discs[this.currentDiscIndex];
-        const file = disc.files[this.currentFileIndex];
-        const track = file.tracks[this.currentTrackIndex];
+        const track = this.currentTrack;
+        const file = track.file;
+        const disc = file.disc;
         document.title = track.title + " - CueTube"; // Youtube affiche : disc.title + " - m3u-YouTube"
 
         // Slider
@@ -1021,10 +955,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             $foreground.show();
         }
         $scope.isPlaying = false;
-    };
-
-    $scope.getCurrentTrack = function() {
-      return $scope.currentFile.tracks[this.currentTrackIndex];
     };
 
     $scope.fileSlider = {
@@ -1302,8 +1232,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         localStorage.setItem('discIds', _.pluck($scope.discs, 'id'));
         localStorage.setItem('shuffle', $scope.shuffle);
         localStorage.setItem('current', JSON.stringify({
-            discId: $scope.currentDisc.id,
-            fileIndex: $scope.currentFile.index,
+            discId: $scope.currentTrack.disc.id,
+            fileIndex: $scope.currentTrack.file.index,
             trackIndex: $scope.currentTrack.index
         }));
 

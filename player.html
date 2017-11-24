@@ -89,14 +89,14 @@
 
                             <div class="discs">
 
-                                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentDiscIndex], inTracklist: disc == discInTracklist}">
+                                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentTrack.disc.index], inTracklist: disc == discInTracklist}">
                                     <div class="disc-thumb" ng-click="disc.clickThumb($event)" ng-dblclick="disc.doubleClickThumb($event)" title="{{disc.title}}. Cliquer pour ouvrir la liste des pistes de l'album">
                                         <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" title="Cocher cette case pour activer/désactiver ce disque. 'Alt' pour inverser la sélection des autres disques. 'Shift' pour sélectionner un ensemble de disques qui se suivent."/>
                                         <div class="disabled-video-cache" ng-hide="disc.enabled"></div>
                                         <img class="" ng-src="https://img.youtube.com/vi/{{disc.videoId}}/default.jpg" />
                                     </div>
                                     <div class="tracklist" ng-click="stopPropagation($event)">
-                                        <h2 class="disc-name" ng-class="{active: disc == discs[currentDiscIndex]}" ng-click="disc.load()">{{disc.title}}</h2>
+                                        <h2 class="disc-name" ng-class="{active: disc == discs[currentTrack.disc.index]}" ng-click="disc.load()">{{disc.title}}</h2>
                                         <h3 class="disc-performer" ng-show="disc.performer">{{disc.performer}}</h3>
 
                                         <a href="edit-cue?id={{disc.id}}" target="_blank">Éditer</a>
@@ -107,7 +107,7 @@
                                             <ol class="disc-list">
                                                 <!-- TODO : ng-repeat sans créer d'élément div dans un li ? -->
                                                 <div ng-repeat="file in disc.files">
-                                                    <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
+                                                    <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentTrack.disc.index].files[currentTrack.file.index].tracks[currentTrack.index], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index, $parent.$parent.$index)">
                                                         <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
                                                         <span>{{track.title || "Track "+track.number}}</span>
                                                     </li>
@@ -170,18 +170,18 @@
                 <div id="player-infos">
 
                     <h2 id="player-disc-name">
-                        {{currentDisc.title}}
-                        <a ng-href="{{currentDisc.src}}" ng-show="currentDisc.src" title="Voir sur YouTube"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
+                        {{currentTrack.disc.title}}
+                        <a ng-href="{{currentTrack.disc.src}}" ng-show="currentTrack.disc.src" title="Voir sur YouTube"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
                     </h2>
                     <h3 id="player-track-name"><span class="track-number">{{currentTrack.number}}.</span> {{currentTrack.title}}</h3><!-- TODO : "Track X" si title vide -->
                     <h4 id="player-track-performer">{{currentTrack.performer}}</h4>
 
                     <!-- TODO : tracklist courante -->
                     <!--
-                    <div ng-model="currentDisc" class="columns">
+                    <div ng-model="currentTrack.disc" class="columns">
                         <ol class="disc-list">
-                            <div ng-repeat="file in currentDisc.files">
-                                <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentDiscIndex].files[currentFileIndex].tracks[currentTrackIndex], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index)">
+                            <div ng-repeat="file in currentTrack.disc.files">
+                                <li ng-repeat="track in file.tracks" class="track" ng-class="{active: track == discs[currentTrack.disc.index].files[currentTrack.file.index].tracks[currentTrack.index], disabled: !track.enabled}" ng-click="loadTrackIndex($index, $parent.$index)">
                                     <input type="checkbox" ng-model="track.enabled" ng-click="track.afterClickCheckbox($event)" />
                                     <span>{{track.title || "Track "+track.number}}</span>
                                 </li>
