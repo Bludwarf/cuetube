@@ -732,10 +732,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     const scope = event ? event.currentScope : $scope;
     const player = scope.player;
     const track = scope.loadingTrack || scope.currentTrack; // loadingTrack vide si manual seeking
-    scope.loadingDiscIndex = null;
-    scope.loadingFileIndex = null;
-    scope.loadingTrack = null;
-    scope.currentTrack = track;
 
     // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
     const file = track.file;
@@ -762,6 +758,11 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
       trackIndex: scope.currentTrack.index,
       date: new Date()
     });
+
+    scope.loadingDiscIndex = null;
+    scope.loadingFileIndex = null;
+    scope.loadingTrack = null;
+    scope.currentTrack = track;
   }
 
   $scope.$on("video started", (event) => {
