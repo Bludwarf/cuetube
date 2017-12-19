@@ -57,8 +57,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
   let discIds;
-  let remainingDiscNumber;
   let discs;
+  $scope.discsById = {};
   $scope.discs = []; // au cas où personne ne l'initialise
 
   // Liste des disque en paramètre ?
@@ -69,23 +69,35 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
   // Collection de disques en paramètre ?
   else if (collectionParam) {
-    if ($scope.currentCollectionNames.indexOf(collectionParam) === -1) {
-      $scope.currentCollectionNames.push(collectionParam);
-    }
-    persistence.getCollectionDiscIds(collectionParam).then(discIds => {
-      loadDiscs(discIds);
-    }).catch(err => {
-      // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
-      persistence.newCollection(collectionParam).then(collection => {
-        $scope.collectionNames = $scope.collectionNames || [];
-        $scope.collectionNames.push(collectionParam);
-        $scope.$apply();
-        loadDiscs(collection.discIds);
-      }).catch(err => {
-        alert('Erreur lors de la création de cette collection');
-        history.back();
-      });
+    const collectionNames = collectionParam.split(',');
+    $scope.currentCollectionNames = collectionNames;
+
+    const promises = [];
+    collectionNames.forEach(collectionParam => {
+
+      promises.push(Promise.resolve(collectionParam)
+          .then(collectionName => $scope.discIdsByCollection[collectionName])
+          .then(discIds => {
+            if (discIds) return discIds;
+
+            return persistence.getCollectionDiscIds(collectionParam)
+                .catch(err => {
+                  // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
+                  persistence.newCollection(collectionParam).then(collection => {
+                    $scope.collectionNames = $scope.collectionNames || [];
+                    $scope.collectionNames.push(collectionParam);
+                    $scope.$apply();
+                  }).catch(err => {
+                    alert('Erreur lors de la création de cette collection');
+                    history.back();
+                  });
+                });
+          }));
     });
+
+    Promise.all(promises.map(p => p.catch(e => e)))
+        .then(results => loadDiscsFromCollections())
+        .catch(e => console.log(e));
   }
 
   // Pas de demande, on reprend la sauvegarde
@@ -126,7 +138,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.lastToggledTracklist = tracklist;
   }
 
-  $scope.toggleRepeatMode = function(e) {
+  $scope.toggleRepeatMode = function (e) {
     if ($scope.repeatMode === 'track') {
       $scope.repeatMode = '';
     } else {
@@ -348,53 +360,85 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     return disc;
   }
 
-  // TODO : discsById
   function loadDiscs(discIds) {
-    remainingDiscNumber = discIds.length;
-    discs = new Array(remainingDiscNumber);
-    $scope.discs = discs;
+
+    console.log("Chargement des disques :", discIds);
+    $scope.hidePlayer();
+
+    const discLoaders = [];
 
     for (let discIndex = 0; discIndex < discIds.length; ++discIndex) {
 
       const discId = discIds[discIndex];
-      persistence.getDisc(discId, discIndex).then(disc => {
-        discs[discIndex] = disc;
-        enrichDisc(disc, discIndex);
 
-        // Reprise des paramètres sauvegardés
-        let savedString = localStorage.getItem('disc.' + disc.id);
-        if (savedString) {
-          let saved = JSON.parse(savedString);
-          if (saved.enabled !== undefined) {
-            disc.enabled = saved.enabled;
+      discLoaders[discIndex] = new Promise(function (resolve, reject) {
+        // Recherche d'abord dans la mémoire
+        resolve($scope.discsById[discId]);
+      })
+
+          .then(cacheDisc => { // Disc en cache ?
+            if (cacheDisc) return cacheDisc;
+
+            return persistence.getDisc(discId, discIndex)
+                .then(disc => {
+                  enrichDisc(disc, discIndex);
+
+                  // Reprise des paramètres sauvegardés
+                  let savedString = localStorage.getItem('disc.' + disc.id);
+                  if (savedString) {
+                    let saved = JSON.parse(savedString);
+                    if (saved.enabled !== undefined) {
+                      disc.enabled = saved.enabled;
+                    }
+                    if (saved.disabledTrackIndices) {
+                      let tracks = disc.tracks;
+                      saved.disabledTrackIndices.forEach((trackIndex) => {
+                        tracks[trackIndex].enabled = false;
+                      });
+                    }
+                    _.extend(disc, {
+                      nextTracks: saved.nextTracks
+                    });
+                  }
+
+                  // Cache
+                  $scope.discsById[discId] = disc;
+                  return disc;
+                })
+                .catch(resKO => {
+                  console.error("Error GET cuesheet " + discId + " via $http : " + resKO.data);
+                  prompt('Veuillez ajouter la cuesheet ' + discId, discId);
+                })
+          })
+
+          // .then(disc => {
+          //   // INIT si dernier disque
+          //   if (--remainingDiscNumber === 0)
+          //     initYT();
+          // }, resKO => {
+          //   // INIT si dernier disque
+          //   if (--remainingDiscNumber === 0)
+          //     initYT();
+          //
+          // })
+
+          // .then(disc => $scope.discs[discIndex] = disc);
+    } // for
+
+    Promise.all(discLoaders.map(p => p.catch(e => {
+
+      return e;
+    })))
+        .then(loadedDiscs => {
+          $scope.discs = loadedDiscs;
+          console.log("Disques chargés :", loadedDiscs);
+          if (!isInitYT) {
+            initYT(); // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
+          } else {
+            $scope.showPlayer();
           }
-          if (saved.disabledTrackIndices) {
-            let tracks = disc.tracks;
-            saved.disabledTrackIndices.forEach((trackIndex) => {
-              tracks[trackIndex].enabled = false;
-            });
-          }
-          _.extend(disc, {
-            nextTracks: saved.nextTracks
-          });
-        }
-
-        // INIT si dernier disque
-        if (--remainingDiscNumber === 0)
-          initYT();
-      }, resKO => {
-        // INIT si dernier disque
-        if (--remainingDiscNumber === 0)
-          initYT();
-        console.error("Error GET cuesheet " + discId + " via $http : " + resKO.data);
-        prompt('Veuillez ajouter la cuesheet ' + discId, discId);
-      });
-    }
-
-    // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
-    if (discIds.length === 0) {
-      initYT();
-    }
+        })
+        .catch(e => console.log(e));
 
   }
 
@@ -403,18 +447,22 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   $scope.currentTrack = null;
   $scope.loadingTrack = null;
 
+  let isInitYT = false;
+
   function initYT() {
+    if (!isInitYT) {
+      // TODO : éviter l'erreur : Uncaught ReferenceError: ytcfg is not defined
+      console.log("Initialisation de YouTube");
 
-    // TODO : éviter l'erreur : Uncaught ReferenceError: ytcfg is not defined
-    console.log("Initialisation de YouTube");
+      // 2. This code loads the IFrame Player API code asynchronously.
+      const tag = document.createElement('script');
 
-    // 2. This code loads the IFrame Player API code asynchronously.
-    const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
+      isInitYT = true;
+    }
   }
 
   $scope.onYouTubeIframeAPIReady = function () {
@@ -856,7 +904,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     }
   });
 
-  $scope.checkCurrentTrack = function() {
+  $scope.checkCurrentTrack = function () {
     const track = $scope.currentTrack.file.getTrackAt($scope.player.getCurrentTime());
     if (track && track !== $scope.currentTrack) {
       console.log(`On est passé à la piste #${track.number} ${track.title}`);
@@ -1020,11 +1068,24 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     }
   };
 
+  $scope.showPlayer = function() {
+    $foregroundIcon.html("<span class='glyphicon glyphicon-play'></span>");
+    $foreground.hide();
+  };
+
+  $scope.hidePlayer = function(pauseButton) {
+    if (pauseButton) {
+      $foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
+    } else {
+      $foregroundIcon.html(`<div id="foreground-overlay-icon" class="center font-size-50p"></div>`);
+    }
+    $foreground.show();
+  };
+
   $scope.play = function () {
     const player = $scope.player;
     if (!player) return;
-    $foregroundIcon.html("<span class='glyphicon glyphicon-play'></span>");
-    $foreground.hide();
+    $scope.showPlayer();
     player.playVideo();
     $scope.isPlaying = true;
   };
@@ -1034,8 +1095,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     if (!player) return;
     player.pauseVideo();
     if (!skipForeground) {
-      $foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
-      $foreground.show();
+      $scope.hidePlayer(true);
     }
     $scope.isPlaying = false;
   };
@@ -1152,12 +1212,18 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     // En mode collection on ajoute également le disque à la collection
     if (collectionParam) {
-      console.log("Ajout du disque dans la collection " + collectionParam);
-      const discIds = $scope.discs.map(disc => disc.id);
-      persistence.postCollectionDiscIds(collectionParam, discIds).then(discIds => {
-        console.log("Disque ajouté avec succès dans la collection " + collectionParam);
+      const collectionNames = collectionParam.split(',');
+      let collectionName = collectionNames[collectionNames.length - 1];
+      if (collectionNames.length > 1) {
+        alert(`Par défaut on va ajouter la vidéo à la dernière collection : ${collectionName}`);
+      }
+      console.log("Ajout du disque dans la collection " + collectionName);
+      const discIds = $scope.discIdsByCollection[collectionName];
+      discIds.push(disc.id);
+      persistence.postCollectionDiscIds(collectionName, discIds).then(discIds => {
+        console.log("Disque ajouté avec succès dans la collection " + collectionName);
       }, resKO => {
-        alert("Erreur lors de l'ajout du disque dans la collection " + collectionParam);
+        alert("Erreur lors de l'ajout du disque dans la collection " + collectionName);
       });
     }
 
@@ -1429,10 +1495,17 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     const index = $scope.discs.indexOf(disc);
     if (index === -1) return;
     $scope.discs.splice(index, 1);
-    persistence.postCollectionDiscIds(collectionParam, $scope.discs.map(disc => disc.id));
+    if (collectionParam.split(',').length > 1) {
+      alert("Suppression en multi collection par encore gérée"); // TODO
+    } else {
+      persistence.postCollectionDiscIds(collectionParam, $scope.discs.map(disc => disc.id));
+    }
   };
 
-  $scope.toggleCollection = function(collectionName) {
+  $scope.toggleCollection = function (collectionName, $event) {
+
+    $scope.hidePlayer();
+    $event.stopPropagation();
 
     // Coché ?
     const index = $scope.currentCollectionNames.indexOf(collectionName);
@@ -1442,6 +1515,21 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     } else {
       $scope.currentCollectionNames.splice(index, 1);
     }
+
+    loadDiscsFromCollections();
+  };
+
+  function loadDiscsFromCollections() {
+    $scope.hidePlayer();
+
+    // Historique navigateur
+    const state = {
+      currentCollectionNames: $scope.currentCollectionNames
+    };
+    const title = document.title;
+    document.title = "CueTube - " + $scope.currentCollectionNames.join(" + ");
+    history.pushState(state, document.title, "?collection="+encodeURIComponent($scope.currentCollectionNames.join(",")));
+    document.title = title;
 
     // On récupère la liste des disques de toutes les collections actives
     const getDiscsIds = $scope.currentCollectionNames.map(collectionName => $scope.getDiscsIds(collectionName));
@@ -1454,25 +1542,32 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             }
           });
           return all;
-        }))
+        }, []))
         .then(discIds => loadDiscs(discIds))
-        .catch(e => alert('Erreur lors du chargement des disques des collections : '+e));
+        .catch(e => alert('Erreur lors du chargement des disques des collections : ' + e));
+  }
 
-  };
-
-  $scope.getDiscsIds = function(collectionName) {
-    return new Promise(function(resolve, reject) {
+  $scope.getDiscsIds = function (collectionName) {
+    return new Promise(function (resolve, reject) {
       // Recherche d'abord dans la mémoire
       resolve($scope.discIdsByCollection[collectionName]);
     }).then(discIds => {
       if (discIds) {
         return discIds;
       } else {
-        return persistence.getCollectionDiscIds(collectionName).catch(err => {
-          alert("Impossible d'ouvrir la collection : " + collectionName + " : " + err);
-        });
+        return persistence.getCollectionDiscIds(collectionName)
+            .then(discIds => $scope.discIdsByCollection[collectionName] = discIds)
+            .catch(err => {
+              alert("Impossible d'ouvrir la collection : " + collectionName + " : " + err);
+            });
       }
     });
+  };
+
+  $scope.playCollection = function (collectionName) {
+    $scope.currentCollectionNames = [collectionName ? collectionName : DEFAULT_COLLECTION];
+    $scope.collectionName = collectionName;
+    loadDiscsFromCollections();
   }
 
 } // Controller

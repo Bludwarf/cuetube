@@ -5,6 +5,10 @@
     margin-right:10px;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
 .clickable-glyphicon {
     cursor: pointer;
 }
@@ -30,7 +34,7 @@
     bottom: 0;
     right: 0;
     position: fixed;
-    z-index: 1;
+    z-index: 1000;
 }
 
 .center-parent {
