@@ -433,7 +433,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         $scope.currentTrack = track;
 
         // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
-        $scope.loadTrack(track);
+        $scope.loadTrack(track, current.time);
 
         return;
       }
@@ -489,10 +489,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.loadTrack(track);
   };
 
-  function getYouTubeStartSeconds(track) {
+  function getYouTubeStartSeconds(track, time) {
     const file = track.file;
     const multiTrack = file.tracks.length > 1;
-    let start = multiTrack ? Math.floor(track.startSeconds) : undefined; // YouTube n'accèpte que des entiers
+    let start = multiTrack ? Math.floor(track.startSeconds + (time ? time : 0)) : time; // YouTube n'accèpte que des entiers, on met undefined si !multitrack et pas de time
 
     // Youtube ne redémarre pas à 0 si on lui indique exactement 0
     if (multiTrack && !start) {
@@ -505,7 +505,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   /**
    * @param track {Disc.Track} piste à charger
    */
-  $scope.loadTrack = function (track) {
+  $scope.loadTrack = function (track, time) {
 
     const file = track.file;
     const disc = file.disc;
@@ -524,7 +524,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     this.showOnlyPlaylist(disc.index);
 
-    const start = getYouTubeStartSeconds(track); // YouTube n'accèpte que des entiers
+    const start = getYouTubeStartSeconds(track, time); // YouTube n'accèpte que des entiers
     const end = multiTrack ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
     if (start || end) console.log("Track from " + start + " to " + end);
 
@@ -1312,7 +1312,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     localStorage.setItem('current', JSON.stringify({
       discId: $scope.currentTrack.disc.id,
       fileIndex: $scope.currentTrack.file.index,
-      trackIndex: $scope.currentTrack.index
+      trackIndex: $scope.currentTrack.index,
+      time: $scope.slider.value
     }));
 
     // Sauvegarde pour chaque disque
@@ -1343,6 +1344,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   $scope.restore = function (key, defaultValue) {
     const string = localStorage.getItem(key);
     if (!string) return defaultValue;
+    if (string === 'true') return true;
+    if (string === 'false') return false;
     if (string.match(/^\w/)) return string;
     return JSON.parse(string);
   };
@@ -1393,6 +1396,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   // Paramètres
   $scope.shuffle = $scope.restore('shuffle', true);
   $scope.repeatMode = $scope.restore('repeatMode', '');
+  $scope.slider.value = $scope.restore('time', 0);
 
   // Collections
   persistence.getCollectionNames().then((collectionNames => {
