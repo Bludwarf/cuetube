@@ -160,6 +160,11 @@ class Disc {
     get date(): string {
         return this.getRem("DATE");
     }
+
+    get icon(): string {
+        if (!this.files || !this.files.length) return undefined;
+        return this.files[0].icon;
+    }
 }
 
 module Disc {
@@ -298,6 +303,10 @@ module Disc {
             if (!enabled && this.tracks.length === this.disc.tracks.length) {
                 this.disc.enabled = false;
             }
+        }
+
+        get icon(): string {
+            return "https://img.youtube.com/vi/"+this.videoId+"/default.jpg"
         }
     }
 
