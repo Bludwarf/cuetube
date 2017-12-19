@@ -546,9 +546,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
   // TODO à déplacer dans yt-helper
   function getYouTubeStartSeconds(track, time) {
+    time = time || track.startSeconds;
     const file = track.file;
     const multiTrack = file.tracks.length > 1;
-    let start = multiTrack ? Math.floor(track.startSeconds + (time ? time : 0)) : time; // YouTube n'accèpte que des entiers, on met undefined si !multitrack et pas de time
+    let start = multiTrack ? Math.floor(time) : time; // YouTube n'accèpte que des entiers, on met undefined si !multitrack et pas de time
 
     // Youtube ne redémarre pas à 0 si on lui indique exactement 0
     if (multiTrack && !start) {
@@ -1120,6 +1121,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
   $scope.seekTo = function (time) {
     if (isNaN(time)) return false;
+    if (checkCurrentTimeTimeout) clearTimeout(checkCurrentTimeTimeout);
     //console.log("TODO : seekTo("+time+")");
     $scope.player.seekTo(time);
     $scope.slider.value = time;
