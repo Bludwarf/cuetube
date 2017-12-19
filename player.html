@@ -67,7 +67,9 @@
                                 <div id="collapseOne" class="panel-collapse collapse in">
                                     <ul class="list-group">
                                         <li class="list-group-item" ng-class="{active: isDefaultCollection}"><i><a ng-href="?">Collection par défaut</a></i></li>
-                                        <li class="list-group-item" ng-repeat="collectionNameI in collectionNames" ng-class="{active: collectionNameI == collectionName}"><a ng-href="?collection={{collectionNameI}}">{{collectionNameI}}</a></li>
+                                        <li class="list-group-item" ng-repeat="collectionNameI in collectionNames" ng-class="{active: collectionNameI == collectionName}">
+                                            <input style="margin-right: 8px;" type="checkbox" ng-checked="currentCollectionNames.indexOf(collectionNameI) != -1" ng-click="toggleCollection(collectionNameI)" /><a ng-href="?collection={{collectionNameI}}">{{collectionNameI}}</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>

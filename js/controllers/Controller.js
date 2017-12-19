@@ -50,6 +50,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   /** Nom de la collection affiché à l'écran */
   $scope.collectionName = !$scope.isDefaultCollection ? collectionParam : 'Collection par défaut';
 
+  /** Toutes les collections indexées par nom de collection */
+  $scope.discIdsByCollection = {};
+  $scope.currentCollectionNames = [];
+
   // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
   let discIds;
@@ -65,6 +69,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
   // Collection de disques en paramètre ?
   else if (collectionParam) {
+    if ($scope.currentCollectionNames.indexOf(collectionParam) === -1) {
+      $scope.currentCollectionNames.push(collectionParam);
+    }
     persistence.getCollectionDiscIds(collectionParam).then(discIds => {
       loadDiscs(discIds);
     }).catch(err => {
@@ -489,6 +496,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.loadTrack(track);
   };
 
+  // TODO à déplacer dans yt-helper
   function getYouTubeStartSeconds(track, time) {
     const file = track.file;
     const multiTrack = file.tracks.length > 1;
@@ -506,6 +514,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
    * @param track {Disc.Track} piste à charger
    */
   $scope.loadTrack = function (track, time) {
+
+    clearTimeout(checkCurrentTimeTimeout); // suppression de tous les timers
 
     const file = track.file;
     const disc = file.disc;
@@ -536,7 +546,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
       $scope.player = new YT.Player('player', {
         height: height,
         width: height * aspect,
-        videoId: this.getVideoId(),
+        videoId: track.file.videoId,
         playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
           autoplay: 1,
           start: start,
@@ -700,6 +710,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   $scope.getVideoId = function () {
     //return getVideoIdFromUrl(file.name);
     //return getParameterByName("v", file.name);
+    if (!this.currentTrack) return undefined;
     return this.currentTrack.file.videoId;
   };
 
@@ -772,9 +783,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     // Historique
     scope.history.push({
       discId: disc.discId,
-      discIndex: scope.currentTrack.disc.index,
-      fileIndex: scope.currentTrack.file.index,
-      trackIndex: scope.currentTrack.index,
+      discIndex: track.disc.index,
+      fileIndex: track.file.index,
+      trackIndex: track.index,
       date: new Date()
     });
 
@@ -1419,5 +1430,48 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.discs.splice(index, 1);
     persistence.postCollectionDiscIds(collectionParam, $scope.discs.map(disc => disc.id));
   };
+
+  $scope.toggleCollection = function(collectionName) {
+
+    // Coché ?
+    const index = $scope.currentCollectionNames.indexOf(collectionName);
+    const checked = index === -1;
+    if (checked) {
+      $scope.currentCollectionNames.push(collectionName);
+    } else {
+      $scope.currentCollectionNames.splice(index, 1);
+    }
+
+    // On récupère la liste des disques de toutes les collections actives
+    const getDiscsIds = $scope.currentCollectionNames.map(collectionName => $scope.getDiscsIds(collectionName));
+    Promise.all(getDiscsIds.map(p => p.catch(e => e)))
+        .then(discIdsByIndex => discIdsByIndex.reduce((all, array) => {
+          // On concatère les disques sans doublons
+          array.forEach(item => {
+            if (all.indexOf(item) === -1) {
+              all.push(item);
+            }
+          });
+          return all;
+        }))
+        .then(discIds => loadDiscs(discIds))
+        .catch(e => alert('Erreur lors du chargement des disques des collections : '+e));
+
+  };
+
+  $scope.getDiscsIds = function(collectionName) {
+    return new Promise(function(resolve, reject) {
+      // Recherche d'abord dans la mémoire
+      resolve($scope.discIdsByCollection[collectionName]);
+    }).then(discIds => {
+      if (discIds) {
+        return discIds;
+      } else {
+        return persistence.getCollectionDiscIds(collectionName).catch(err => {
+          alert("Impossible d'ouvrir la collection : " + collectionName + " : " + err);
+        });
+      }
+    });
+  }
 
 } // Controller
