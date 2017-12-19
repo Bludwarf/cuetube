@@ -558,7 +558,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
       const player = $scope.player;
 
       // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
-      if ($scope.currentTrack === track || getParameterByName('v', player.getVideoUrl()) === track.disc.videoId) {
+      if ($scope.currentTrack === track || getParameterByName('v', player.getVideoUrl()) === track.file.videoId) {
         $scope.reloadTrack(track);
       }
 
@@ -566,7 +566,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
       else {
         // FIXME : graphiquement on ne voit plus les bornes start et end
         player.loadVideoById({
-          videoId: track.disc.videoId,
+          videoId: track.file.videoId,
           startSeconds: start,
           endSeconds: end,
           playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
@@ -765,7 +765,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     // Notif
     notify((track.title || "Track " + track.number), {
       tag: 'onTrackStarted',
-      body: disc.title
+      body: disc.title,
+      icon: track.file.icon
     });
 
     // Historique

@@ -137,6 +137,11 @@ class Disc {
     get date() {
         return this.getRem("DATE");
     }
+    get icon() {
+        if (!this.files || !this.files.length)
+            return undefined;
+        return this.files[0].icon;
+    }
 }
 (function (Disc) {
     class File {
@@ -253,6 +258,9 @@ class Disc {
             if (!enabled && this.tracks.length === this.disc.tracks.length) {
                 this.disc.enabled = false;
             }
+        }
+        get icon() {
+            return "https://img.youtube.com/vi/" + this.videoId + "/default.jpg";
         }
     }
     File.DEFAULT_TYPE = "MP3";
