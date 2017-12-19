@@ -953,6 +953,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     //const player = event.target;
     const state = event.data;
 
+    if ($scope.lastPlayerStates.length >= 10) $scope.lastPlayerStates.shift();
+    const lastState = $scope.lastPlayerStates.length ? $scope.lastPlayerStates[$scope.lastPlayerStates.length - 1] : undefined;
+    $scope.lastPlayerStates.push(state);
+
     console.log("player state : " + state + (YT_STATES[state] ? ":" + YT_STATES[state] : ""));
 
     // N'importe quel évènement après un chrono de deleted video => la supprimée n'est pas supprimée
@@ -969,7 +973,12 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
             $scope.loadingTrack.disc.index !== $scope.currentTrack.disc.index &&
             $scope.loadingTrack.file.index !== $scope.currentTrack.file.index &&
             $scope.loadingTrack.index !== $scope.currentTrack.index)) {
-      $scope.$emit("video ended");
+      // est-ce que la vidéo était en lecture actuellement ?
+      if (lastState === YT.PlayerState.PLAYING) {
+        $scope.$emit("video ended");
+      } else {
+        console.log("La vidéo ne s'est pas vraiment arrêtée");
+      }
     }
 
     // Vidéo démarrée
@@ -983,9 +992,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     else if (state === YT.PlayerState.PAUSED) {
       $scope.isPlaying = false;
     }
-
-    if ($scope.lastPlayerStates.length >= 10) $scope.lastPlayerStates.shift();
-    $scope.lastPlayerStates.push(state);
 
     // Détection d'une série de 3 évènements
     if ($scope.lastPlayerStates.length >= 3) {
