@@ -1413,6 +1413,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   // Collections
   persistence.getCollectionNames().then((collectionNames => {
     $scope.collectionNames = collectionNames;
+    $scope.$apply();
   })).catch(e => {
     console.error("Erreur lors du chargement de la liste des collections :", e);
   });
