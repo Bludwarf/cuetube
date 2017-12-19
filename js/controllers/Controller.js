@@ -119,6 +119,14 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.lastToggledTracklist = tracklist;
   }
 
+  $scope.toggleRepeatMode = function(e) {
+    if ($scope.repeatMode === 'track') {
+      $scope.repeatMode = '';
+    } else {
+      $scope.repeatMode = 'track';
+    }
+  };
+
   $scope.stopPropagation = function (e) {
     e.stopPropagation(); // pour ne pas appeler document.onclick
   };
@@ -205,8 +213,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     disc.load = function () {
       this.enabled = true;
-      this.nextTrack($scope.shuffle, this);
-      $scope.loadCurrentTrack($scope.player);
+      const track = this.nextTrack($scope.shuffle, this);
+      $scope.loadTrack(track);
     };
 
     disc.play = function () {
@@ -267,9 +275,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
           track = this.tracks[0];
         }
       }
-
-      /** @type Disc.Track */
-      $scope.currentTrack = track;
 
       return track;
     };
@@ -427,11 +432,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
         let track = file.tracks[current.trackIndex];
         $scope.currentTrack = track;
 
-        // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
-        let player = $scope.loadCurrentTrack();
-        $scope.$apply(() => {
-          $scope.player = player;
-        });
+        // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
+        $scope.loadTrack(track);
 
         return;
       }
@@ -483,29 +485,18 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     const disc = $scope.discs[discIndex];
     const file = disc.files[fileIndex];
     const track = file.tracks[trackIndex];
-    $scope.currentTrack = track;
 
-    // On active automatiquement cette piste et ce disque
-    disc.enabled = true;
-    track.enabled = true;
-
-    // Suppression dans la liste des suivants auto
-    if ($scope.shuffle) {
-      let nextTracks = disc.nextTracks;
-      let i = nextTracks.indexOf(track.number);
-      nextTracks.splice(i, 1); // on supprime que celui-ci
-    }
-
-    $scope.loadCurrentTrack($scope.player);
+    $scope.loadTrack(track);
   };
 
   /**
-   * @param track
+   * @param track {Disc.Track} piste à charger
    */
   $scope.loadTrack = function (track) {
 
+    const file = track.file;
     const disc = file.disc;
-    $scope.currentTrack = track;
+    const multiTrack = file.tracks.length > 1;
 
     // On active automatiquement cette piste et ce disque
     disc.enabled = true;
@@ -518,7 +509,66 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
       nextTracks.splice(i, 1); // on supprime que celui-ci
     }
 
-    $scope.loadCurrentTrack($scope.player);
+    this.showOnlyPlaylist(disc.index);
+
+    let start = multiTrack ? Math.floor(track.startSeconds) : undefined; // YouTube n'accèpte que des entiers
+    const end = multiTrack ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
+    if (start || end) console.log("Track from " + start + " to " + end);
+
+    // Youtube ne redémarre pas à 0 si on lui indique exactement 0
+    if (multiTrack && !start) {
+      start = 0.001; // FIXME : OK  alors que YouTube n'accèpte que des entiers ?
+    }
+
+    $scope.loadingTrack = track;
+    if (!$scope.player) {
+      // On peut récupérer cette variable a posteriori avec : YT.get("player")
+      const aspect = 16 / 9;
+      const height = 180;
+      $scope.player = new YT.Player('player', {
+        height: height,
+        width: height * aspect,
+        videoId: this.getVideoId(),
+        playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
+          autoplay: 1,
+          start: start,
+          end: end
+        },
+        events: {
+          // 4. The API will call this function when the video player is ready.
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+
+      // Premier chargement on en profite
+      onFirstPlayerLoad();
+    }
+
+    else {
+
+      const player = $scope.player;
+
+      // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
+      if ($scope.currentTrack === track || getParameterByName('v', player.getVideoUrl()) === track.disc.videoId) {
+        $scope.seekTo(start ? start : 0); // start undefined quand video non multitrack
+      }
+
+      // Changement de vidéo YouTube
+      else {
+        // FIXME : graphiquement on ne voit plus les bornes start et end
+        player.loadVideoById({
+          videoId: track.disc.videoId,
+          startSeconds: start,
+          endSeconds: end,
+          playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
+            autoplay: 1,
+            start: start,
+            end: end
+          }
+        });
+      }
+    }
   };
 
   /**
@@ -542,8 +592,13 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     const discIndex = possibleDiscs.indexOf(disc);
 
+    // Répétition de la piste ?
+    if ($scope.repeatMode === 'track') {
+      console.log("On répète la même piste comme demandé");
+    }
+
     // Aléatoire ?
-    if ($scope.shuffle) {
+    else if ($scope.shuffle) {
       disc = weightedRandom(possibleDiscs, disc => disc.tracks.length);
       track = disc.nextTrack($scope.shuffle); // FIXME : arrêter la lecture si plus aucune piste
     }
@@ -562,11 +617,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
       } while (!track.enabled);
     }
 
-    $scope.currentTrack = track;
-
-    // loadCurrentTrack sorti de apply pour éviter l'erreur "$apply already in progress"
-    if ($scope.currentTrack) {
-      $scope.player = $scope.loadCurrentTrack($scope.player);
+    // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
+    if (track) {
+      $scope.loadTrack(track);
     } else {
       alert("Aucun disque à lire !");
     }
@@ -579,11 +632,11 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
     const disc = $scope.discs[previousEntry.discIndex];
     const file = disc.files[previousEntry.fileIndex];
-    $scope.currentTrack = file.tracks[previousEntry.trackIndex];
+    const track = file.tracks[previousEntry.trackIndex];
 
     this.history.pop(); // suppression du previous
-    this.loadCurrentTrack($scope.player);
-    this.history.pop(); // suppression du previous (ajouté par loadCurrentTrack)
+    this.loadTrack(track);
+    this.history.pop(); // suppression du previous (ajouté par loadTrack)
   };
 
   $scope.showOnlyPlaylist = function (discIndex) {
@@ -659,122 +712,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
       return query.v;
   }*/
 
-  $scope.loadCurrentTrack = function () {
-    const track = this.currentTrack;
-    const file = track.file;
-    const disc = file.disc;
-    const multiTrack = file.tracks.length > 1;
-
-    disc.enabled = true;
-    track.enabled = true;
-
-    this.showOnlyPlaylist(disc.index);
-
-    let start = multiTrack ? Math.floor(track.startSeconds) : undefined; // YouTube n'accèpte que des entiers
-    const end = multiTrack ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
-    if (start || end) console.log("Track from " + start + " to " + end);
-
-    // Youtube ne redémarre pas à 0 si on lui indique exactement 0
-    if (multiTrack && !start) {
-      start = 0.001; // FIXME : OK  alors que YouTube n'accèpte que des entiers ?
-    }
-
-    if (!$scope.player) {
-      // On peut récupérer cette variable a posteriori avec : YT.get("player")
-      const aspect = 16 / 9;
-      const height = 180;
-      $scope.player = new YT.Player('player', {
-        height: height,
-        width: height * aspect,
-        videoId: this.getVideoId(),
-        playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
-          autoplay: 1,
-          start: start,
-          end: end
-        },
-        events: {
-          // 4. The API will call this function when the video player is ready.
-          onReady: onPlayerReady,
-          onStateChange: onPlayerStateChange
-        }
-      });
-
-      // Premier chargement on en profite
-      onFirstPlayerLoad();
-    }
-    // else {
-    //     player = new YT.Player('player', {
-    //         height: '90',
-    //         width: '160',
-    //         videoId: video.videoId,
-    //         playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
-    //             autoplay: 1,
-    //             start: cue.startSeconds,
-    //             end: cue.endSeconds
-    //         },
-    //         events: {
-    //             'onReady': onPlayerReady,
-    //             'onStateChange': onPlayerStateChange
-    //         }
-    //     });
-    // }
-    else {
-
-      const player = $scope.player;
-
-      // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
-      /*
-       const loadedVideoId = getParameterByName('v', player.getVideoUrl());
-       if (loadedVideoId == this.getVideoId()) {
-       this.changeVideoIHM();
-       $scope.seekTo(start);
-       //player.playVideoAt(start); // TODO : lancer si pausé
-       }
-
-       // Changement de vidéo YouTube
-       else {
-       */
-      // FIXME : graphiquement on ne voit plus les bornes start et end
-      player.loadVideoById({
-        videoId: this.getVideoId(),
-        startSeconds: start,
-        endSeconds: end,
-        playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
-          autoplay: 1,
-          start: start,
-          end: end
-        }
-      });
-
-      // Changement IHM (déjà appelé au 1er chargement par onPlayerReady)
-      //this.changeVideoIHM();
-      //}
-    }
-
-    $scope.loadingTrack = $scope.currentTrack;
-
-    // Notif
-    notify((track.title || "Track " + track.number), {
-      tag: 'loadCurrentTrack',
-      body: disc.title
-    });
-
-    // Historique
-    this.history.push({
-      discId: disc.discId,
-      discIndex: this.currentTrack.disc.index,
-      fileIndex: this.currentTrack.file.index,
-      trackIndex: this.currentTrack.index,
-      date: new Date()
-    });
-
-    return $scope.player;
-  };
-
   function onPlayerReady(event) {
-    event.target.playVideo();
-    $scope.changeVideoIHM();
-    checkCurrentTime();
+    const player = event ? event.target : $scope.player;
+    player.playVideo();
+    $scope.$emit("video started");
   }
 
   const YT_STATES = [
@@ -786,17 +727,58 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     "CUED",
   ];
 
-  $scope.$on("video started", (event) => {
-    const scope = event.currentScope;
+  function onTrackStarted(event) {
+    console.log("on video started");
+    const scope = event ? event.currentScope : $scope;
     const player = scope.player;
+    const track = scope.loadingTrack || scope.currentTrack; // loadingTrack vide si manual seeking
     scope.loadingDiscIndex = null;
     scope.loadingFileIndex = null;
     scope.loadingTrack = null;
+    scope.currentTrack = track;
 
     // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
-    const file = scope.currentTrack.file;
+    const file = track.file;
     if (!file.duration) file.duration = player.getDuration();
     // TODO : on pourrait stocker cette information sur le serveur
+
+    // Incrémentation du nombre de lectures de la piste courante
+    track.played = track.played ? track.played + 1 : 1;
+
+    const disc = file.disc;
+    document.title = track.title + " - CueTube"; // Youtube affiche : disc.title + " - m3u-YouTube"
+
+    // Notif
+    notify((track.title || "Track " + track.number), {
+      tag: 'onTrackStarted',
+      body: disc.title
+    });
+
+    // Historique
+    scope.history.push({
+      discId: disc.discId,
+      discIndex: scope.currentTrack.disc.index,
+      fileIndex: scope.currentTrack.file.index,
+      trackIndex: scope.currentTrack.index,
+      date: new Date()
+    });
+  }
+
+  $scope.$on("video started", (event) => {
+    onTrackStarted(event);
+  });
+
+  $scope.$on("video playing", (event) => {
+    console.log("on video playing");
+    const scope = event.currentScope;
+
+    // On vient en fait de démarrer une nouvelle piste ?
+    if (scope.loadingTrack) {
+      onTrackStarted(event);
+    }
+
+    const track = scope.currentTrack;
+    const file = track.file;
 
     // Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant
     //const slider = document.getElementById("player-controls-form").trackPosition;
@@ -807,12 +789,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     }
     scope.fileSlider.max = file.duration;
 
-    $scope.isPlaying = true;
+    scope.isPlaying = true;
     scope.changeVideoIHM(); // au cas ou on a déplacé le curseur
-
-    // Incrémentation du nombre de lectures de la piste courante
-    const track = $scope.currentTrack;
-    ++track.played;
   });
 
   $scope.$on("video ended", (event) => {
@@ -825,9 +803,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     // on cherche la piste courant uniquement pour une vidéo multipiste
     if ($scope.currentTrack.disc.tracks.length > 1) {
       const track = $scope.currentTrack.file.getTrackAt($scope.player.getCurrentTime());
-      if (track) {
+      if (track && track !== $scope.currentTrack) {
         console.log(`On a sauté manuellement vers la piste #${track.number} ${track.title}`);
         $scope.currentTrack = track;
+        $scope.$emit("video started");
       }
     }
   });
@@ -896,7 +875,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     // TODO : ne pas appeler quand on fait un manual seek
     else if (state === YT.PlayerState.PLAYING) {
       $scope.isPlaying = true;
-      $scope.$emit("video started");
+      $scope.$emit("video playing");
     }
 
     else if (state === YT.PlayerState.PAUSED) {
@@ -946,11 +925,11 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
       return -1;
   }*/
 
+  /**
+   * Déclenché à chaque mise à jour de la position
+   */
   $scope.changeVideoIHM = function () {
-    const track = this.currentTrack;
-    const file = track.file;
-    const disc = file.disc;
-    document.title = track.title + " - CueTube"; // Youtube affiche : disc.title + " - m3u-YouTube"
+    const track = $scope.currentTrack;
 
     // Slider
     //const form = document.getElementById("player-controls-form");
@@ -958,11 +937,13 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     const slider = $scope.slider;
     slider.min = track.startSeconds;
     slider.max = track.endSeconds;
-    $scope.fileSlider.max = file.duration;
+    $scope.fileSlider.max = track.file.duration;
+
+    checkCurrentTime();
   };
 
   /**
-   * Appelé par loadCurrentTrack lors de la 1ère création du player
+   * Appelé par loadTrack lors de la 1ère création du player
    */
   function onFirstPlayerLoad() {
     /*const lists = $("#playlist .video-list");
@@ -1281,6 +1262,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   $scope.save = function () {
     localStorage.setItem('discIds', _.pluck($scope.discs, 'id'));
     localStorage.setItem('shuffle', $scope.shuffle);
+    localStorage.setItem('repeatMode', $scope.repeatMode);
     localStorage.setItem('current', JSON.stringify({
       discId: $scope.currentTrack.disc.id,
       fileIndex: $scope.currentTrack.file.index,
@@ -1315,6 +1297,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   $scope.restore = function (key, defaultValue) {
     const string = localStorage.getItem(key);
     if (!string) return defaultValue;
+    if (string.match(/^\w/)) return string;
     return JSON.parse(string);
   };
 
@@ -1363,6 +1346,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
   // Paramètres
   $scope.shuffle = $scope.restore('shuffle', true);
+  $scope.repeatMode = $scope.restore('repeatMode', '');
 
   // Collections
   persistence.getCollectionNames().then((collectionNames => {

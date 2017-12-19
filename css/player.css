@@ -37,7 +37,7 @@ body {
 #player-position {
     position: absolute;
     top: 0;
-    left: 48px; /* controls.width + margin*/
+    left: 0;
     right: 0;
     height: 21px;
     margin: 0 1em 4px 1em;
@@ -49,8 +49,9 @@ body {
 
 #player-position > div {
     position: absolute;
-    top: 0;
+    top: 4px;
     bottom: 0;
+    font-size: large;
 }
 
 #player-position-start {
@@ -60,9 +61,13 @@ body {
 }
 
 #player-position-slider {
-    left: 5em; /* player-position-start.width */
-    right: 7em; /* player-position-end.width */
+    left: 5.5em; /* player-position-start.width */
+    right: 7.5em; /* player-position-end.width */
     margin: 0 4px;
+}
+
+#player-position-slider input {
+    margin-top: 1px;
 }
 
 #player-position-end {
@@ -81,10 +86,10 @@ body {
 
 #player-controls {
     position: absolute;
-    top: 0;
+    top: 35px;
     bottom: 0;
     left: 0;
-    width: 32px;
+    width: 135px;
     margin-left: 8px;
 }
 
@@ -94,10 +99,10 @@ body {
 
 #player-infos {
     position: absolute;
-    top: 29px; /* position + margin */
+    top: 29px;
     bottom: 0;
     right: 0;
-    left: 48px; /* controls.width + margin */
+    left: 145px;
     margin: 0 1em;
 }
 
@@ -281,6 +286,7 @@ body {
 
 .track-controls {
     position: relative;
+    line-height: 42px;
 }
 
 .track-controls .text {
@@ -304,13 +310,13 @@ body {
 }
 
 .svg-checkbox.active,
-[class~="glyphicon"][ng-click] {
+[class~="glyphicon"][ng-click].active {
     color: #FFF;
     fill: #FFF;
 }
 
 .svg-checkbox.active:hover,
-[class~="glyphicon"][ng-click]:hover {
+[class~="glyphicon"][ng-click].active:hover {
     color: #DDD;
     fill: #DDD;
 }
@@ -332,6 +338,10 @@ body {
 
 #menu {
     margin: 1em;
+}
+
+#player-disc-name {
+    margin-top: 8px;
 }
 
 #player-track-name .track-number {
