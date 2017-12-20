@@ -180,6 +180,14 @@ function formatMMSS(time) {
  * @author https://stackoverflow.com/a/8435261
  */
 function weightedRandom(elements, weight) {
+
+    if (!elements || !elements.length) {
+      return null;
+    }
+    if (elements.length === 1) {
+      return elements[0];
+    }
+
     const weights = elements.map(element => weight(element));
     const total = weights.reduce((a, b) => a + b, 0);
     const r = Math.random() * total;

@@ -59,6 +59,7 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   let discIds;
   let discs;
   $scope.discsById = {};
+  /** @deprecated TODO à remplacer par discsById */
   $scope.discs = []; // au cas où personne ne l'initialise
 
   // Liste des disque en paramètre ?
@@ -139,10 +140,12 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   }
 
   $scope.toggleRepeatMode = function (e) {
-    if ($scope.repeatMode === 'track') {
-      $scope.repeatMode = '';
-    } else {
+    if (!$scope.repeatMode) {
+      $scope.repeatMode = 'disc';
+    } else if ($scope.repeatMode === 'disc') {
       $scope.repeatMode = 'track';
+    } else {
+      $scope.repeatMode = '';
     }
   };
 
@@ -657,9 +660,13 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     let disc = track && track.disc;
 
     const possibleDiscs = [];
-    for (let i = 0; i < discs.length; ++i) {
-      let disc = discs[i];
-      if (disc && disc.enabled && disc.playable) possibleDiscs.push(disc);
+    if (!$scope.repeatMode) {
+      for (let i = 0; i < discs.length; ++i) {
+        let disc = discs[i];
+        if (disc && disc.enabled && disc.playable) possibleDiscs.push(disc);
+      }
+    } else {
+      possibleDiscs.push(disc);
     }
 
     // Aucun disque jouable ?

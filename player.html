@@ -148,7 +148,8 @@
                             <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-pause active" ng-click="pause(true)" ng-show="isPlaying == undefined || isPlaying" title="Met en pause la lecture. Raccourci clavier : Espace"></span>
                             <span style="font-size: 32px;" class="glyphicon glyphicon-step-forward" ng-click="next()" title="Piste suivante. Raccourci clavier : bas"></span>
                             <span style="font-size: 32px; margin-right: 10px;" class="svg-checkbox glyphter-random" ng-class="{active: shuffle}" ng-click="shuffle = !shuffle" title="Mode de lecture aléatoire. Une piste ne sera pas rejouée tant que les autres pistes du disque n'ont pas été jouées."></span>
-                            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-refresh" ng-class="{active: repeatMode == 'track'}" ng-click="toggleRepeatMode()" title="Lit en boucle la piste actuelle."></span>
+                            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-repeat"  ng-class="{active: repeatMode == 'disc'}"  ng-click="toggleRepeatMode()" ng-show="repeatMode != 'track'" title="Lit en boucle le disque actuel."></span>
+                            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-refresh" ng-class="{active: repeatMode == 'track'}" ng-click="toggleRepeatMode()" ng-show="repeatMode == 'track'" title="Lit en boucle la piste actuelle."></span>
                         </div>
                     </form>
                 </div>
