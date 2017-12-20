@@ -47,7 +47,10 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   const collectionParam = getParameterByName("collection", document.location.search) || DEFAULT_COLLECTION;
 
   $scope.isDefaultCollection = collectionParam.toLocaleLowerCase() === DEFAULT_COLLECTION.toLocaleLowerCase();
-  /** Nom de la collection affiché à l'écran */
+  /**
+   * Nom de la collection affiché à l'écran
+   * @deprecated à remplacer par currentCollectionNames
+   */
   $scope.collectionName = !$scope.isDefaultCollection ? collectionParam : 'Collection par défaut';
 
   /** Toutes les collections indexées par nom de collection */
@@ -1226,8 +1229,8 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.discs.push(disc);
 
     // En mode collection on ajoute également le disque à la collection
-    if (collectionParam) {
-      const collectionNames = collectionParam.split(',');
+    if ($scope.currentCollectionNames && $scope.currentCollectionNames.length) {
+      const collectionNames = $scope.currentCollectionNames;
       let collectionName = collectionNames[collectionNames.length - 1];
       if (collectionNames.length > 1) {
         alert(`Par défaut on va ajouter la vidéo à la dernière collection : ${collectionName}`);
@@ -1357,7 +1360,9 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
       persistence.getDisc(id, index).then(disc => {
         if (confirm("La vidéo/playlist existe déjà localement. L'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.")) {
           disc.src = url;
-          $scope.importDisc(disc, cb);
+          // Import du disque (sans sauvegarde avec la persistance)
+          enrichDisc(disc, $scope.discs.length);
+          $scope.createDisc(disc);
         } else {
           fallback();
         }
