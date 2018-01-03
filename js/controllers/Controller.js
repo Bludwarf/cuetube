@@ -7,11 +7,11 @@
  * @property track.played : nombre de fois joué
  * @param cuetubeConf cf fichier de conf /js/app.conf.js
  */
-function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
+angular.module('cuetube').controller('Controller', function($scope, $http, cuetubeConf/*, $ngConfirm*/, gapiClient) {
 
   const GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
   const localPersistence = new LocalStoragePersistence($scope, $http);
-  const persistence = (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? localPersistence : new LocalServerPersistence($scope, $http);
+  /*const*/let persistence = (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? localPersistence : new LocalServerPersistence($scope, $http);
   const DEFAULT_COLLECTION = '_DEFAULT_';
 
   /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
@@ -61,71 +61,85 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
 
   let discIds;
   let discs;
-  $scope.discsById = {};
-  /** @deprecated TODO à remplacer par discsById */
-  $scope.discs = []; // au cas où personne ne l'initialise
 
-  // Liste des disque en paramètre ?
-  if (discsParam) {
-    discIds = discsParam.split(",");
-    loadDiscs(discIds);
-  }
+  $scope.init = function() {
 
-  // Collection de disques en paramètre ?
-  else if (collectionParam) {
-    const collectionNames = collectionParam.split(',');
-    $scope.currentCollectionNames = collectionNames;
-
-    const promises = [];
-    collectionNames.forEach(collectionParam => {
-
-      promises.push(Promise.resolve(collectionParam)
-          .then(collectionName => $scope.discIdsByCollection[collectionName])
-          .then(discIds => {
-            if (discIds) return discIds;
-
-            return persistence.getCollectionDiscIds(collectionParam)
-                .catch(err => {
-                  // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
-                  persistence.newCollection(collectionParam).then(collection => {
-                    $scope.collectionNames = $scope.collectionNames || [];
-                    $scope.collectionNames.push(collectionParam);
-                    $scope.$apply();
-                  }).catch(err => {
-                    alert('Erreur lors de la création de cette collection');
-                    history.back();
-                  });
-                });
-          }));
+    // Collections
+    persistence.getCollectionNames().then(collectionNames => {
+      $scope.collectionNames = collectionNames;
+      $scope.$apply();
+    }).catch(e => {
+      console.error("Erreur lors du chargement de la liste des collections :", e);
     });
 
-    Promise.all(promises.map(p => p.catch(e => e)))
-        .then(results => loadDiscsFromCollections())
-        .catch(e => console.log(e));
-  }
+    $scope.discsById = {};
+    /** @deprecated TODO à remplacer par discsById */
+    $scope.discs = []; // au cas où personne ne l'initialise
 
-  // Pas de demande, on reprend la sauvegarde
-  else if (localStorage.getItem('discIds')) {
-    console.log("On charge les disques enregistrés dans le localStorage");
-    discIds = localStorage.getItem('discIds').split(',');
-    loadDiscs(discIds);
-  }
+    // Liste des disque en paramètre ?
+    if (discsParam) {
+      discIds = discsParam.split(",");
+      loadDiscs(discIds);
+    }
 
-  // Pas de demande de playlist => "Démo"
-  else {
-    discIds = [
-      "Dg0IjOzopYU",
-      "RRtlWfi6jiM",
-      "TGXwvLupP5A",
-      "WGmHaMRAXuI",
-      "_VlTKjkDdbs",
-      //"8OS4A2a-Fxg", // sushi
-      //"zvHQELG1QHE" // démons et manants
-    ];
-  }
+    // Collection de disques en paramètre ?
+    else if (collectionParam) {
+      const collectionNames = collectionParam.split(',');
+      $scope.currentCollectionNames = collectionNames;
 
-  // Tracklist togglée
-  $scope.lastToggledTracklist = null;
+      const promises = [];
+      collectionNames.forEach(collectionParam => {
+
+        promises.push(Promise.resolve(collectionParam)
+            .then(collectionName => $scope.discIdsByCollection[collectionName])
+            .then(discIds => {
+              if (discIds) return discIds;
+
+              return persistence.getCollectionDiscIds(collectionParam)
+                  .catch(err => {
+                    // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
+                    persistence.newCollection(collectionParam).then(collection => {
+                      $scope.collectionNames = $scope.collectionNames || [];
+                      $scope.collectionNames.push(collectionParam);
+                      $scope.$apply();
+                    }).catch(err => {
+                      alert('Erreur lors de la création de cette collection');
+                      history.back();
+                    });
+                  });
+            }));
+      });
+
+      Promise.all(promises.map(p => p.catch(e => e)))
+          .then(results => loadDiscsFromCollections())
+          .catch(e => console.log(e));
+    }
+
+    // Pas de demande, on reprend la sauvegarde
+    else if (localStorage.getItem('discIds')) {
+      console.log("On charge les disques enregistrés dans le localStorage");
+      discIds = localStorage.getItem('discIds').split(',');
+      loadDiscs(discIds);
+    }
+
+    // Pas de demande de playlist => "Démo"
+    else {
+      discIds = [
+        "Dg0IjOzopYU",
+        "RRtlWfi6jiM",
+        "TGXwvLupP5A",
+        "WGmHaMRAXuI",
+        "_VlTKjkDdbs",
+        //"8OS4A2a-Fxg", // sushi
+        //"zvHQELG1QHE" // démons et manants
+      ];
+    }
+
+    // Tracklist togglée
+    $scope.lastToggledTracklist = null;
+  };
+
+  $scope.init();
 
   function toggleTracklist(tracklist, disc) {
     const lastToggledTracklist = $scope.lastToggledTracklist;
@@ -1496,14 +1510,6 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
   $scope.repeatMode = $scope.restore('repeatMode', '');
   $scope.slider.value = $scope.restore('time', 0);
 
-  // Collections
-  persistence.getCollectionNames().then((collectionNames => {
-    $scope.collectionNames = collectionNames;
-    $scope.$apply();
-  })).catch(e => {
-    console.error("Erreur lors du chargement de la liste des collections :", e);
-  });
-
   // TODO : comment déclarer des services avec Angular ?
   $scope.getCueService = function () {
     if (!$scope.cueService) $scope.cueService = new CueService($http);
@@ -1588,6 +1594,27 @@ function Controller($scope, $http, cuetubeConf/*, $ngConfirm*/) {
     $scope.currentCollectionNames = [collectionName ? collectionName : DEFAULT_COLLECTION];
     $scope.collectionName = collectionName;
     loadDiscsFromCollections();
-  }
+  };
 
-} // Controller
+  $scope.connectGoogleDrive = function () {
+
+    gapiClient.init({
+
+      // Client ID and API key from the Developer Console
+      apiKey: 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE',
+      clientId: '873045101562-3t98pn5qlml130icgp9e8q5tqsqsao76.apps.googleusercontent.com',
+
+      // Array of API discovery doc URLs for APIs used by the quickstart
+      discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+
+      // Authorization scopes required by the API; multiple scopes can be
+      // included, separated by spaces.
+      // TODO : utiliser plutôt le dossier https://developers.google.com/drive/v2/web/appdata
+      scope: 'https://www.googleapis.com/auth/drive'
+    }).then(() => {
+      persistence = new GoogleDrivePersistence($scope, $http);
+      $scope.init();
+    });
+  };
+
+}); // Controller

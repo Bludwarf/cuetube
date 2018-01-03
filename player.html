@@ -38,8 +38,21 @@
     <script type="text/javascript" src="js/persistence.js"></script>
     <script type="text/javascript" src="js/persistence/LocalServerPersistence.js"></script>
     <script type="text/javascript" src="js/persistence/LocalStoragePersistence.js"></script>
-    <script type="text/javascript" src="js/controllers/Controller.js"></script>
+    <script type="text/javascript" src="js/persistence/GoogleDrivePersistence.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
+    <!--<script type="text/javascript" src="socket.io/socket.io.js"></script>-->
+    <script type="text/javascript" src="js/underscore-min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/angular.min.js"></script>
+    <script type="text/javascript" src="js/moment.min.js"></script>
+    <script type="text/javascript" src="js/angular-confirm.min.js"></script>
+
+    <script src="https://apis.google.com/js/api.js"></script>
+
+    <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript" src="js/app.conf.js"></script>
+    <script type="text/javascript" src="js/services/GapiClient.js"></script>
+    <script type="text/javascript" src="js/controllers/Controller.js"></script>
 </head>
 
 <body>
@@ -85,7 +98,8 @@
                                 <div class="buttons">
                                     <!--<button ng-click="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
                                     <button ng-click="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
-                                    <button class="btn btn-default" ng-click="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist</button></a>
+                                    <button class="btn btn-default" ng-click="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist</button>
+                                    <button class="btn btn-default" ng-click="connectGoogleDrive()">Google Drive</button>
                                 </div>
                             </div>
 
@@ -254,26 +268,18 @@
         }
 
     </script>
-    <!--<script src="socket.io/socket.io.js"></script>-->
-    <script src="js/underscore-min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/angular.min.js"></script>
-    <script src="js/moment.min.js"></script>
-    <script src="js/angular-confirm.min.js"></script>
-
-    <script src="js/app.js"></script>
-    <script src="js/app.conf.js"></script>
 
     <!-- Gestion des thumbs des disques -->
     <script>
 
         // Fermeture de la tracklist ouverte si click ailleurs
         document.addEventListener('click', function(e) {
-            var lastToggled = getCtrl().lastToggledTracklist;
+            const lastToggled = getCtrl().lastToggledTracklist;
             if (lastToggled != null) $(lastToggled).hide();
         });
 
     </script>
+
 </body>
 
 </html>
