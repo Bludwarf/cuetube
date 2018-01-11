@@ -84,5 +84,5 @@ function stringValue(string) {
         return `"${string}"`;
     return string;
 }
-// module.exports = CuePrinter;
+module.exports = CuePrinter;
 //# sourceMappingURL=CuePrinter.js.map
