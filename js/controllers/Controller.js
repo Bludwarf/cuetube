@@ -677,7 +677,8 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     let disc = track && track.disc;
 
     const possibleDiscs = [];
-    if (!$scope.repeatMode) {
+    // Répétition du disque ? (uniquement si disque existant)
+    if (!$scope.repeatMode || !disc) {
       for (let i = 0; i < discs.length; ++i) {
         let disc = discs[i];
         if (disc && disc.enabled && disc.playable) possibleDiscs.push(disc);
