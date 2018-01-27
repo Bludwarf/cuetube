@@ -5,22 +5,24 @@ const CuePrinter = require("../CuePrinter");
 class GoogleDrivePersistence extends Persistence {
     constructor($scope, $http) {
         super($scope, $http);
-        this.rootFolderId = '16xjNCGVHLYi2Z5J5xzkhcUs0-joFzcka';
-        this.collectionsFolder = null;
-        this.cuesFolder = null;
+        this.rootFolder = undefined;
+        this.collectionsFolder = undefined;
+        this.cuesFolder = undefined;
         /** exemple : subFolders['16xjNCGVHLYi2Z5J5xzkhcUs0']['Collections'] = (id du sous-dossier "Collections") */
         this.subFolders = new Map();
         this.collectionsFiles = new Map();
         this.cuesFiles = new Map(); // TODO : init
     }
     getFolders() {
-        return Promise.all([
-            this.getGoogleFolder('Collections', this.rootFolderId, 'collectionsFolder'),
-            this.getGoogleFolder('Disques', this.rootFolderId, 'cuesFolder')
-        ]).then(results => ({
-            collectionsFolder: results[0],
-            cuesFolder: results[1]
-        }));
+        return this.getGoogleFolder('CueTube', null, 'rootFolder').then(rootFolder => {
+            return Promise.all([
+                this.getGoogleFolder('Collections', rootFolder.id, 'collectionsFolder'),
+                this.getGoogleFolder('Disques', rootFolder.id, 'cuesFolder')
+            ]).then(results => ({
+                collectionsFolder: results[0],
+                cuesFolder: results[1]
+            }));
+        });
     }
     /**
      * On crée automatiquement le dossier s'il n'existe pas

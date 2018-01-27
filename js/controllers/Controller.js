@@ -102,6 +102,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
         $scope.currentCollectionNames = collectionNames;
 
         const promises = [];
+        $scope.discIdsByCollection = [];
         collectionNames.forEach(collectionParam => {
 
           promises.push(Promise.resolve(collectionParam)
@@ -125,7 +126,13 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
         });
 
         Promise.all(promises.map(p => p.catch(e => e)))
-            .then(results => loadDiscsFromCollections())
+            .then(results => {
+              // Liste des disques pour chaque collection
+              collectionNames.forEach((collectionParam, i) => {
+                $scope.discIdsByCollection[collectionParam] = results[i];
+              });
+              loadDiscsFromCollections();
+            })
             .catch(e => console.log(e));
       }
 
@@ -1613,26 +1620,11 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     loadDiscsFromCollections();
   };
 
-  const GOOGLE_AUTH_PARAMS = {
-
-    // Client ID and API key from the Developer Console
-    apiKey: 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE',
-    clientId: '873045101562-3t98pn5qlml130icgp9e8q5tqsqsao76.apps.googleusercontent.com', // à reporter dans <meta name="google-signin-client_id"
-
-    // Array of API discovery doc URLs for APIs used by the quickstart
-    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-
-    // Authorization scopes required by the API; multiple scopes can be
-    // included, separated by spaces.
-    // TODO : utiliser plutôt le dossier https://developers.google.com/drive/v2/web/appdata
-    scope: 'https://www.googleapis.com/auth/drive'  // à reporter dans <meta name="google-signin-scope"
-  };
-
   $scope.connectedToGoogleDrive = false;
   // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => $scope.connectedToGoogleDrive = isSignedIn);
   $scope.connectGoogleDrive = function () {
 
-    gapiClient.init(GOOGLE_AUTH_PARAMS).then(() => {
+    gapiClient.init().then(() => {
       $scope.connectedToGoogleDrive = true;
       const googleDrivePersistence = new GoogleDrivePersistence($scope, $http);
 
@@ -1647,7 +1639,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   };
 
   $scope.onSignIn = function(googleUser) {
-    gapiClient.init(GOOGLE_AUTH_PARAMS).then(() => {
+    gapiClient.init().then(() => {
 
       const logoutBtn = document.getElementById("logout-btn");
       // logoutBtn.innerHTML = `<img src="${googleUser.getImageUrl()}" />${googleUser.getGivenName()}`;
@@ -1660,6 +1652,9 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
       const googleDrivePersistence = new GoogleDrivePersistence($scope, $http);
 
       // TODO : synchro avec l'ancienne persistance pour ne rien perdre
+
+      // RAZ de variables/caches, etc...
+      // $scope.discIdsByCollection = {}; // déjà fait par init()
 
       persistence = googleDrivePersistence;
       $scope.init();

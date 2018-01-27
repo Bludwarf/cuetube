@@ -142,7 +142,7 @@
 
                             <div class="discs">
 
-                                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc == discs[currentTrack.disc.index], inTracklist: disc == discInTracklist}">
+                                <div class="disc-wrapper" ng-repeat="disc in discs" data-index="{{$index}}" data-discId="{{disc.discId}}" ng-class="{active: disc.id == currentTrack.disc.id, inTracklist: disc == discInTracklist}">
                                     <div class="disc-thumb" ng-click="disc.clickThumb($event)" ng-dblclick="disc.doubleClickThumb($event)" title="{{disc.title}}. Cliquer pour ouvrir la liste des pistes de l'album">
                                         <input type="checkbox" ng-model="disc.enabled" CHECKED ng-click="disc.afterClickThumbCheckbox($event)" title="Cocher cette case pour activer/désactiver ce disque. 'Alt' pour inverser la sélection des autres disques. 'Shift' pour sélectionner un ensemble de disques qui se suivent."/>
                                         <div class="disabled-video-cache" ng-hide="disc.enabled"></div>
