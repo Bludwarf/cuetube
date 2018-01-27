@@ -35,7 +35,7 @@ angular.module('cuetube').factory('gapiClient', function($rootScope, $http, cuet
               return gapi.auth2.getAuthInstance().signIn();
             }
           }, reason => {
-            console.error(name, 'getConnection Google Drive error:', reason.result.error.message);
+            console.error(name, 'getConnection Google Drive error:', reason || reason.result || reason.result.error.message);
             reject(reason);
           }).then(() => {
             resolve();
