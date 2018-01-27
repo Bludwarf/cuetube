@@ -1429,7 +1429,13 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   $scope.createCollection = function (name) {
     name = name || prompt("Nom de la collection à créer");
     if (name) {
-      this.openCollection(name);
+      const collection = {
+        name: name,
+        discIds: []
+      };
+      persistence.postCollection(collection).then(collectionCreee => {
+        this.openCollection(name);
+      });
     }
   };
 
