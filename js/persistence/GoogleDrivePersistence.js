@@ -142,7 +142,7 @@ class GoogleDrivePersistence extends Persistence {
             .then(file => this.upload({
             id: file ? file.id : undefined,
             name: filename,
-            description: `Collection ${collectionName} dans CueTube`,
+            // description: `Collection ${collectionName} dans CueTube`,
             parents: [folder.id]
         }, content))
             .then(file => {
@@ -290,7 +290,7 @@ class GoogleDrivePersistence extends Persistence {
             .then(file => this.upload({
             id: file ? file.id : undefined,
             name: `${discId}.cue`,
-            description: `Disque ${disc.title} (id YouTube : ${discId}) dans CueTube`,
+            description: disc.title,
             parents: [discFolder.id]
         }, content))
             .then(file => {

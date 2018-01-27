@@ -1646,7 +1646,13 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => $scope.connectedToGoogleDrive = isSignedIn);
   $scope.connectGoogleDrive = function () {
 
+    const loginBtn = document.getElementById("login-btn");
+    loginBtn.innerText = "Connexion...";
+    $scope.hidePlayer();
+
     gapiClient.init().then(() => {
+
+      loginBtn.innerText = "Connecté·e";
       $scope.connectedToGoogleDrive = true;
       const googleDrivePersistence = new GoogleDrivePersistence($scope, $http);
 
@@ -1657,7 +1663,19 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
       persistence = googleDrivePersistence;
       $scope.init();
+    }).catch(err => {
+      loginBtn.innerText = "Google Drive";
+      $scope.showPlayer();
+      alert("Erreur de connexion à Google Drive");
+      console.error(err);
     });
+  };
+
+  $scope.disconnectGoogleDrive = function() {
+    // TODO
+    $scope.connectedToGoogleDrive = false;
+    const loginBtn = document.getElementById("login-btn");
+    loginBtn.innerText = "Google Drive";
   };
 
   $scope.onSignIn = function(googleUser) {
