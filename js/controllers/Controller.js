@@ -544,7 +544,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     // Premier lancement ...
     if ((!$scope.discs || !$scope.discs.length)) {
       // ... de l'application
-      if (!collectionParam) {
+      if (!$scope.getCollectionParam()) {
         alert("Bienvenue sur CueTube mec ! Pour lancer du gros son ajoute un album avec le bouton en haut à droite. Enjoy !");
       }
       // ... de la collection
