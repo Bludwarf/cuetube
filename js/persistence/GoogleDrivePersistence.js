@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../../node_modules/@types/gapi.client.drive/index.d.ts" />
+/// <reference path="../@types/gapi.client.drive/index.d.ts" />
 /// <reference path="../@types/GoogleDrive.d.ts" />
 const CuePrinter = require("../CuePrinter");
 class GoogleDrivePersistence extends Persistence {
@@ -15,20 +15,28 @@ class GoogleDrivePersistence extends Persistence {
     }
     getFolders() {
         return Promise.all([
-            this.getOrFindGoogleFolder('Collections', this.rootFolderId, 'collectionsFolder'),
-            this.getOrFindGoogleFolder('Disques', this.rootFolderId, 'cuesFolder')
+            this.getGoogleFolder('Collections', this.rootFolderId, 'collectionsFolder'),
+            this.getGoogleFolder('Disques', this.rootFolderId, 'cuesFolder')
         ]).then(results => ({
             collectionsFolder: results[0],
             cuesFolder: results[1]
         }));
     }
-    getOrFindGoogleFolder(name, parentId, field, fieldObject = this) {
+    /**
+     * On crée automatiquement le dossier s'il n'existe pas
+     * @param {string} name
+     * @param {string} parentId
+     * @param field
+     * @param fieldObject
+     * @return {Promise<gapi.client.drive.File>}
+     */
+    getGoogleFolder(name, parentId, field, fieldObject = this) {
         return Promise.resolve(fieldObject[field]).then(file => {
             if (file) {
                 return file;
             }
             else {
-                return this.findGoogleFile(name, parentId).then(file => fieldObject[field] = file);
+                return this.findGoogleFile(name, parentId, true).then(file => fieldObject[field] = file);
             }
         });
     }
@@ -82,7 +90,7 @@ class GoogleDrivePersistence extends Persistence {
      *
      * @param {string} pattern exemple /.*\.cue/
      * @param folderGoogleId id du dossier parent dans Google Drive
-     * @return {PromiseLike<gapi.client.Response<gapi.client.drive.FileList>>}
+     * @return {Promise<gapi.client.Response<gapi.client.drive.FileList>>}
      */
     findGoogleFiles(pattern, folderGoogleId) {
         return gapi.client.drive.files.list({
@@ -117,11 +125,22 @@ class GoogleDrivePersistence extends Persistence {
      */
     postCollection(collection) {
         const content = collection.discIds.join('\r\n');
+        const filename = `${collection.name}.cues`;
+        let folder;
         return this.getFolders()
-            .then(folders => this.upload({
-            name: `${collection.name}.cues`,
+            .then(folders => {
+            folder = folders.collectionsFolder;
+            return this.findGoogleFile(filename, folder.id);
+        })
+            .catch(err => {
+            // La collection n'existe pas encore
+            return null;
+        })
+            .then(file => this.upload({
+            id: file ? file.id : undefined,
+            name: filename,
             description: `Collection ${collection.name} dans CueTube`,
-            parents: [folders.collectionsFolder.id]
+            parents: [folder.id]
         }, content))
             .then(file => {
             console.log(`Collection ${collection.name} sauvegardée dans Google Drive`, file);
@@ -129,35 +148,50 @@ class GoogleDrivePersistence extends Persistence {
         });
     }
     /**
-     *
+     * Création ou modification si metadata.id
      * @param {string} metadata https://developers.google.com/drive/v3/reference/files (par exemple {name: 'fichier.cue'})
      * @param {string} data
      * @return {Request<T>}
      *
      * @author https://stackoverflow.com/a/35182924
      * @author bludwarf@gmail.com
+     *
+     * @see https://developers.google.com/drive/v3/web/multipart-upload
      */
     upload(metadata, data) {
-        const boundary = '-------314159265358979323846';
-        const delimiter = "\r\n--" + boundary + "\r\n";
-        const close_delim = "\r\n--" + boundary + "--";
-        const contentType = 'application/x-cue'; // https://www.filesuffix.com/en/extension/cue
-        const multipartRequestBody = delimiter +
-            'Content-Type: application/json\r\n\r\n' +
-            JSON.stringify(metadata) +
-            delimiter +
-            'Content-Type: ' + contentType + '\r\n\r\n' +
-            data +
-            close_delim;
-        return gapi.client.request({
-            'path': '/upload/drive/v3/files',
-            'method': 'POST',
-            'params': { 'uploadType': 'multipart' },
-            'headers': {
-                'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-            },
-            'body': multipartRequestBody
-        });
+        // UPDATE
+        if (metadata.id) {
+            return gapi.client.request({
+                path: '/upload/drive/v3/files/' + metadata.id,
+                method: 'PATCH',
+                params: {
+                    uploadType: 'media'
+                },
+                body: data
+            });
+        }
+        else {
+            const boundary = '-------314159265358979323846';
+            const delimiter = "\r\n--" + boundary + "\r\n";
+            const close_delim = "\r\n--" + boundary + "--";
+            const contentType = 'application/x-cue'; // https://www.filesuffix.com/en/extension/cue
+            const multipartRequestBody = delimiter +
+                'Content-Type: application/json\r\n\r\n' +
+                JSON.stringify(metadata) +
+                delimiter +
+                'Content-Type: ' + contentType + '\r\n\r\n' +
+                data +
+                close_delim;
+            return gapi.client.request({
+                'path': '/upload/drive/v3/files',
+                'method': 'POST',
+                'params': { 'uploadType': 'multipart' },
+                'headers': {
+                    'Content-Type': 'multipart/related; boundary="' + boundary + '"'
+                },
+                'body': multipartRequestBody
+            });
+        } // CREATE
     }
     getDisc(discId, discIndex) {
         return this.getConnection()
@@ -167,9 +201,8 @@ class GoogleDrivePersistence extends Persistence {
                 return file;
             }
             else {
-                return this.getFolders()
-                    .then(folders => this.getOrFindGoogleFolders([discId[0], discId[1], discId[2]], folders.cuesFolder.id))
-                    .then(subFolders => this.findGoogleFile(discId + '.cue', subFolders[2].id))
+                return this.getDiscFolder(discId)
+                    .then(folder => this.findGoogleFile(discId + '.cue', folder.id))
                     .then(file => {
                     this.cuesFiles.set(discId, file); // cache
                     return file;
@@ -179,31 +212,36 @@ class GoogleDrivePersistence extends Persistence {
             .then(file => this.getFileContent(file.id))
             .then(content => super.createDisc(discId, discIndex, CueParser.parse(content)));
     }
-    getOrFindGoogleFolders(names, parentId, files = [], fieldObject = this) {
+    getDiscFolder(discId) {
+        return this.getFolders()
+            .then(folders => this.getGoogleFolders([discId[0], discId[1], discId[2]], folders.cuesFolder.id))
+            .then(subFolders => subFolders[2]);
+    }
+    getGoogleFolders(names, parentId, files = [], fieldObject = this) {
         // Création des sous-dossiers dans le cache
         if (!this.subFolders.has(parentId)) {
             this.subFolders.set(parentId, {});
         }
         const subFolders = this.subFolders.get(parentId);
         const name = names[0];
-        return this.getOrFindGoogleFolder(name, parentId, name, subFolders).then(file => {
+        return this.getGoogleFolder(name, parentId, name, subFolders).then(file => {
             files.push(file);
             if (names.length == 1) {
                 return Promise.resolve(files);
             }
             else {
                 const nextFieldObject = subFolders[name];
-                return this.getOrFindGoogleFolders(names.slice(1), file.id, files, nextFieldObject);
+                return this.getGoogleFolders(names.slice(1), file.id, files, nextFieldObject);
             }
         });
     }
     /**
-     *
      * @param {string} name exemple "monDisque.cue"
      * @param folderGoogleId id du dossier parent dans Google Drive
-     * @return {PromiseLike<gapi.client.Response<gapi.client.drive.FileList>>}
+     * @param autoCreate Crée automatiquement le dossier/fichier s'il n'existe pas
+     * @return {Promise<gapi.client.Response<gapi.client.drive.FileList>>}
      */
-    findGoogleFile(name, folderGoogleId) {
+    findGoogleFile(name, folderGoogleId, autoCreate = false) {
         let q = `name = '${name}' and trashed != true`;
         if (folderGoogleId) {
             q += ` and '${folderGoogleId}' in parents`;
@@ -213,8 +251,22 @@ class GoogleDrivePersistence extends Persistence {
         })
             .then(res => res.result.files)
             .then(files => {
-            if (!files || !files.length)
-                throw new Error(`Fichier ${name} introuvable dans Google Drive`);
+            if (!files || !files.length) {
+                if (!autoCreate) {
+                    throw new Error(`Fichier ${name} introuvable dans Google Drive`);
+                }
+                else {
+                    console.log(`Création du fichier/dossier ${name} dans Google Drive`);
+                    return gapi.client.drive.files.create({
+                        resource: {
+                            'name': name,
+                            'mimeType': 'application/vnd.google-apps.folder',
+                            'parents': [folderGoogleId]
+                        },
+                        fields: 'id'
+                    }).then(res => res.result);
+                }
+            }
             if (files.length > 1)
                 throw new Error(`Plusieurs disques ${name} trouvés dans Google Drive : ${files.length}`);
             return files[0];
@@ -222,11 +274,21 @@ class GoogleDrivePersistence extends Persistence {
     }
     postDisc(discId, disc) {
         const content = CuePrinter.print(disc.cuesheet);
-        return this.getFolders()
-            .then(folders => this.upload({
+        let discFolder;
+        return this.getDiscFolder(discId)
+            .then(folder => {
+            discFolder = folder;
+            return this.findGoogleFile(discId + '.cue', folder.id);
+        })
+            .catch(err => {
+            // Le disque n'existe pas encore
+            return null;
+        })
+            .then(file => this.upload({
+            id: file ? file.id : undefined,
             name: `${discId}.cue`,
             description: `Disque ${disc.title} (id YouTube : ${discId}) dans CueTube`,
-            parents: [folders.cuesFolder.id]
+            parents: [discFolder.id]
         }, content))
             .then(file => {
             console.log(`Disque ${disc.title} sauvegardé dans Google Drive`, file);
