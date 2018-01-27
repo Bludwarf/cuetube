@@ -269,7 +269,7 @@ body {
 }
 
 #header {
-    position: relative;
+    /* position: relative; */
 }
 
 #header > h1 {
@@ -282,6 +282,7 @@ body {
     right: 0;
     bottom: 0;
     text-align: right;
+    margin: 1em;
 }
 
 .track-controls {

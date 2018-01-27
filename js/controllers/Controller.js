@@ -44,7 +44,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   const discsParam = getParameterByName("discs", document.location.search);
 
   // Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
-  const collectionParam = getParameterByName("collection", document.location.search) || DEFAULT_COLLECTION;
+  let collectionParam = getParameterByName("collection", document.location.search) || DEFAULT_COLLECTION;
 
   $scope.isDefaultCollection = collectionParam.toLocaleLowerCase() === DEFAULT_COLLECTION.toLocaleLowerCase();
   /**
@@ -68,78 +68,93 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     persistence.getCollectionNames().then(collectionNames => {
       $scope.collectionNames = collectionNames;
       $scope.$apply();
+      return collectionNames;
     }).catch(e => {
-      console.error("Erreur lors du chargement de la liste des collections :", e);
-    });
+      console.error(e);
+      alert("Erreur lors du chargement de la liste des collections :" + e);
+    }).then(knownCollectionNames => {
 
-    $scope.discsById = {};
-    /** @deprecated TODO à remplacer par discsById */
-    $scope.discs = []; // au cas où personne ne l'initialise
+      $scope.discsById = {};
+      /** @deprecated TODO à remplacer par discsById */
+      $scope.discs = []; // au cas où personne ne l'initialise
 
-    // Liste des disque en paramètre ?
-    if (discsParam) {
-      discIds = discsParam.split(",");
-      loadDiscs(discIds);
-    }
+      // Liste des disque en paramètre ?
+      if (discsParam) {
+        discIds = discsParam.split(",");
+        loadDiscs(discIds);
+      }
 
-    // Collection de disques en paramètre ?
-    else if (collectionParam) {
-      const collectionNames = collectionParam.split(',');
-      $scope.currentCollectionNames = collectionNames;
+      // Collection de disques en paramètre ?
+      else if (collectionParam) {
+        const requestedCollectionNames = collectionParam.split(',');
+        const collectionNames = [];
+        const unknownCollectionNames = [];
+        requestedCollectionNames.forEach(collectionName => {
+          if (knownCollectionNames.indexOf(collectionName) !== -1) {
+            collectionNames.push(collectionName);
+          } else {
+            unknownCollectionNames.push(collectionName);
+          }
+        });
+        if (unknownCollectionNames.length) {
+          alert("Les collections suivantes n'ont pas été trouvées : " + unknownCollectionNames.join(", "));
+        }
+        $scope.currentCollectionNames = collectionNames;
 
-      const promises = [];
-      collectionNames.forEach(collectionParam => {
+        const promises = [];
+        collectionNames.forEach(collectionParam => {
 
-        promises.push(Promise.resolve(collectionParam)
-            .then(collectionName => $scope.discIdsByCollection[collectionName])
-            .then(discIds => {
-              if (discIds) return discIds;
+          promises.push(Promise.resolve(collectionParam)
+              .then(collectionName => $scope.discIdsByCollection[collectionName])
+              .then(discIds => {
+                if (discIds) return discIds;
 
-              return persistence.getCollectionDiscIds(collectionParam)
-                  .catch(err => {
-                    // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
-                    persistence.newCollection(collectionParam).then(collection => {
-                      $scope.collectionNames = $scope.collectionNames || [];
-                      $scope.collectionNames.push(collectionParam);
-                      $scope.$apply();
-                    }).catch(err => {
-                      alert('Erreur lors de la création de cette collection');
-                      history.back();
+                return persistence.getCollectionDiscIds(collectionParam)
+                    .catch(err => {
+                      // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
+                      persistence.newCollection(collectionParam).then(collection => {
+                        $scope.collectionNames = $scope.collectionNames || [];
+                        $scope.collectionNames.push(collectionParam);
+                        $scope.$apply();
+                      }).catch(err => {
+                        alert('Erreur lors de la création de cette collection');
+                        history.back();
+                      });
                     });
-                  });
-            }));
-      });
+              }));
+        });
 
-      Promise.all(promises.map(p => p.catch(e => e)))
-          .then(results => loadDiscsFromCollections())
-          .catch(e => console.log(e));
-    }
+        Promise.all(promises.map(p => p.catch(e => e)))
+            .then(results => loadDiscsFromCollections())
+            .catch(e => console.log(e));
+      }
 
-    // Pas de demande, on reprend la sauvegarde
-    else if (localStorage.getItem('discIds')) {
-      console.log("On charge les disques enregistrés dans le localStorage");
-      discIds = localStorage.getItem('discIds').split(',');
-      loadDiscs(discIds);
-    }
+      // Pas de demande, on reprend la sauvegarde
+      else if (localStorage.getItem('discIds')) {
+        console.log("On charge les disques enregistrés dans le localStorage");
+        discIds = localStorage.getItem('discIds').split(',');
+        loadDiscs(discIds);
+      }
 
-    // Pas de demande de playlist => "Démo"
-    else {
-      discIds = [
-        "Dg0IjOzopYU",
-        "RRtlWfi6jiM",
-        "TGXwvLupP5A",
-        "WGmHaMRAXuI",
-        "_VlTKjkDdbs",
-        //"8OS4A2a-Fxg", // sushi
-        //"zvHQELG1QHE" // démons et manants
-      ];
-    }
+      // Pas de demande de playlist => "Démo"
+      else {
+        discIds = [
+          "Dg0IjOzopYU",
+          "RRtlWfi6jiM",
+          "TGXwvLupP5A",
+          "WGmHaMRAXuI",
+          "_VlTKjkDdbs",
+          //"8OS4A2a-Fxg", // sushi
+          //"zvHQELG1QHE" // démons et manants
+        ];
+      }
+    }); // persistence.getCollectionNames.then
 
-    // Tracklist togglée
-    $scope.lastToggledTracklist = null;
+      // Tracklist togglée
+      $scope.lastToggledTracklist = null;
   };
 
-  $scope.init();
+  $scope.init(); // TODO : on devrait attendre l'authent Google avant d'initialiser
 
   function toggleTracklist(tracklist, disc) {
     const lastToggledTracklist = $scope.lastToggledTracklist;
@@ -1555,7 +1570,8 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     };
     const title = document.title;
     document.title = "CueTube - " + $scope.currentCollectionNames.join(" + ");
-    history.pushState(state, document.title, "?collection="+encodeURIComponent($scope.currentCollectionNames.join(",")));
+    collectionParam = $scope.currentCollectionNames.join(",");
+    history.pushState(state, document.title, "?collection="+encodeURIComponent(collectionParam));
     document.title = title;
 
     // On récupère la liste des disques de toutes les collections actives
@@ -1597,23 +1613,55 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     loadDiscsFromCollections();
   };
 
+  const GOOGLE_AUTH_PARAMS = {
+
+    // Client ID and API key from the Developer Console
+    apiKey: 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE',
+    clientId: '873045101562-3t98pn5qlml130icgp9e8q5tqsqsao76.apps.googleusercontent.com', // à reporter dans <meta name="google-signin-client_id"
+
+    // Array of API discovery doc URLs for APIs used by the quickstart
+    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+
+    // Authorization scopes required by the API; multiple scopes can be
+    // included, separated by spaces.
+    // TODO : utiliser plutôt le dossier https://developers.google.com/drive/v2/web/appdata
+    scope: 'https://www.googleapis.com/auth/drive'  // à reporter dans <meta name="google-signin-scope"
+  };
+
+  $scope.connectedToGoogleDrive = false;
+  // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => $scope.connectedToGoogleDrive = isSignedIn);
   $scope.connectGoogleDrive = function () {
 
-    gapiClient.init({
+    gapiClient.init(GOOGLE_AUTH_PARAMS).then(() => {
+      $scope.connectedToGoogleDrive = true;
+      const googleDrivePersistence = new GoogleDrivePersistence($scope, $http);
 
-      // Client ID and API key from the Developer Console
-      apiKey: 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE',
-      clientId: '873045101562-3t98pn5qlml130icgp9e8q5tqsqsao76.apps.googleusercontent.com',
+      // TODO : synchro avec l'ancienne persistance pour ne rien perdre
 
-      // Array of API discovery doc URLs for APIs used by the quickstart
-      discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+      // TODO debug
+      window.persistence = googleDrivePersistence;
 
-      // Authorization scopes required by the API; multiple scopes can be
-      // included, separated by spaces.
-      // TODO : utiliser plutôt le dossier https://developers.google.com/drive/v2/web/appdata
-      scope: 'https://www.googleapis.com/auth/drive'
-    }).then(() => {
-      persistence = new GoogleDrivePersistence($scope, $http);
+      persistence = googleDrivePersistence;
+      $scope.init();
+    });
+  };
+
+  $scope.onSignIn = function(googleUser) {
+    gapiClient.init(GOOGLE_AUTH_PARAMS).then(() => {
+
+      const logoutBtn = document.getElementById("logout-btn");
+      // logoutBtn.innerHTML = `<img src="${googleUser.getImageUrl()}" />${googleUser.getGivenName()}`;
+      logoutBtn.innerHTML = `${googleUser.getGivenName()}`;
+
+      if (!gapi.client.drive) {
+        alert("Google Drive non initialisé");
+        return;
+      }
+      const googleDrivePersistence = new GoogleDrivePersistence($scope, $http);
+
+      // TODO : synchro avec l'ancienne persistance pour ne rien perdre
+
+      persistence = googleDrivePersistence;
       $scope.init();
     });
   };
