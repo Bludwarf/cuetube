@@ -7,8 +7,8 @@ angular.module('cuetube').factory('gapiClient', function($rootScope, $http, cuet
   const GOOGLE_AUTH_PARAMS = {
 
     // Client ID and API key from the Developer Console
-    apiKey: 'X6lPAIPy1CvDg2umVyp4_1Js',
-    clientId: '873045101562-2786cqdp2igp89viptblei8cbi4t52uj.apps.googleusercontent.com', // à reporter dans <meta name="google-signin-client_id"
+    clientId: '873045101562-7qb3dk4iaon7b4vh3gos9tft6oj1286r.apps.googleusercontent.com',   // à reporter dans <meta name="google-signin-client_id"
+    apiKey: 'AByhJW_P7MQQDT_c7hgeYYGy', // code secret
 
     // Array of API discovery doc URLs for APIs used by the quickstart
     discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
