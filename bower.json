@@ -24,6 +24,7 @@
     "angular-confirm": "angular1-confirm#^1.1.0",
     "angular": "^1.0.6",
     "angular-mocks": "^1.0.6",
-    "karma-read-json": "^1.1.0"
+    "karma-read-json": "^1.1.0",
+    "system.js": "^0.21.0"
   }
 }

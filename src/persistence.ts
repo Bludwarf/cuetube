@@ -3,7 +3,7 @@ abstract class Persistence {
     constructor(protected $scope: IPlayerScope, protected $http: ng.IHttpService) {
     }
 
-    public abstract getCollectionNames(): Promise<string[]>;
+    public abstract getCollectionNames(): Promise<string[]> | PromiseLike<string[]>;
 
     /**
      *
