@@ -36,6 +36,7 @@ angular.module('cuetube').factory('gapiClient', function($rootScope, $http, cuet
             }
           }, reason => {
             console.error(name, 'getConnection Google Drive error:', reason || reason.result || reason.result.error.message);
+            alert("Échec de connexion à Google Drive");
             reject(reason);
           }).then(() => {
             resolve();
