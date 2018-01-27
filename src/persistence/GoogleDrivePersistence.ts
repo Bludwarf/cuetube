@@ -6,9 +6,9 @@ import drive = gapi.client.drive;
 
 class GoogleDrivePersistence extends Persistence {
 
-    private rootFolderId = '16xjNCGVHLYi2Z5J5xzkhcUs0-joFzcka';
-    private collectionsFolder = null;
-    private cuesFolder = null;
+    private rootFolder = undefined;
+    private collectionsFolder = undefined;
+    private cuesFolder = undefined;
 
     /** exemple : subFolders['16xjNCGVHLYi2Z5J5xzkhcUs0']['Collections'] = (id du sous-dossier "Collections") */
     private subFolders: Map<string, {}> = new Map();
@@ -24,13 +24,15 @@ class GoogleDrivePersistence extends Persistence {
         collectionsFolder: drive.File,
         cuesFolder: drive.File
     }> {
-        return Promise.all([
-            this.getGoogleFolder('Collections', this.rootFolderId, 'collectionsFolder'),
-            this.getGoogleFolder('Disques', this.rootFolderId, 'cuesFolder')
-        ]).then(results => ({
-            collectionsFolder: results[0],
-            cuesFolder: results[1]
-        }));
+        return this.getGoogleFolder('CueTube', null, 'rootFolder').then(rootFolder => {
+            return Promise.all([
+                this.getGoogleFolder('Collections', rootFolder.id, 'collectionsFolder'),
+                this.getGoogleFolder('Disques', rootFolder.id, 'cuesFolder')
+            ]).then(results => ({
+                collectionsFolder: results[0],
+                cuesFolder: results[1]
+            }));
+        });
     }
 
     /**
