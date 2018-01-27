@@ -525,8 +525,9 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
       const disc = _.find($scope.discs, (disc) => disc && disc.id === current.discId);
 
       if (!disc) {
-        console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé`);
-        $scope.currentTrack = undefined;
+        console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé. On lance un disque aléatoirement`);
+        scope.repeatMode = null;
+        $scope.next();
       } else {
         console.log("Chargement de la précédente lecture...", current);
 
