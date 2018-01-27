@@ -6,7 +6,7 @@ angular.module('cuetube')
         /** Ajout de disques */
         addDisc: {
             /** Lecture automatique des disques ajoutés ? */
-            autoplay: true
+            autoplay: false
         },
 
         debug: false

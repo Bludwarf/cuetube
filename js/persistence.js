@@ -13,6 +13,9 @@ class Persistence {
     }
     getCollectionDiscIds(collectionName, cb) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!collectionName) {
+                collectionName = Persistence.DEFAULT_COLLECTION;
+            }
             let collection = yield this.getCollection(collectionName);
             if (!collection) {
                 collection = new Collection(collectionName);
@@ -28,6 +31,9 @@ class Persistence {
      */
     postCollectionDiscIds(collectionName, discIds) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!collectionName) {
+                collectionName = Persistence.DEFAULT_COLLECTION;
+            }
             const collection = (yield this.getCollection(collectionName)) || new Collection();
             collection.discIds = discIds;
             this.postCollection(collection);
@@ -101,4 +107,5 @@ class Persistence {
         });
     }
 }
+Persistence.DEFAULT_COLLECTION = '_DEFAULT_';
 //# sourceMappingURL=persistence.js.map

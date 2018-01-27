@@ -127,7 +127,8 @@ class GoogleDrivePersistence extends Persistence {
      */
     postCollection(collection) {
         const content = collection.discIds.join('\r\n');
-        const filename = `${collection.name}.cues`;
+        const collectionName = collection.name ? collection.name : Persistence.DEFAULT_COLLECTION;
+        const filename = `${collectionName}.cues`;
         let folder;
         return this.getFolders()
             .then(folders => {
@@ -141,11 +142,11 @@ class GoogleDrivePersistence extends Persistence {
             .then(file => this.upload({
             id: file ? file.id : undefined,
             name: filename,
-            description: `Collection ${collection.name} dans CueTube`,
+            description: `Collection ${collectionName} dans CueTube`,
             parents: [folder.id]
         }, content))
             .then(file => {
-            console.log(`Collection ${collection.name} sauvegardée dans Google Drive`, file);
+            console.log(`Collection ${collectionName} sauvegardée dans Google Drive`, file);
             return collection;
         });
     }

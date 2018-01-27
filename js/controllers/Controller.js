@@ -44,14 +44,15 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   const discsParam = getParameterByName("discs", document.location.search);
 
   // Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
-  let collectionParam = getParameterByName("collection", document.location.search) || DEFAULT_COLLECTION;
+  $scope.getCollectionParam = function() {
+    return getParameterByName("collection", document.location.search);
+  };
 
-  $scope.isDefaultCollection = collectionParam.toLocaleLowerCase() === DEFAULT_COLLECTION.toLocaleLowerCase();
   /**
    * Nom de la collection affiché à l'écran
    * @deprecated à remplacer par currentCollectionNames
    */
-  $scope.collectionName = !$scope.isDefaultCollection ? collectionParam : 'Collection par défaut';
+  $scope.collectionName = $scope.getCollectionParam() || 'Collection par défaut';
 
   /** Toutes les collections indexées par nom de collection */
   $scope.discIdsByCollection = {};
@@ -63,6 +64,8 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   let discs;
 
   $scope.init = function() {
+
+    let collectionParam = $scope.getCollectionParam();
 
     // Collections
     persistence.getCollectionNames().then(collectionNames => {
@@ -143,17 +146,18 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
         loadDiscs(discIds);
       }
 
-      // Pas de demande de playlist => "Démo"
+      // Pas de demande de playlist => "Collection par défaut"
       else {
-        discIds = [
-          "Dg0IjOzopYU",
-          "RRtlWfi6jiM",
-          "TGXwvLupP5A",
-          "WGmHaMRAXuI",
-          "_VlTKjkDdbs",
-          //"8OS4A2a-Fxg", // sushi
-          //"zvHQELG1QHE" // démons et manants
-        ];
+        $scope.playCollection();
+        // discIds = [
+        //   "Dg0IjOzopYU",
+        //   "RRtlWfi6jiM",
+        //   "TGXwvLupP5A",
+        //   "WGmHaMRAXuI",
+        //   "_VlTKjkDdbs",
+        //   //"8OS4A2a-Fxg", // sushi
+        //   //"zvHQELG1QHE" // démons et manants
+        // ];
       }
     }); // persistence.getCollectionNames.then
 
@@ -478,6 +482,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
             initYT(); // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
           } else {
             $scope.showPlayer();
+            $scope.$apply();
           }
         })
         .catch(e => console.log(e));
@@ -539,7 +544,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     // Premier lancement ...
     if ((!$scope.discs || !$scope.discs.length)) {
       // ... de l'application
-      if (collectionParam === DEFAULT_COLLECTION) {
+      if (!collectionParam) {
         alert("Bienvenue sur CueTube mec ! Pour lancer du gros son ajoute un album avec le bouton en haut à droite. Enjoy !");
       }
       // ... de la collection
@@ -1429,6 +1434,11 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   $scope.createCollection = function (name) {
     name = name || prompt("Nom de la collection à créer");
     if (name) {
+      name = name.trim();
+      if ($scope.collectionNames.indexOf(name) !== -1) {
+        alert("Cette collection existe déjà mec !");
+        return;
+      }
       const collection = {
         name: name,
         discIds: []
@@ -1546,6 +1556,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   };
 
   $scope.removeDisc = function (disc) {
+    let collectionParam = $scope.getCollectionParam();
     if (!confirm(`Voulez-vous vraiment retirer le disque\n${disc.title}\nde la collection "${collectionParam}" ?`)) return;
     const index = $scope.discs.indexOf(disc);
     if (index === -1) return;
@@ -1583,8 +1594,8 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     };
     const title = document.title;
     document.title = "CueTube - " + $scope.currentCollectionNames.join(" + ");
-    collectionParam = $scope.currentCollectionNames.join(",");
-    history.pushState(state, document.title, collectionParam ? "?collection="+encodeURIComponent(collectionParam) : '');
+    let collectionParam = $scope.currentCollectionNames.join(",");
+    history.pushState(state, document.title, collectionParam ? "?collection="+encodeURIComponent(collectionParam) : 'player');
     document.title = title;
 
     // On récupère la liste des disques de toutes les collections actives
@@ -1621,7 +1632,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   };
 
   $scope.playCollection = function (collectionName) {
-    $scope.currentCollectionNames = [collectionName ? collectionName : DEFAULT_COLLECTION];
+    $scope.currentCollectionNames = [collectionName];
     $scope.collectionName = collectionName;
     loadDiscsFromCollections();
   };
