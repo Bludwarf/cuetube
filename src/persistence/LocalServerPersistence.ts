@@ -52,8 +52,9 @@ class LocalServerPersistence extends Persistence {
     }
 
     public postCollection(collection: Collection): Promise<Collection> {
+        const collectionName = collection.name ? collection.name : Persistence.DEFAULT_COLLECTION;
         return new Promise((resolve, reject) => {
-            this.$http.post<Collection>(`/collection/${collection.name}/discs`, collection.discIds).then(res => {
+            this.$http.post<Collection>(`/collection/${collectionName}/discs`, collection.discIds).then(res => {
                 if (res.status !== 200) {
                     console.error("Error POST collection != 200");
                     return reject(res.status);

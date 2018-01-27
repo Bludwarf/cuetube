@@ -1,5 +1,7 @@
 abstract class Persistence {
 
+    static DEFAULT_COLLECTION = '_DEFAULT_';
+
     constructor(protected $scope: IPlayerScope, protected $http: ng.IHttpService) {
     }
 
@@ -17,6 +19,9 @@ abstract class Persistence {
     public abstract postCollection(collection: Collection): Promise<Collection>;
 
     public async getCollectionDiscIds(collectionName: string, cb: (err: Error, discIds: string[]) => void): Promise<string[]> {
+        if (!collectionName) {
+            collectionName = Persistence.DEFAULT_COLLECTION;
+        }
         let collection: Collection = await this.getCollection(collectionName);
         if (!collection) {
             collection = new Collection(collectionName);
@@ -31,6 +36,9 @@ abstract class Persistence {
      * @return {Promise<string[]>}
      */
     public async postCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
+        if (!collectionName) {
+            collectionName = Persistence.DEFAULT_COLLECTION;
+        }
         const collection: Collection = await this.getCollection(collectionName) || new Collection();
         collection.discIds = discIds;
         this.postCollection(collection);

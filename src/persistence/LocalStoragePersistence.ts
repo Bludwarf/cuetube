@@ -77,10 +77,11 @@ class LocalStoragePersistence extends Persistence {
     }
 
     public async postCollection(collection: Collection): Promise<Collection> {
-        this.setItem(`collection.${collection.name}`, collection);
+        const collectionName = collection.name ? collection.name : Persistence.DEFAULT_COLLECTION;
+        this.setItem(`collection.${collectionName}`, collection);
         const collectionNames = await this.getCollectionNames();
-        if (collectionNames.indexOf(collection.name) === -1) {
-            collectionNames.push(collection.name);
+        if (collectionNames.indexOf(collectionName) === -1) {
+            collectionNames.push(collectionName);
             try {
                 this.setCollectionNames(collectionNames);
             } catch (e) {
