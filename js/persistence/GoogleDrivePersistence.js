@@ -110,11 +110,27 @@ class GoogleDrivePersistence extends Persistence {
             alt: 'media'
         })).then(res => res.body);
     }
+    /**
+     * Supprimer automatiquement les lignes vides
+     * @param {string} fileId
+     * @return {Promise<string[]>}
+     */
     getFileLines(fileId) {
-        return this.getFileContent(fileId).then(content => content.split(/\r?\n/));
+        return this.getFileContent(fileId)
+            .then(content => content.split(/\r?\n/))
+            .then(lines => lines.filter(line => line.trim()));
     }
     getCollection(collectionName) {
-        return this.getFileLines(this.collectionsFiles.get(collectionName).id)
+        return Promise.resolve(this.collectionsFiles.get(collectionName))
+            .then(file => {
+            // Collection déjà connue ?
+            if (file) {
+                return this.getFileLines(file.id);
+            }
+            else {
+                return [];
+            }
+        })
             .then(discIds => {
             return {
                 name: collectionName,
@@ -142,6 +158,7 @@ class GoogleDrivePersistence extends Persistence {
             .then(file => this.upload({
             id: file ? file.id : undefined,
             name: filename,
+            mimeType: 'text/plain',
             // description: `Collection ${collectionName} dans CueTube`,
             parents: [folder.id]
         }, content))

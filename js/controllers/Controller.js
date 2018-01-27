@@ -1274,17 +1274,25 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     // En mode collection on ajoute également le disque à la collection
     if ($scope.currentCollectionNames && $scope.currentCollectionNames.length) {
       const collectionNames = $scope.currentCollectionNames;
-      let collectionName = collectionNames[collectionNames.length - 1];
-      if (collectionNames.length > 1) {
-        alert(`Par défaut on va ajouter la vidéo à la dernière collection : ${collectionName}`);
-      }
-      console.log("Ajout du disque dans la collection " + collectionName);
-      const discIds = $scope.discIdsByCollection[collectionName];
-      discIds.push(disc.id);
-      persistence.postCollectionDiscIds(collectionName, discIds).then(discIds => {
-        console.log("Disque ajouté avec succès dans la collection " + collectionName);
-      }, resKO => {
-        alert("Erreur lors de l'ajout du disque dans la collection " + collectionName);
+      collectionNames.forEach(collectionName => {
+
+        // uniquement si non existant
+        const discIds = $scope.discIdsByCollection[collectionName];
+        if (discIds.indexOf(disc.id) === -1) {
+
+          if (!confirm(`On ajoute cette vidéo à la collection ${collectionName} ?`)) {
+            return;
+          }
+
+          console.log("Ajout du disque dans la collection " + collectionName);
+          discIds.push(disc.id);
+          persistence.postCollectionDiscIds(collectionName, discIds).then(discIds => {
+            console.log("Disque ajouté avec succès dans la collection " + collectionName);
+          }, resKO => {
+            alert("Erreur lors de l'ajout du disque dans la collection " + collectionName);
+          });
+        }
+
       });
     }
 

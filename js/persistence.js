@@ -107,5 +107,5 @@ class Persistence {
         });
     }
 }
-Persistence.DEFAULT_COLLECTION = '_DEFAULT_';
+Persistence.DEFAULT_COLLECTION = '_default_';
 //# sourceMappingURL=persistence.js.map
