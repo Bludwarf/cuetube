@@ -526,7 +526,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
       if (!disc) {
         console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé. On lance un disque aléatoirement`);
-        scope.repeatMode = null;
+        $scope.repeatMode = null;
         $scope.next();
       } else {
         console.log("Chargement de la précédente lecture...", current);
