@@ -1460,7 +1460,11 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   $scope.save = function () {
     localStorage.setItem('discIds', _.pluck($scope.discs, 'id'));
     localStorage.setItem('shuffle', $scope.shuffle);
-    localStorage.setItem('repeatMode', $scope.repeatMode);
+    if ($scope.repeatMode) {
+      localStorage.setItem('repeatMode', $scope.repeatMode);
+    } else {
+      localStorage.removeItem('repeatMode');
+    }
     localStorage.setItem('current', JSON.stringify({
       discId: $scope.currentTrack.disc.id,
       fileIndex: $scope.currentTrack.file.index,
