@@ -1,6 +1,6 @@
 abstract class Persistence {
 
-    static DEFAULT_COLLECTION = '_DEFAULT_';
+    static DEFAULT_COLLECTION = '_default_';
 
     constructor(protected $scope: IPlayerScope, protected $http: ng.IHttpService) {
     }

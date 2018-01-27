@@ -127,12 +127,28 @@ class GoogleDrivePersistence extends Persistence {
         })).then(res => res.body);
     }
 
+    /**
+     * Supprimer automatiquement les lignes vides
+     * @param {string} fileId
+     * @return {Promise<string[]>}
+     */
     private getFileLines(fileId: string): Promise<string[]> {
-        return this.getFileContent(fileId).then(content => content.split(/\r?\n/));
+        return this.getFileContent(fileId)
+            .then(content => content.split(/\r?\n/))
+            .then(lines => lines.filter(line => line.trim()));
     }
 
     getCollection(collectionName: string): Promise<Collection> {
-        return this.getFileLines(this.collectionsFiles.get(collectionName).id)
+
+        return Promise.resolve(this.collectionsFiles.get(collectionName))
+            .then(file => {
+                // Collection déjà connue ?
+                if (file) {
+                    return this.getFileLines(file.id);
+                } else {
+                    return [];
+                }
+            })
             // Création de l'objet collection
             .then(discIds => {
                 return {
@@ -164,6 +180,7 @@ class GoogleDrivePersistence extends Persistence {
             .then(file => this.upload({
                 id: file ? file.id : undefined,
                 name: filename,
+                mimeType: 'text/plain',
                 // description: `Collection ${collectionName} dans CueTube`,
                 parents: [folder.id]
             }, content))
