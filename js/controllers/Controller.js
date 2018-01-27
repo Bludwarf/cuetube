@@ -1578,7 +1578,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     const title = document.title;
     document.title = "CueTube - " + $scope.currentCollectionNames.join(" + ");
     collectionParam = $scope.currentCollectionNames.join(",");
-    history.pushState(state, document.title, "?collection="+encodeURIComponent(collectionParam));
+    history.pushState(state, document.title, collectionParam ? "?collection="+encodeURIComponent(collectionParam) : '');
     document.title = title;
 
     // On récupère la liste des disques de toutes les collections actives
