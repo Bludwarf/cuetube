@@ -1264,12 +1264,10 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
       const existingDisc = $scope.discs[existingDiscIndex];
       disc.index = existingDisc.index;
       $scope.discs[existingDiscIndex] = disc;
-      return;
     } else {
       disc.index = $scope.discs.length;
+      $scope.discs.push(disc);
     }
-
-    $scope.discs.push(disc);
 
     // En mode collection on ajoute également le disque à la collection
     if ($scope.currentCollectionNames && $scope.currentCollectionNames.length) {
@@ -1297,7 +1295,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     }
 
     // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
-    if (cuetubeConf.debug) {
+    if (existingDiscIndex === -1 && cuetubeConf.debug) {
       prompt("Disque créé avec l'id suivant", disc.id);
     }
 

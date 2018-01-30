@@ -12,6 +12,29 @@ class GoogleDrivePersistence extends Persistence {
         this.subFolders = new Map();
         this.collectionsFiles = new Map();
         this.cuesFiles = new Map(); // TODO : init
+        /**
+         * Pour éviter de recevoir un 403 pour usage trop intensif de l'API Google Drive
+         *
+         * Exemple :
+         * {
+     "error": {
+      "errors": [
+       {
+        "domain": "usageLimits",
+        "reason": "userRateLimitExceeded",
+        "message": "User Rate Limit Exceeded"
+       }
+      ],
+      "code": 403,
+      "message": "User Rate Limit Exceeded"
+     }
+    }
+    
+         */
+        this.apiCall = {
+            last: undefined,
+            minInterval: 200 // ms
+        };
     }
     getFolders() {
         return this.getGoogleFolder('CueTube', null, 'rootFolder').then(rootFolder => {
@@ -234,7 +257,7 @@ class GoogleDrivePersistence extends Persistence {
     }
     getDiscFolder(discId) {
         return this.getFolders()
-            .then(folders => this.getGoogleFolders([discId[0], discId[1], discId[2]], folders.cuesFolder.id))
+            .then(folders => this.getGoogleFolders([discId[0].toUpperCase(), discId[1].toUpperCase(), discId[2].toUpperCase()], folders.cuesFolder.id))
             .then(subFolders => subFolders[2]);
     }
     getGoogleFolders(names, parentId, files = [], fieldObject = this) {
@@ -266,8 +289,15 @@ class GoogleDrivePersistence extends Persistence {
         if (folderGoogleId) {
             q += ` and '${folderGoogleId}' in parents`;
         }
-        return gapi.client.drive.files.list({
-            q: q
+        return this.tempoApiCall().then(delay => {
+            if (delay > 0) {
+                console.log("On a attendu", delay, "ms avant d'appeler Google Drive");
+            }
+            return delay;
+        }).then(delay => {
+            return gapi.client.drive.files.list({
+                q: q
+            });
         })
             .then(res => res.result.files)
             .then(files => {
@@ -291,6 +321,31 @@ class GoogleDrivePersistence extends Persistence {
                 throw new Error(`Plusieurs disques ${name} trouvés dans Google Drive : ${files.length}`);
             return files[0];
         });
+    }
+    /**
+     * Attente si nécessaire entre deux appels api Google Drive
+     * @return {Promise<number>} : le temps attendu
+     */
+    tempoApiCall() {
+        const now = new Date();
+        if (!this.apiCall.last) {
+            this.apiCall.last = now;
+            return Promise.resolve(0);
+        }
+        else {
+            // src : https://stackoverflow.com/a/22707551/
+            const delay = this.apiCall.last.getTime() + this.apiCall.minInterval - now.getTime();
+            if (delay <= 0) {
+                this.apiCall.last = new Date();
+                return Promise.resolve(delay);
+            }
+            else {
+                this.apiCall.last = new Date(now.getTime() + delay);
+                return new Promise(function (resolve) {
+                    setTimeout(resolve, delay, delay);
+                });
+            }
+        }
     }
     postDisc(discId, disc) {
         const content = CuePrinter.print(disc.cuesheet);
