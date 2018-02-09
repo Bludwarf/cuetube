@@ -45,6 +45,19 @@ class GoogleDrivePersistence extends Persistence {
                 collectionsFolder: results[0],
                 cuesFolder: results[1]
             }));
+        }, e => {
+            const err = e;
+            if (errorContains(err, { reason: "notFound", location: "fileId" })) {
+                if (confirm('Tu dois créér un dossier "CueTube" dans ton Drive mon gars sinon CueTube pourra pas l\'utiliser. Appuie sur OK quand c\'est fait...')) {
+                    return this.getFolders();
+                }
+                else {
+                    throw err;
+                }
+            }
+            console.error("Erreur GoogleDrivePersistence.getFolders inconnue :");
+            console.error(err);
+            throw err;
         });
     }
     /**
@@ -370,6 +383,20 @@ class GoogleDrivePersistence extends Persistence {
             return disc;
         });
     }
+}
+function errorContains(error, errorDetail) {
+    if (!error || !error.result || !error.result.error || !error.result.error.errors) {
+        return false;
+    }
+    return error.result.error.errors.find(currentDetail => equalsOnlyDefinedFields(currentDetail, errorDetail));
+}
+function equalsOnlyDefinedFields(actual, expected) {
+    for (const key in expected) {
+        if (expected.hasOwnProperty(key) && expected[key] !== undefined && expected[key] !== actual[key]) {
+            return false;
+        }
+    }
+    return true;
 }
 module.exports = GoogleDrivePersistence;
 //# sourceMappingURL=GoogleDrivePersistence.js.map
