@@ -18,7 +18,7 @@ abstract class Persistence {
 
     public abstract postCollection(collection: Collection): Promise<Collection>;
 
-    public async getCollectionDiscIds(collectionName: string, cb: (err: Error, discIds: string[]) => void): Promise<string[]> {
+    public async getCollectionDiscIds(collectionName: string): Promise<string[]> {
         if (!collectionName) {
             collectionName = Persistence.DEFAULT_COLLECTION;
         }
