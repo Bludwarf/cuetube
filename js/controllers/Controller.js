@@ -633,7 +633,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
     const start = getYouTubeStartSeconds(track, time); // YouTube n'accèpte que des entiers
     const end = multiTrack ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
-    if (start || end) console.log("Track from " + start + " to " + end);
+    if (start || end) console.log(`Piste ${track.number} du disque ${disc.id} (de ${start}s à ${end}s) : ${track.title}`);
 
     $scope.loadingTrack = track;
     if (!$scope.player) {
