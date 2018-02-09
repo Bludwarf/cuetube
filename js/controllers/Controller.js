@@ -45,7 +45,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
   // Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
   $scope.getCollectionParam = function() {
-    return getParameterByName("collection", document.location.search);
+    return decodeURIComponent(getParameterByName("collection", document.location.search));
   };
 
   /**
@@ -1568,15 +1568,50 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
   $scope.removeDisc = function (disc) {
     let collectionParam = $scope.getCollectionParam();
-    if (!confirm(`Voulez-vous vraiment retirer le disque\n${disc.title}\nde la collection "${collectionParam}" ?`)) return;
-    const index = $scope.discs.indexOf(disc);
-    if (index === -1) return;
-    $scope.discs.splice(index, 1);
-    if (collectionParam.split(',').length > 1) {
-      alert("Suppression en multi collection par encore gérée"); // TODO
-    } else {
-      persistence.postCollectionDiscIds(collectionParam, $scope.discs.map(disc => disc.id));
-    }
+    const collectionNames = collectionParam.split(',');
+    const promises = [];
+    let removeConfirmed = true;
+    collectionNames.forEach(collectionName => {
+
+      if (collectionNames.length > 1 && !confirm(`Supprimer le disque ${disc.title} de la collection ${collectionName} ?`)) {
+        removeConfirmed = false;
+        return false;
+      }
+
+      promises.push(Promise.resolve(collectionParam)
+          .then(collectionParam => {
+            let discIds = $scope.discIdsByCollection[collectionParam];
+            if (discIds) {
+              return discIds;
+            } else {
+              return persistence.getCollectionDiscIds(collectionName);
+            }
+          })
+          .then(discIds => {
+            const index = discIds.indexOf(disc.id);
+            if (index === -1) return discIds;
+
+            discIds.splice(index, 1);
+            return persistence.postCollectionDiscIds(collectionName, discIds);
+          })
+          .then(discIds => {
+            $scope.discIdsByCollection[collectionName] = discIds;
+            console.log(`Disques sauvegardés pour la collection ${collectionName}`, discIds);
+            return discIds;
+          })
+      );
+    });
+
+    // Attente des promises
+    Promise.all(promises).then(results => {
+      if (removeConfirmed) {
+        const index = $scope.discs.indexOf(disc);
+        if (index === -1) return;
+
+        // Suppression dans les disques actuellement affichés
+        $scope.discs.splice(index, 1);
+      }
+    });
   };
 
   $scope.toggleCollection = function (collectionName, $event) {

@@ -11,7 +11,7 @@ class Persistence {
         this.$scope = $scope;
         this.$http = $http;
     }
-    getCollectionDiscIds(collectionName, cb) {
+    getCollectionDiscIds(collectionName) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!collectionName) {
                 collectionName = Persistence.DEFAULT_COLLECTION;
