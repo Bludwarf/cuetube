@@ -1278,7 +1278,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
         const discIds = $scope.discIdsByCollection[collectionName];
         if (discIds.indexOf(disc.id) === -1) {
 
-          if (!confirm(`On ajoute cette vidéo à la collection ${collectionName} ?`)) {
+          if (collectionNames.length > 1 && !confirm(`On ajoute cette vidéo à la collection ${collectionName} ?`)) {
             return;
           }
 
