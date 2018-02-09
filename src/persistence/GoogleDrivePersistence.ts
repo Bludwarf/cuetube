@@ -59,6 +59,18 @@ class GoogleDrivePersistence extends Persistence {
                 collectionsFolder: results[0],
                 cuesFolder: results[1]
             }));
+        }, e => {
+            const err : GoogleDriveError = e;
+            if (errorContains(err, {reason: "notFound", location: "fileId"})) {
+                if (confirm('Tu dois créér un dossier "CueTube" dans ton Drive mon gars sinon CueTube pourra pas l\'utiliser. Appuie sur OK quand c\'est fait...')) {
+                    return this.getFolders();
+                } else {
+                    throw err;
+                }
+            }
+            console.error("Erreur GoogleDrivePersistence.getFolders inconnue :");
+            console.error(err);
+            throw err;
         });
     }
 
@@ -414,6 +426,55 @@ class GoogleDrivePersistence extends Persistence {
             });
     }
 
+}
+
+interface GoogleDriveError {
+    result: GoogleDriveErrorResult;
+    /** result en string */
+    body: string,
+    /** map : nom du header en minuscule, valeur */
+    "headers": string;
+    /** 404 par exemple */
+    "status": number;
+    "statusText":null;
+}
+
+interface GoogleDriveErrorResult {
+    error: {
+        "errors": GoogleDriveErrorDetail[],
+        "code": number; //404,
+        "message": string; //"File not found: ."
+    }
+}
+
+interface GoogleDriveErrorDetail {
+    /** par exemple "global" */
+    "domain"?: string;
+    /** par exemple "notFound" */
+    "reason"?: string;
+    /** par exemple "File not found: ." */
+    "message"?: string;
+    /** par exemple "parameter" */
+    "locationType"?: string;
+    /** par exemple "fileId" */
+    "location"?: string;
+}
+
+function errorContains(error : GoogleDriveError, errorDetail : GoogleDriveErrorDetail) {
+    if (!error || !error.result || !error.result.error || !error.result.error.errors) {
+        return false;
+    }
+
+    return error.result.error.errors.find(currentDetail => equalsOnlyDefinedFields(currentDetail, errorDetail));
+}
+
+function equalsOnlyDefinedFields(actual, expected) {
+    for (const key in expected) {
+        if (expected.hasOwnProperty(key) && expected[key] !== undefined && expected[key] !== actual[key]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 export = GoogleDrivePersistence;
