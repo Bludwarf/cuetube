@@ -11,6 +11,12 @@ class Persistence {
         this.$scope = $scope;
         this.$http = $http;
     }
+    /**
+     * @return {Promise<boolean>} true si init OK, false sinon
+     */
+    init(params) {
+        return Promise.resolve(true);
+    }
     getCollectionDiscIds(collectionName) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!collectionName) {
@@ -108,4 +114,3 @@ class Persistence {
     }
 }
 Persistence.DEFAULT_COLLECTION = '_default_';
-//# sourceMappingURL=persistence.js.map

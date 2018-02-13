@@ -118,4 +118,3 @@ class LocalStoragePersistence extends Persistence {
     }
 }
 LocalStoragePersistence.DEFAULT_COLLECTION = '_DEFAULT_';
-//# sourceMappingURL=LocalStoragePersistence.js.map

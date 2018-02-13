@@ -12,7 +12,35 @@
     <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
     <link rel="stylesheet" href="css/angular.css">
 
-    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <!-- On estime qu'en arrivant sur cette page on est déjà authentifié sur Google -->
+    <meta name="google-signin-client_id" content="1000775747908-0o7m255fho5q5aa24li8h7012km3513f.apps.googleusercontent.com">
+    <meta name="google-signin-scope" content="https://www.googleapis.com/auth/drive">
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/underscore-min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/moment.min.js"></script>
+
+    <script src="js/angular.min.js"></script>
+
+    <script type="text/javascript" src="js/cuesheet.js"></script>
+    <script type="text/javascript" src="js/utils.js"></script>
+    <script type="text/javascript" src="js/disc.js"></script>
+    <script type="text/javascript" src="js/CueParser.js"></script>
+    <script type="text/javascript" src="js/CuePrinter.js"></script>
+    <script type="text/javascript" src="js/yt-parser.js"></script>
+    <script type="text/javascript" src="js/yt-helper.js"></script>
+    <script type="text/javascript" src="js/persistence.js"></script>
+    <script type="text/javascript" src="js/persistence/LocalServerPersistence.js"></script>
+    <script type="text/javascript" src="js/persistence/LocalStoragePersistence.js"></script>
+
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+
+    <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript" src="js/app.conf.js"></script>
+    <script type="text/javascript" src="js/services/GapiClient.js"></script>
+    <script type="text/javascript" src="js/controllers/EditCue.js"></script>
 
     <script>
         // exemple : https://www.youtube.com/embed/Dg0IjOzopYU?origin=https%3A%2F%2Fsoundsgood.co&amp;feature=player_embedded&amp;html5=true&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1&amp;showinfo=0&amp;rel=0&amp;autoplay=0&amp;disablekb=1&amp;playsinline=1&amp;widgetid=2
@@ -105,17 +133,31 @@
 
     </style>
 
-    <script type="text/javascript" src="js/cuesheet.js"></script>
-    <script type="text/javascript" src="js/utils.js"></script>
-    <script type="text/javascript" src="js/disc.js"></script>
-    <script type="text/javascript" src="js/CueParser.js"></script>
-    <script type="text/javascript" src="js/CuePrinter.js"></script>
-    <script type="text/javascript" src="js/yt-parser.js"></script>
-    <script type="text/javascript" src="js/yt-helper.js"></script>
-    <script type="text/javascript" src="js/persistence.js"></script>
-    <script type="text/javascript" src="js/persistence/LocalServerPersistence.js"></script>
-    <script type="text/javascript" src="js/persistence/LocalStoragePersistence.js"></script>
-    <script type="text/javascript" src="js/controllers/EditCue.js"></script>
+    <script src="js/system.js"></script>
+    <script>
+      /*System.config({
+        transpiler: 'typescript',
+        packages: {
+          src: {
+            defaultExtension: 'ts'
+          }
+        }
+      });*/
+      System.config({
+        packages: {
+          '.': {
+            defaultExtension: 'js'
+          }
+        }
+      });
+      System.import('js/CuePrinter').then(function (CuePrinter) {
+        window.CuePrinter = CuePrinter;
+      });
+      System.import('js/persistence/GoogleDrivePersistence').then(function (GoogleDrivePersistence) {
+        window.GoogleDrivePersistence = GoogleDrivePersistence;
+      });
+      //.then(null, console.error.bind(console));
+    </script>
 </head>
 
 <body id="ctrl" ng-controller="EditCue" style="display: none;" ng-show="disc">
@@ -216,14 +258,6 @@
         }
 
     </script>
-    <!--<script src="socket.io/socket.io.js"></script>-->
-    <script src="js/jquery.min.js"></script>
-    <script src="js/underscore-min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/angular.min.js"></script>
-    <script src="js/moment.min.js"></script>
-
-    <script type="text/javascript" src="js/app.js"></script>
 </body>
 
 </html>

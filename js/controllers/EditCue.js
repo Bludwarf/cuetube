@@ -5,10 +5,11 @@
 /**
  * @property track.played : nombre de fois joué
  */
-function EditCue($scope, $http) {
+function EditCue($scope, $http, gapiClient) {
 
     const localPersistence = new LocalStoragePersistence($scope, $http);
-    const persistence = (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? localPersistence : new LocalServerPersistence($scope, $http);
+    const persistence = getPersistence();
+    console.log('persistence =', persistence)
     /** true si le disque n'existe pas encore */
     let creationMode = false;
 
@@ -19,7 +20,7 @@ function EditCue($scope, $http) {
         alert("Veuillez indiquer l'id du disque à modifier");
         return;
     }
-    persistence.getDisc(params.id, 0).then(disc => {
+    persistence.init({gapiClient}).then(isInit => persistence.getDisc(params.id, 0)).then(disc => {
         $scope.disc = disc;
         $scope.$apply();
     }).catch(err => {
@@ -41,6 +42,25 @@ function EditCue($scope, $http) {
           alert(`Disque ${params.id} introuvable !\n\nErreur technique : ${err.data || err}`);
         }
     });
+
+    /**
+     *
+     * @return {Persistence}
+     */
+    function getPersistence() {
+      const persistenceName = localStorage.getItem("persistence");
+      if (persistenceName === 'GoogleDrive') {
+        return new GoogleDrivePersistence($scope, $http);
+      }
+      if (persistenceName === 'LocalStorage') {
+        return localPersistence;
+      }
+      if (persistenceName === 'LocalServer') {
+        return new LocalServerPersistence($scope, $http)
+      }
+
+      return (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? localPersistence : new LocalServerPersistence($scope, $http);
+    }
 
     $scope.$watch('track.performer', function (newValue, oldValue) {
         if(newValue === "")

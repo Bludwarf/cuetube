@@ -1,6 +1,7 @@
 "use strict";
 /// <reference path="../@types/gapi.client.drive/index.d.ts" />
 /// <reference path="../@types/GoogleDrive.d.ts" />
+/// <reference path="../services/GapiClient.d.ts" />
 const CuePrinter = require("../CuePrinter");
 class GoogleDrivePersistence extends Persistence {
     constructor($scope, $http) {
@@ -35,6 +36,21 @@ class GoogleDrivePersistence extends Persistence {
             last: undefined,
             minInterval: 200 // ms
         };
+    }
+    /**
+     * @return {Promise<boolean>} true si init OK, false sinon
+     */
+    init(params) {
+        if (!params || !params.gapiClient) {
+            throw new Error("Veuillez appeler init avec {gapiClient}");
+        }
+        return params.gapiClient.init().then(() => {
+            if (!gapi.client.drive) {
+                alert("Google Drive non initialisé");
+                return Promise.resolve(false);
+            }
+            return Promise.resolve(true);
+        });
     }
     getFolders() {
         return this.getGoogleFolder('CueTube', null, 'rootFolder').then(rootFolder => {
@@ -399,4 +415,3 @@ function equalsOnlyDefinedFields(actual, expected) {
     return true;
 }
 module.exports = GoogleDrivePersistence;
-//# sourceMappingURL=GoogleDrivePersistence.js.map

@@ -77,4 +77,3 @@ class LocalServerPersistence extends Persistence {
         });
     }
 }
-//# sourceMappingURL=LocalServerPersistence.js.map

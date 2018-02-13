@@ -11,8 +11,27 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
   const GOOGLE_KEY = "AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE";
   const localPersistence = new LocalStoragePersistence($scope, $http);
-  /*const*/let persistence = (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? localPersistence : new LocalServerPersistence($scope, $http);
+  let persistence = getPersistence();
   const DEFAULT_COLLECTION = '_DEFAULT_';
+
+  /**
+   *
+   * @return {Persistence}
+   */
+  function getPersistence() {
+    const persistenceName = localStorage.getItem("persistence");
+    if (persistenceName === 'GoogleDrive') {
+      return new GoogleDrivePersistence($scope, $http);
+    }
+    if (persistenceName === 'LocalStorage') {
+      return localPersistence;
+    }
+    if (persistenceName === 'LocalServer') {
+      return new LocalServerPersistence($scope, $http)
+    }
+
+    return (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? localPersistence : new LocalServerPersistence($scope, $http);
+  }
 
   /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
   const DELETED_VIDEO_TIMEOUT = 10;
@@ -68,7 +87,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     let collectionParam = $scope.getCollectionParam();
 
     // Collections
-    persistence.getCollectionNames().then(collectionNames => {
+    persistence.init({gapiClient}).then(isInit => persistence.getCollectionNames()).then(collectionNames => {
       $scope.collectionNames = collectionNames;
       $scope.$apply();
       return collectionNames;
@@ -665,7 +684,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
       const player = $scope.player;
 
       // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
-      if ($scope.currentTrack === track || getParameterByName('v', player.getVideoUrl()) === track.file.videoId) {
+      if ($scope.currentTrack === track || player && player.getVideoUrl && getParameterByName('v', player.getVideoUrl()) === track.file.videoId) {
         $scope.reloadTrack(track);
       }
 
@@ -1699,10 +1718,8 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
       // TODO : synchro avec l'ancienne persistance pour ne rien perdre
 
-      // TODO debug
-      window.persistence = googleDrivePersistence;
-
       persistence = googleDrivePersistence;
+      localStorage.setItem("persistence", "GoogleDrive");
       $scope.init();
     }).catch(err => {
       loginBtn.innerText = "Google Drive";
@@ -1716,9 +1733,14 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     // TODO
     $scope.connectedToGoogleDrive = false;
     const loginBtn = document.getElementById("login-btn");
+
+    localStorage.removeItem("persistence");
+    persistence = getPersistence();
+
     loginBtn.innerText = "Google Drive";
   };
 
+  /*
   $scope.onSignIn = function(googleUser) {
     gapiClient.init().then(() => {
 
@@ -1738,8 +1760,10 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
       // $scope.discIdsByCollection = {}; // déjà fait par init()
 
       persistence = googleDrivePersistence;
+      localStorage.setItem("persistence", "GoogleDrive");
       $scope.init();
     });
   };
+  */
 
 }); // Controller

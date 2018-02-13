@@ -4,4 +4,3 @@ class Collection {
         this.discIds = [];
     }
 }
-//# sourceMappingURL=Collection.js.map
