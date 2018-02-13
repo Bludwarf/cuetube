@@ -1,5 +1,6 @@
 /// <reference path="../@types/gapi.client.drive/index.d.ts" />
 /// <reference path="../@types/GoogleDrive.d.ts" />
+/// <reference path="../services/GapiClient.d.ts" />
 
 import CuePrinter = require('../CuePrinter');
 import drive = gapi.client.drive;
@@ -45,6 +46,24 @@ class GoogleDrivePersistence extends Persistence {
 
     constructor($scope: IPlayerScope, $http: ng.IHttpService) {
         super($scope, $http);
+    }
+
+    /**
+     * @return {Promise<boolean>} true si init OK, false sinon
+     */
+    public init(params: any): Promise<boolean> {
+        if (!params || !params.gapiClient) {
+            throw new Error("Veuillez appeler init avec {gapiClient}");
+        }
+        return params.gapiClient.init().then(() => {
+
+            if (!gapi.client.drive) {
+                alert("Google Drive non initialisé");
+                return Promise.resolve(false);
+            }
+
+            return Promise.resolve(true);
+        });
     }
 
     private getFolders(): Promise<{

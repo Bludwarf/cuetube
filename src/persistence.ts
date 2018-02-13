@@ -5,6 +5,13 @@ abstract class Persistence {
     constructor(protected $scope: IPlayerScope, protected $http: ng.IHttpService) {
     }
 
+    /**
+     * @return {Promise<boolean>} true si init OK, false sinon
+     */
+    public init(params: any): Promise<boolean> {
+        return Promise.resolve(true);
+    }
+
     public abstract getCollectionNames(): Promise<string[]>;
 
     /**
