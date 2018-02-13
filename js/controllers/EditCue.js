@@ -50,6 +50,9 @@ function EditCue($scope, $http, gapiClient) {
     function getPersistence() {
       const persistenceName = localStorage.getItem("persistence");
       if (persistenceName === 'GoogleDrive') {
+        if (!GoogleDrivePersistence) {
+          window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
+        }
         return new GoogleDrivePersistence($scope, $http);
       }
       if (persistenceName === 'LocalStorage') {
