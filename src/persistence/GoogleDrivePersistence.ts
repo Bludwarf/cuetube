@@ -17,6 +17,12 @@ class GoogleDrivePersistence extends Persistence {
     private collectionsFiles: Map<string, gapi.client.drive.File> = new Map();
     private cuesFiles: Map<string, gapi.client.drive.File> = new Map(); // TODO : init
 
+    private prefs = {
+        googleDrive: {
+            minInterval: localStorage.getItem('googleDrive.minInterval')
+        }
+    };
+
     /**
      * Pour éviter de recevoir un 403 pour usage trop intensif de l'API Google Drive
      *
@@ -41,7 +47,7 @@ class GoogleDrivePersistence extends Persistence {
         minInterval: number;
     } = {
         last: undefined,
-        minInterval: 200 // ms
+        minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval) || 200 // ms
     };
 
     constructor($scope: IPlayerScope, $http: ng.IHttpService) {
