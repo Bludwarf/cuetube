@@ -13,6 +13,11 @@ class GoogleDrivePersistence extends Persistence {
         this.subFolders = new Map();
         this.collectionsFiles = new Map();
         this.cuesFiles = new Map(); // TODO : init
+        this.prefs = {
+            googleDrive: {
+                minInterval: localStorage.getItem('googleDrive.minInterval')
+            }
+        };
         /**
          * Pour éviter de recevoir un 403 pour usage trop intensif de l'API Google Drive
          *
@@ -34,7 +39,7 @@ class GoogleDrivePersistence extends Persistence {
          */
         this.apiCall = {
             last: undefined,
-            minInterval: 200 // ms
+            minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval) || 200 // ms
         };
     }
     /**
