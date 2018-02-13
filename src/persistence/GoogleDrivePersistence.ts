@@ -204,7 +204,8 @@ class GoogleDrivePersistence extends Persistence {
 
     getCollection(collectionName: string): Promise<Collection> {
 
-        return Promise.resolve(this.collectionsFiles.get(collectionName))
+        return this.getConnection()
+            .then(() => this.getCollectionFile(collectionName))
             .then(file => {
                 // Collection déjà connue ?
                 if (file) {
@@ -222,6 +223,26 @@ class GoogleDrivePersistence extends Persistence {
             });
     }
 
+
+    private getCollectionFile(collectionName: string): Promise<drive.File> {
+        return this.getConnection()
+            // Fichier Google Drive connu ?
+            .then(() => {
+                const file = this.collectionsFiles.get(collectionName);
+                if (file) {
+                    return file;
+                } else {
+                    return this.getFolders()
+                        // Recherche du fichier collection
+                        .then(folders => this.findGoogleFile(`${collectionName}.cues`, folders.collectionsFolder.id))
+                        .then(file => {
+                            this.collectionsFiles.set(collectionName, file); // cache
+                            return file;
+                        });
+                }
+            })
+    }
+
     /**
      * https://developers.google.com/drive/v3/web/appdata
      */
@@ -231,12 +252,9 @@ class GoogleDrivePersistence extends Persistence {
         const collectionName = collection.name ? collection.name : Persistence.DEFAULT_COLLECTION;
         const filename = `${collectionName}.cues`;
         let folder;
-        return this.getFolders()
+        return this.getConnection()
             // Fichier existant ?
-            .then(folders => {
-                folder = folders.collectionsFolder;
-                return this.findGoogleFile(filename, folder.id);
-            })
+            .then(() => this.getCollectionFile(collectionName))
             .catch(err => {
                 // La collection n'existe pas encore
                 return null;
@@ -313,6 +331,14 @@ class GoogleDrivePersistence extends Persistence {
 
         return this.getConnection()
             // Fichier Google Drive connu ?
+            .then(() => this.getCueFile(discId))
+            .then(file => this.getFileContent(file.id))
+            .then(content => super.createDisc(discId, discIndex, CueParser.parse(content)));
+    }
+
+    private getCueFile(discId): Promise<drive.File> {
+        return this.getConnection()
+            // Fichier Google Drive connu ?
             .then(() => {
                 const file = this.cuesFiles.get(discId);
                 if (file) {
@@ -327,8 +353,6 @@ class GoogleDrivePersistence extends Persistence {
                         });
                 }
             })
-            .then(file => this.getFileContent(file.id))
-            .then(content => super.createDisc(discId, discIndex, CueParser.parse(content)));
     }
 
     private getDiscFolder(discId: string): Promise<drive.File> {
@@ -429,12 +453,8 @@ class GoogleDrivePersistence extends Persistence {
     postDisc(discId: string, disc: Disc): Promise<any> {
         const content = CuePrinter.print(disc.cuesheet);
         let discFolder;
-        return this.getDiscFolder(discId)
-            // Recherche du fichier cue
-            .then(folder => {
-                discFolder = folder;
-                return this.findGoogleFile(discId + '.cue', folder.id);
-            })
+        return this.getConnection()
+            .then(() => this.getCueFile(discId))
             .catch(err => {
                 // Le disque n'existe pas encore
                 return null;
