@@ -21,6 +21,9 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
   function getPersistence() {
     const persistenceName = localStorage.getItem("persistence");
     if (persistenceName === 'GoogleDrive') {
+      if (!GoogleDrivePersistence) {
+        window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
+      }
       return new GoogleDrivePersistence($scope, $http);
     }
     if (persistenceName === 'LocalStorage') {
@@ -87,7 +90,13 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     let collectionParam = $scope.getCollectionParam();
 
     // Collections
-    persistence.init({gapiClient}).then(isInit => persistence.getCollectionNames()).then(collectionNames => {
+    persistence.init({gapiClient}).then(isInit => {
+      if (isInit && persistence instanceof GoogleDrivePersistence) {
+        const loginBtn = document.getElementById("login-btn");
+        loginBtn.innerText = "Connecté·e";
+        $scope.connectedToGoogleDrive = true;
+      }
+    }).then(isInit => persistence.getCollectionNames()).then(collectionNames => {
       $scope.collectionNames = collectionNames;
       $scope.$apply();
       return collectionNames;
@@ -1710,17 +1719,24 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     loginBtn.innerText = "Connexion...";
     $scope.hidePlayer();
 
-    gapiClient.init().then(() => {
+    const googleDrivePersistence = new GoogleDrivePersistence($scope, $http);
+    googleDrivePersistence.init({gapiClient}).then(isInit => {
 
-      loginBtn.innerText = "Connecté·e";
-      $scope.connectedToGoogleDrive = true;
-      const googleDrivePersistence = new GoogleDrivePersistence($scope, $http);
+      if (isInit) {
+        loginBtn.innerText = "Connecté·e";
+        $scope.connectedToGoogleDrive = true;
 
-      // TODO : synchro avec l'ancienne persistance pour ne rien perdre
+        // TODO : synchro avec l'ancienne persistance pour ne rien perdre
 
-      persistence = googleDrivePersistence;
-      localStorage.setItem("persistence", "GoogleDrive");
-      $scope.init();
+        persistence = googleDrivePersistence;
+        localStorage.setItem("persistence", "GoogleDrive");
+        $scope.init();
+      }
+
+      else {
+        loginBtn.innerText = "Google Drive";
+        $scope.showPlayer();
+      }
     }).catch(err => {
       loginBtn.innerText = "Google Drive";
       $scope.showPlayer();
