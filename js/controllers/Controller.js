@@ -97,6 +97,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
         $scope.connectedToGoogleDrive = true;
       }
     }).then(isInit => persistence.getCollectionNames()).then(collectionNames => {
+      collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
       $scope.collectionNames = collectionNames;
       $scope.$apply();
       return collectionNames;
