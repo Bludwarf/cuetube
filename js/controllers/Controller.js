@@ -1442,6 +1442,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
           // Import du disque (sans sauvegarde avec la persistance)
           enrichDisc(disc, $scope.discs.length);
           $scope.createDisc(disc);
+          $scope.$apply();
         } else {
           fallback();
         }
@@ -1454,6 +1455,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
             const disc = new Disc(cue);
             disc.src = url;
             $scope.importDisc(disc, cb);
+            $scope.$apply();
           } else {
             fallback();
           }
