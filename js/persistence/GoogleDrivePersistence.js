@@ -221,8 +221,11 @@ class GoogleDrivePersistence extends Persistence {
         const collectionName = collection.name ? collection.name : Persistence.DEFAULT_COLLECTION;
         const filename = `${collectionName}.cues`;
         let folder;
-        return this.getConnection()
-            .then(() => this.getCollectionFile(collectionName))
+        return this.getConnection().then(() => this.getFolders())
+            .then(folders => {
+            folder = folders.collectionsFolder;
+            return this.getCollectionFile(collectionName);
+        })
             .catch(err => {
             // La collection n'existe pas encore
             return null;
