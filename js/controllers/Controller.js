@@ -1410,6 +1410,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
     url = url || prompt("URL de la vidéo/playlist YouTube");
     cb = cb || (err => {
+      $scope.$apply();
       if (err) {
         console.error(err);
         alert(err);
