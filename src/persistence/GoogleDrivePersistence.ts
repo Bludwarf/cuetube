@@ -453,8 +453,11 @@ class GoogleDrivePersistence extends Persistence {
     postDisc(discId: string, disc: Disc): Promise<any> {
         const content = CuePrinter.print(disc.cuesheet);
         let discFolder;
-        return this.getConnection()
-            .then(() => this.getCueFile(discId))
+        return this.getConnection().then(() => this.getDiscFolder(discId))
+            .then((folder) => {
+                discFolder = folder;
+                return this.getCueFile(discId);
+            })
             .catch(err => {
                 // Le disque n'existe pas encore
                 return null;
