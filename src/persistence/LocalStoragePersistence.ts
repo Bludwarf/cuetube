@@ -6,6 +6,10 @@ class LocalStoragePersistence extends Persistence {
         super($scope, $http);
     }
 
+    get title(): string {
+        return "LocalStorage";
+    }
+
     /**
      * @param {string} key
      * @return undefined si item inconnu

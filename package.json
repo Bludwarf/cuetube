@@ -11,7 +11,7 @@
     "@types/gapi.client": "^1.0.0",
     "@types/gapi.client.drive": "^3.0.0",
     "@types/gapi.youtube": "^3.0.32",
-    "@types/underscore": "^dnpm install --save @types/underscore.8.2",
+    "@types/underscore": "^1.8.8",
     "@types/youtube": "0.0.31",
     "async": "~0.2.8",
     "body-parser": "^1.15.2",

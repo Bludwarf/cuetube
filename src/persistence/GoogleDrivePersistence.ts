@@ -45,6 +45,7 @@ class GoogleDrivePersistence extends Persistence {
     private apiCall: {
         last: Date;
         minInterval: number;
+        lastPromise?: Promise<number>;
     } = {
         last: undefined,
         minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval) || 200 // ms
@@ -52,6 +53,10 @@ class GoogleDrivePersistence extends Persistence {
 
     constructor($scope: IPlayerScope, $http: ng.IHttpService) {
         super($scope, $http);
+    }
+
+    get title(): string {
+        return "Google Drive";
     }
 
     /**
@@ -173,8 +178,10 @@ class GoogleDrivePersistence extends Persistence {
      * @return {Promise<gapi.client.Response<gapi.client.drive.FileList>>}
      */
     public findGoogleFiles(pattern: RegExp, folderGoogleId: string): Promise<gapi.client.drive.File[]> {
-        return gapi.client.drive.files.list({ // Step 5: Assemble the API request
-            q: `'${folderGoogleId}' in parents and trashed != true` // https://developers.google.com/drive/v3/web/search-parameters
+        return this.tempoApiCall().then(delay => {
+            return gapi.client.drive.files.list({ // Step 5: Assemble the API request
+                q: `'${folderGoogleId}' in parents and trashed != true` // https://developers.google.com/drive/v3/web/search-parameters
+            });
         })
             .then(res => res.result.files) // Extraction des noms de fichiers dans le dossier
             .then(files => files.filter(file => file.name.match(pattern)));
@@ -188,7 +195,9 @@ class GoogleDrivePersistence extends Persistence {
         return this.getConnection().then(() => gapi.client.drive.files.get({ // Step 5: Assemble the API request
             fileId: fileId,
             alt: 'media'
-        })).then(res => res.body);
+        }))
+            .then(res => res.body)
+            .then(body => decodeURIComponent(escape(body))); // fix utf-8 issues : https://groups.google.com/forum/#!topic/google-api-javascript-client/Rb1lJX8yH_U
     }
 
     /**
@@ -205,7 +214,8 @@ class GoogleDrivePersistence extends Persistence {
     getCollection(collectionName: string): Promise<Collection> {
 
         return this.getConnection()
-            .then(() => this.getCollectionFile(collectionName))
+            .then(() => this.tempoApiCall())
+            .then((delay) => this.getCollectionFile(collectionName))
             .then(file => {
                 // Collection déjà connue ?
                 if (file) {
@@ -430,27 +440,39 @@ class GoogleDrivePersistence extends Persistence {
 
     /**
      * Attente si nécessaire entre deux appels api Google Drive
-     * @return {Promise<number>} : le temps attendu
+     * @param previousDelay {?number} délai déjà attendu
+     * @return {Promise<number>} : le temps total attendu
      */
-    public tempoApiCall(): Promise<number> {
+    public tempoApiCall(previousDelay: number = 0): Promise<number> {
 
-        const now = new Date();
-        if (!this.apiCall.last) {
-            this.apiCall.last = now;
-            return Promise.resolve(0);
-        } else {
-            // src : https://stackoverflow.com/a/22707551/
-            const delay = this.apiCall.last.getTime() + this.apiCall.minInterval - now.getTime();
-            if (delay <= 0) {
-                this.apiCall.last = new Date();
-                return Promise.resolve(delay);
+        // Promise déjà en attente ? => on se place derrière cette promise TODO
+        const lastPromise : Promise<number> = /*this.apiCall.lastPromise ||*/ Promise.resolve(0);
+        return lastPromise.then(lastPromiseDelay => {
+            const now = new Date();
+            if (!this.apiCall.last) {
+                this.apiCall.last = now;
+                return Promise.resolve(previousDelay);
             } else {
-                this.apiCall.last = new Date(now.getTime() + delay);
-                return new Promise(function (resolve) {
-                    setTimeout(resolve, delay, delay);
-                });
+                // src : https://stackoverflow.com/a/22707551/
+                const delay = this.apiCall.last.getTime() + this.apiCall.minInterval - now.getTime();
+                if (delay <= 0) {
+                    console.log(`tempo GoogleDrive terminée : ${previousDelay}ms`);
+                    this.apiCall.last = new Date();
+                    return Promise.resolve(previousDelay);
+                } else {
+                    //this.apiCall.last = new Date(now.getTime() + delay);
+                    const persist = this;
+                    const promise : Promise<number> = new Promise(function (resolve) {
+                        //console.log(`tempo GoogleDrive : +${delay}ms...`);
+                        setTimeout(() => {
+                            persist.tempoApiCall(previousDelay + delay).then(delay => resolve(delay));
+                        }, delay);
+                    });
+                    this.apiCall.lastPromise = promise;
+                    return promise;
+                }
             }
-        }
+        });
     }
 
     postDisc(discId: string, disc: Disc): Promise<any> {
