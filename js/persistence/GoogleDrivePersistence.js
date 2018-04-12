@@ -42,6 +42,9 @@ class GoogleDrivePersistence extends Persistence {
             minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval) || 200 // ms
         };
     }
+    get title() {
+        return "Google Drive";
+    }
     /**
      * @return {Promise<boolean>} true si init OK, false sinon
      */
@@ -152,8 +155,10 @@ class GoogleDrivePersistence extends Persistence {
      * @return {Promise<gapi.client.Response<gapi.client.drive.FileList>>}
      */
     findGoogleFiles(pattern, folderGoogleId) {
-        return gapi.client.drive.files.list({
-            q: `'${folderGoogleId}' in parents and trashed != true` // https://developers.google.com/drive/v3/web/search-parameters
+        return this.tempoApiCall().then(delay => {
+            return gapi.client.drive.files.list({
+                q: `'${folderGoogleId}' in parents and trashed != true` // https://developers.google.com/drive/v3/web/search-parameters
+            });
         })
             .then(res => res.result.files) // Extraction des noms de fichiers dans le dossier
             .then(files => files.filter(file => file.name.match(pattern)));
@@ -165,7 +170,9 @@ class GoogleDrivePersistence extends Persistence {
         return this.getConnection().then(() => gapi.client.drive.files.get({
             fileId: fileId,
             alt: 'media'
-        })).then(res => res.body);
+        }))
+            .then(res => res.body)
+            .then(body => decodeURIComponent(escape(body))); // fix utf-8 issues : https://groups.google.com/forum/#!topic/google-api-javascript-client/Rb1lJX8yH_U
     }
     /**
      * Supprimer automatiquement les lignes vides
@@ -179,7 +186,8 @@ class GoogleDrivePersistence extends Persistence {
     }
     getCollection(collectionName) {
         return this.getConnection()
-            .then(() => this.getCollectionFile(collectionName))
+            .then(() => this.tempoApiCall())
+            .then((delay) => this.getCollectionFile(collectionName))
             .then(file => {
             // Collection déjà connue ?
             if (file) {
@@ -380,28 +388,40 @@ class GoogleDrivePersistence extends Persistence {
     }
     /**
      * Attente si nécessaire entre deux appels api Google Drive
-     * @return {Promise<number>} : le temps attendu
+     * @param previousDelay {?number} délai déjà attendu
+     * @return {Promise<number>} : le temps total attendu
      */
-    tempoApiCall() {
-        const now = new Date();
-        if (!this.apiCall.last) {
-            this.apiCall.last = now;
-            return Promise.resolve(0);
-        }
-        else {
-            // src : https://stackoverflow.com/a/22707551/
-            const delay = this.apiCall.last.getTime() + this.apiCall.minInterval - now.getTime();
-            if (delay <= 0) {
-                this.apiCall.last = new Date();
-                return Promise.resolve(delay);
+    tempoApiCall(previousDelay = 0) {
+        // Promise déjà en attente ? => on se place derrière cette promise TODO
+        const lastPromise = Promise.resolve(0);
+        return lastPromise.then(lastPromiseDelay => {
+            const now = new Date();
+            if (!this.apiCall.last) {
+                this.apiCall.last = now;
+                return Promise.resolve(previousDelay);
             }
             else {
-                this.apiCall.last = new Date(now.getTime() + delay);
-                return new Promise(function (resolve) {
-                    setTimeout(resolve, delay, delay);
-                });
+                // src : https://stackoverflow.com/a/22707551/
+                const delay = this.apiCall.last.getTime() + this.apiCall.minInterval - now.getTime();
+                if (delay <= 0) {
+                    console.log(`tempo GoogleDrive terminée : ${previousDelay}ms`);
+                    this.apiCall.last = new Date();
+                    return Promise.resolve(previousDelay);
+                }
+                else {
+                    //this.apiCall.last = new Date(now.getTime() + delay);
+                    const persist = this;
+                    const promise = new Promise(function (resolve) {
+                        //console.log(`tempo GoogleDrive : +${delay}ms...`);
+                        setTimeout(() => {
+                            persist.tempoApiCall(previousDelay + delay).then(delay => resolve(delay));
+                        }, delay);
+                    });
+                    this.apiCall.lastPromise = promise;
+                    return promise;
+                }
             }
-        }
+        });
     }
     postDisc(discId, disc) {
         const content = CuePrinter.print(disc.cuesheet);

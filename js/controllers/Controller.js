@@ -20,12 +20,12 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
    */
   function getPersistence() {
     const persistenceName = localStorage.getItem("persistence");
-    if (persistenceName === 'GoogleDrive') {
-      if (!GoogleDrivePersistence) {
-        window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
-      }
-      return new GoogleDrivePersistence($scope, $http);
-    }
+    // if (persistenceName === 'GoogleDrive') {
+    //   if (!GoogleDrivePersistence) {
+    //     window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
+    //   }
+    //   return new GoogleDrivePersistence($scope, $http);
+    // }
     if (persistenceName === 'LocalStorage') {
       return localPersistence;
     }
@@ -33,7 +33,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
       return new LocalServerPersistence($scope, $http)
     }
 
-    return (window.location.host === "bludwarf.github.io" || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? localPersistence : new LocalServerPersistence($scope, $http);
+    return (window.location.host === "bludwarf.github.io" || window.location.port !== '3000' || getParameterByName("persistence", document.location.search) === 'LocalStorage') ? localPersistence : new LocalServerPersistence($scope, $http);
   }
 
   /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
@@ -90,13 +90,13 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
     let collectionParam = $scope.getCollectionParam();
 
     // Collections
-    persistence.init({gapiClient}).then(isInit => {
+    persistence.init({gapiClient})/*.then(isInit => {
       if (isInit && persistence instanceof GoogleDrivePersistence) {
         const loginBtn = document.getElementById("login-btn");
         loginBtn.innerText = "Connecté·e";
         $scope.connectedToGoogleDrive = true;
       }
-    }).then(isInit => persistence.getCollectionNames()).then(collectionNames => {
+    })*/.then(isInit => persistence.getCollectionNames()).then(collectionNames => {
       collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
       $scope.collectionNames = collectionNames;
       $scope.$apply();
@@ -1721,7 +1721,7 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
     const loginBtn = document.getElementById("login-btn");
     loginBtn.innerText = "Connexion...";
-    $scope.hidePlayer();
+    // $scope.hidePlayer();
 
     const googleDrivePersistence = new GoogleDrivePersistence($scope, $http);
     googleDrivePersistence.init({gapiClient}).then(isInit => {
@@ -1729,21 +1729,29 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
       if (isInit) {
         loginBtn.innerText = "Connecté·e";
         $scope.connectedToGoogleDrive = true;
+        localStorage.setItem("connectedToGoogleDrive", "true");
 
         // TODO : synchro avec l'ancienne persistance pour ne rien perdre
-
-        persistence = googleDrivePersistence;
-        localStorage.setItem("persistence", "GoogleDrive");
-        $scope.init();
+        persistence.merge(googleDrivePersistence).then(modified => {
+          notify(`Synchro terminée avec ${googleDrivePersistence.title}`);
+          // persistence = googleDrivePersistence;
+          // localStorage.setItem("persistence", "GoogleDrive");
+          // $scope.init();
+        }).catch(err => {
+          loginBtn.innerText = "Google Drive";
+          // $scope.showPlayer();
+          alert("Erreur de synchro entre la persistance actuelle et Google Drive");
+          console.error(err);
+        });
       }
 
       else {
         loginBtn.innerText = "Google Drive";
-        $scope.showPlayer();
+        // $scope.showPlayer();
       }
     }).catch(err => {
       loginBtn.innerText = "Google Drive";
-      $scope.showPlayer();
+      // $scope.showPlayer();
       alert("Erreur de connexion à Google Drive");
       console.error(err);
     });

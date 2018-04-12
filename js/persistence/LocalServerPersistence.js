@@ -4,6 +4,9 @@ class LocalServerPersistence extends Persistence {
     constructor($scope, $http) {
         super($scope, $http);
     }
+    get title() {
+        return "Serveur local";
+    }
     getCollectionNames() {
         return new Promise((resolve, reject) => {
             this.$http.get(`/collectionNames`).then(res => {

@@ -1,3 +1,6 @@
+///<reference path="@types/utils.d.ts"/>
+///<reference path="CuePrinter.ts"/>
+//import CuePrinter = require('./CuePrinter');
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -109,6 +112,116 @@ class Persistence {
                 resolve(data);
             }, res => {
                 reject(res.data);
+            });
+        });
+    }
+    /**
+     * Fusionne la persistence src avec la persistence actuelle.
+     * @param {Persistence} src persistence à intégrer dans la courante
+     * @return {Promise<boolean>} true si la persistence actuelle a été modifiée suite au merge
+     */
+    merge(src) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.group("Synchro entre deux persistances en cours");
+            // Synchro des collections
+            return Promise.all([this.getCollectionNames(), src.getCollectionNames()]).then(results => {
+                const [thisCollectionNames, srcCollectionNames] = results;
+                // FIXME : gérer le cas de la collection "_default_"
+                let thisModified = false;
+                /** Collections absentes dans la source */
+                const onlyInThis = thisCollectionNames.filter(name => !srcCollectionNames.includes(name));
+                // TODO utilité de cet index ici ?
+                let discIndex = 0;
+                // Synchro des collections
+                return Promise.all(
+                /** Collections uniquement dans la source */
+                srcCollectionNames.filter(name => !thisCollectionNames.includes(name)).map(name => Promise.resolve()
+                    .then(() => console.log(`Synchro : ajout de la collection ${name}...`))
+                    .then(() => src.getCollection(name))
+                    .then(collection => this.postCollection(collection))
+                    .then(collection => {
+                    thisModified = true;
+                    return collection;
+                })
+                    .then(collection => {
+                    console.log(`Synchro : collection ${name} ajoutée avec succès`);
+                    return collection;
+                })
+                //.catch(err => console.error(`Synchro : échec lors de l'ajout de la collection ${name}`, err))
+                ).concat(
+                /** Collections communes */
+                thisCollectionNames.filter(name => srcCollectionNames.includes(name)).map(name => Promise.resolve()
+                    .then(() => console.log(`Synchro : diff de la collection ${name}...`))
+                    .then(() => Promise.all([this.getCollection(name), src.getCollection(name)]))
+                    .then(results => {
+                    const [thisCollection, srcCollection] = results;
+                    console.group(`Synchro : Collection ${name}`);
+                    let thisCollModified = false;
+                    return Promise.all(
+                    // Disques uniquement dans la source
+                    srcCollection.discIds.filter(discId => !thisCollection.discIds.includes(discId)).map(discId => {
+                        console.log(`Synchro : ajout du disque ${discId} à la collection ${name}...`);
+                        thisCollection.discIds.push(discId);
+                        thisCollModified = true;
+                        return discId;
+                    })).then(results => {
+                        // Si la collection a été modifiée il faut la sauvegarder
+                        if (thisCollModified) {
+                            thisModified = true;
+                            return this.postCollection(thisCollection);
+                        }
+                        else {
+                            return Promise.resolve(thisCollection);
+                        }
+                    }).then(collection => {
+                        if (!thisCollModified) {
+                            console.log(`Collection ${name} non modifiée`);
+                        }
+                        console.groupEnd();
+                        if (thisCollModified) {
+                            return collection;
+                        }
+                        else {
+                            return null;
+                        }
+                    });
+                })))).then(modifiedCollections => {
+                    console.log("Début de la synchro des disques...");
+                    // Récup de tous les disques référencés après synchro
+                    const discIds = modifiedCollections
+                        .filter(collection => collection != null)
+                        .map(collection => collection.discIds)
+                        .reduce((allDiscIds, discIds) => {
+                        discIds.forEach(discId => {
+                            if (allDiscIds.indexOf(discId) === -1) {
+                                allDiscIds.push(discId);
+                            }
+                        });
+                        return allDiscIds;
+                    }, []);
+                    // Synchro de chaque disque
+                    let discIndex = -1; // TODO
+                    Promise.all(discIds.map(discId => Promise
+                        .resolve(discId)
+                        .then(discId => Promise.all([this.getDisc(discId, discIndex), src.getDisc(discId, discIndex)]))
+                        .then(results => {
+                        const [thisDisc, srcDisc] = results;
+                        // Comparaison de la cuesheet pour diff
+                        const thisCueData = CuePrinter.print(thisDisc.cuesheet);
+                        const srcCueData = CuePrinter.print(srcDisc.cuesheet);
+                        if (thisCueData === srcCueData) {
+                            console.log(`Disque ${discId} (${srcDisc.title}) inchangé`);
+                        }
+                        else {
+                            console.log(`Disque ${discId} (${srcDisc.title}) différent. On prend celui de ${src.title}...`, thisCueData, srcCueData);
+                        }
+                    }))).then(results => {
+                        console.log("Fin de la synchro des disques");
+                    });
+                }).then(() => {
+                    console.groupEnd();
+                    return thisModified;
+                });
             });
         });
     }
