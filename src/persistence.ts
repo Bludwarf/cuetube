@@ -238,12 +238,36 @@ abstract class Persistence {
 
                 // Synchro de chaque disque
                 let discIndex = -1;// TODO
-                Promise.all(
+                return Promise.all(
                     discIds.map(discId => Promise
                         .resolve(discId)
-                        .then(discId => Promise.all([this.getDisc(discId, discIndex), src.getDisc(discId, discIndex)]))
+                        .then(discId => {
+                            console.log(`Synchro du disque ${discId}...`);
+                            return discId;
+                        })
+                        .then(discId => Promise.all([
+                            this.getDisc(discId, discIndex).catch(e => null),
+                            src.getDisc(discId, discIndex).catch(e => null)
+                        ]))
                         .then(results => {
                             const [thisDisc, srcDisc] = results;
+
+                            // Le disque n'est pas connu par tout le monde
+                            if (!thisDisc || !srcDisc) {
+                                console.error(`Le disque ${discId} n'est pas connu par tout le monde`);
+                                if (!thisDisc) {
+                                    console.log(`Synchro : ajout du disque ${discId}`);
+                                    return this.postDisc(discId, srcDisc).then(disc => {
+                                        console.log(`Synchro : disque ${discId} "${disc.title}" ajouté avec succès`);
+                                        return disc;
+                                    });
+                                }
+                                if (!srcDisc) {
+                                    console.log(`Synchro : ajout du disque ${discId} vers ${src.title} : TODO`);
+                                    return null;
+                                }
+                                return null;
+                            }
 
                             // Comparaison de la cuesheet pour diff
                             const thisCueData = CuePrinter.print(thisDisc.cuesheet);
@@ -255,9 +279,7 @@ abstract class Persistence {
                             }
                         })
                     )
-                ).then(results => {
-                    console.log("Fin de la synchro des disques");
-                })
+                )
 
             }).then(() => {
                 console.groupEnd();

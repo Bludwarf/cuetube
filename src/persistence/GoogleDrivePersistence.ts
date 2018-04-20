@@ -406,11 +406,6 @@ class GoogleDrivePersistence extends Persistence {
             q += ` and '${folderGoogleId}' in parents`;
         }
         return this.tempoApiCall().then(delay => {
-                if (delay > 0) {
-                    console.log("On a attendu", delay, "ms avant d'appeler Google Drive");
-                }
-                return delay;
-            }).then(delay => {
                 return gapi.client.drive.files.list({
                     q: q
                 })
@@ -456,7 +451,10 @@ class GoogleDrivePersistence extends Persistence {
                 // src : https://stackoverflow.com/a/22707551/
                 const delay = this.apiCall.last.getTime() + this.apiCall.minInterval - now.getTime();
                 if (delay <= 0) {
-                    console.log(`tempo GoogleDrive terminée : ${previousDelay}ms`);
+                    console.log(`%c tempo GoogleDrive terminée : ${previousDelay}ms`,
+                        `background: no-repeat left center url(https://cdn.iconscout.com/public/images/icon/free/png-128/google-drive-social-media-logo-3e5f787c082474e3-128x128.png);
+                        background-size: 16px;
+                        padding-left: 20px;`);
                     this.apiCall.last = new Date();
                     return Promise.resolve(previousDelay);
                 } else {
