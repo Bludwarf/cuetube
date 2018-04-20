@@ -1732,19 +1732,19 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
         localStorage.setItem("connectedToGoogleDrive", "true");
 
         // TODO : synchro avec l'ancienne persistance pour ne rien perdre
-        persistence.merge(googleDrivePersistence).then(modified => {
-          const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
-          console.log(message);
-          notify(message);
-          // persistence = googleDrivePersistence;
-          // localStorage.setItem("persistence", "GoogleDrive");
-          // $scope.init();
-        }).catch(err => {
-          loginBtn.innerText = "Google Drive";
-          // $scope.showPlayer();
-          alert("Erreur de synchro entre la persistance actuelle et Google Drive");
-          console.error(err);
-        });
+        // persistence.merge(googleDrivePersistence).then(modified => {
+        //   const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
+        //   console.log(message);
+        //   notify(message);
+          persistence = googleDrivePersistence;
+          localStorage.setItem("persistence", "GoogleDrive");
+          $scope.init();
+        // }).catch(err => {
+        //   loginBtn.innerText = "Google Drive";
+        //   // $scope.showPlayer();
+        //   alert("Erreur de synchro entre la persistance actuelle et Google Drive");
+        //   console.error(err);
+        // });
       }
 
       else {

@@ -20,6 +20,15 @@ class Persistence {
     init(params) {
         return Promise.resolve(true);
     }
+    getCollectionByNames(collectionsNames) {
+        return Promise.all(collectionsNames.map(name => this.getCollection(name))).then(results => {
+            // conversion array => map
+            return results.reduce((map, collection) => {
+                map[collection.name] = collection;
+                return map;
+            }, {});
+        });
+    }
     getCollectionDiscIds(collectionName) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!collectionName) {
@@ -126,6 +135,17 @@ class Persistence {
             // Synchro des collections
             return Promise.all([this.getCollectionNames(), src.getCollectionNames()]).then(results => {
                 const [thisCollectionNames, srcCollectionNames] = results;
+                // Récup des collections des deux côtés (obligé car on veut tous les disques plus tard)
+                console.log("Récup de toutes les collections des deux côtés...");
+                return Promise.all([
+                    thisCollectionNames,
+                    this.getCollectionByNames(thisCollectionNames),
+                    srcCollectionNames,
+                    src.getCollectionByNames(srcCollectionNames)
+                ]);
+            }).then(results => {
+                const [thisCollectionNames, thisCollections, srcCollectionNames, srcCollections] = results;
+                console.log(`thisCollections[0] : ${thisCollections[thisCollectionNames[0]]}`);
                 // FIXME : gérer le cas de la collection "_default_"
                 let thisModified = false;
                 /** Collections absentes dans la source */
@@ -133,63 +153,16 @@ class Persistence {
                 // TODO utilité de cet index ici ?
                 let discIndex = 0;
                 // Synchro des collections
-                return Promise.all(
-                /** Collections uniquement dans la source */
-                srcCollectionNames.filter(name => !thisCollectionNames.includes(name)).map(name => Promise.resolve()
-                    .then(() => console.log(`Synchro : ajout de la collection ${name}...`))
-                    .then(() => src.getCollection(name))
-                    .then(collection => this.postCollection(collection))
-                    .then(collection => {
-                    thisModified = true;
-                    return collection;
-                })
-                    .then(collection => {
-                    console.log(`Synchro : collection ${name} ajoutée avec succès`);
-                    return collection;
-                })
-                //.catch(err => console.error(`Synchro : échec lors de l'ajout de la collection ${name}`, err))
-                ).concat(
-                /** Collections communes */
-                thisCollectionNames.filter(name => srcCollectionNames.includes(name)).map(name => Promise.resolve()
-                    .then(() => console.log(`Synchro : diff de la collection ${name}...`))
-                    .then(() => Promise.all([this.getCollection(name), src.getCollection(name)]))
-                    .then(results => {
-                    const [thisCollection, srcCollection] = results;
-                    console.group(`Synchro : Collection ${name}`);
-                    let thisCollModified = false;
-                    return Promise.all(
-                    // Disques uniquement dans la source
-                    srcCollection.discIds.filter(discId => !thisCollection.discIds.includes(discId)).map(discId => {
-                        console.log(`Synchro : ajout du disque ${discId} à la collection ${name}...`);
-                        thisCollection.discIds.push(discId);
-                        thisCollModified = true;
-                        return discId;
-                    })).then(results => {
-                        // Si la collection a été modifiée il faut la sauvegarder
-                        if (thisCollModified) {
-                            thisModified = true;
-                            return this.postCollection(thisCollection);
-                        }
-                        else {
-                            return Promise.resolve(thisCollection);
-                        }
-                    }).then(collection => {
-                        if (!thisCollModified) {
-                            console.log(`Collection ${name} non modifiée`);
-                        }
-                        console.groupEnd();
-                        if (thisCollModified) {
-                            return collection;
-                        }
-                        else {
-                            return null;
-                        }
-                    });
-                })))).then(modifiedCollections => {
+                return Promise.all([thisCollectionNames, thisCollections, srcCollectionNames, srcCollections]).then(updateCollResults => {
                     console.log("Début de la synchro des disques...");
+                    const [thisCollectionNames, thisCollections, srcCollectionNames, srcCollections, ...modifiedCollections] = updateCollResults;
+                    const allCollections = [];
+                    for (let name in thisCollections) {
+                        allCollections.push(thisCollections[name]);
+                    }
+                    // Après synchro toutes les collections se trouvent dans thisCollections
                     // Récup de tous les disques référencés après synchro
-                    const discIds = modifiedCollections
-                        .filter(collection => collection != null)
+                    const discIds = allCollections
                         .map(collection => collection.discIds)
                         .reduce((allDiscIds, discIds) => {
                         discIds.forEach(discId => {

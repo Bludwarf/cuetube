@@ -15,6 +15,11 @@ class GoogleDrivePersistence extends Persistence {
         this.cuesFiles = new Map(); // TODO : init
         this.prefs = {
             googleDrive: {
+                /**
+                 * Queries per 100 seconds per user : 1 000
+                 * Soit 10 req/s donc 1 req toutes les 100 ms
+                 * @see https://console.developers.google.com/apis/api/drive.googleapis.com/quotas?project=cuetube-bludwarf
+                 */
                 minInterval: localStorage.getItem('googleDrive.minInterval')
             }
         };
@@ -39,7 +44,14 @@ class GoogleDrivePersistence extends Persistence {
          */
         this.apiCall = {
             last: undefined,
-            minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval) || 200 // ms
+            /**
+             * Queries per 100 seconds per user : 1 000
+             * Soit 10 req/s donc 1 req toutes les 100 ms
+             * @see https://console.developers.google.com/apis/api/drive.googleapis.com/quotas?project=cuetube-bludwarf
+             */
+            minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval) || 100,
+            waiters: 0,
+            nextWaiterId: 0
         };
     }
     get title() {
@@ -167,7 +179,7 @@ class GoogleDrivePersistence extends Persistence {
         return undefined;
     }
     getFileContent(fileId) {
-        return this.getConnection().then(() => gapi.client.drive.files.get({
+        return this.tempoApiCall().then(() => gapi.client.drive.files.get({
             fileId: fileId,
             alt: 'media'
         }))
@@ -185,9 +197,7 @@ class GoogleDrivePersistence extends Persistence {
             .then(lines => lines.filter(line => line.trim()));
     }
     getCollection(collectionName) {
-        return this.getConnection()
-            .then(() => this.tempoApiCall())
-            .then((delay) => this.getCollectionFile(collectionName))
+        return this.getCollectionFile(collectionName)
             .then(file => {
             // Collection déjà connue ?
             if (file) {
@@ -205,21 +215,19 @@ class GoogleDrivePersistence extends Persistence {
         });
     }
     getCollectionFile(collectionName) {
-        return this.getConnection()
-            .then(() => {
-            const file = this.collectionsFiles.get(collectionName);
-            if (file) {
+        // Fichier Google Drive connu ?
+        const file = this.collectionsFiles.get(collectionName);
+        if (file) {
+            return Promise.resolve(file);
+        }
+        else {
+            return this.getFolders()
+                .then(folders => this.findGoogleFile(`${collectionName}.cues`, folders.collectionsFolder.id))
+                .then(file => {
+                this.collectionsFiles.set(collectionName, file); // cache
                 return file;
-            }
-            else {
-                return this.getFolders()
-                    .then(folders => this.findGoogleFile(`${collectionName}.cues`, folders.collectionsFolder.id))
-                    .then(file => {
-                    this.collectionsFiles.set(collectionName, file); // cache
-                    return file;
-                });
-            }
-        });
+            });
+        }
     }
     /**
      * https://developers.google.com/drive/v3/web/appdata
@@ -229,7 +237,7 @@ class GoogleDrivePersistence extends Persistence {
         const collectionName = collection.name ? collection.name : Persistence.DEFAULT_COLLECTION;
         const filename = `${collectionName}.cues`;
         let folder;
-        return this.getConnection().then(() => this.getFolders())
+        return this.getFolders()
             .then(folders => {
             folder = folders.collectionsFolder;
             return this.getCollectionFile(collectionName);
@@ -237,6 +245,11 @@ class GoogleDrivePersistence extends Persistence {
             .catch(err => {
             // La collection n'existe pas encore
             return null;
+        })
+            .then(file => {
+            return this.tempoApiCall().then(delay => {
+                return file;
+            });
         })
             .then(file => this.upload({
             id: file ? file.id : undefined,
@@ -262,6 +275,7 @@ class GoogleDrivePersistence extends Persistence {
      * @see https://developers.google.com/drive/v3/web/multipart-upload
      */
     upload(metadata, data) {
+        // TODO : this.tempoApiCall()
         // UPDATE
         if (metadata.id) {
             return gapi.client.request({
@@ -297,27 +311,23 @@ class GoogleDrivePersistence extends Persistence {
         } // CREATE
     }
     getDisc(discId, discIndex) {
-        return this.getConnection()
-            .then(() => this.getCueFile(discId))
+        return this.getCueFile(discId) // Fichier Google Drive connu ?
             .then(file => this.getFileContent(file.id))
             .then(content => super.createDisc(discId, discIndex, CueParser.parse(content)));
     }
     getCueFile(discId) {
-        return this.getConnection()
-            .then(() => {
-            const file = this.cuesFiles.get(discId);
-            if (file) {
+        const file = this.cuesFiles.get(discId);
+        if (file) {
+            return Promise.resolve(file);
+        }
+        else {
+            return this.getDiscFolder(discId)
+                .then(folder => this.findGoogleFile(discId + '.cue', folder.id))
+                .then(file => {
+                this.cuesFiles.set(discId, file); // cache
                 return file;
-            }
-            else {
-                return this.getDiscFolder(discId)
-                    .then(folder => this.findGoogleFile(discId + '.cue', folder.id))
-                    .then(file => {
-                    this.cuesFiles.set(discId, file); // cache
-                    return file;
-                });
-            }
-        });
+            });
+        }
     }
     getDiscFolder(discId) {
         return this.getFolders()
@@ -384,34 +394,48 @@ class GoogleDrivePersistence extends Persistence {
     /**
      * Attente si nécessaire entre deux appels api Google Drive
      * @param previousDelay {?number} délai déjà attendu
+     * @param waiterIdParam {?number} id du waiter si on avait déjà attendu, utilisé <b>uniquement</b> en interne, ne pas utiliser !
      * @return {Promise<number>} : le temps total attendu
      */
-    tempoApiCall(previousDelay = 0) {
+    tempoApiCall(previousDelay = 0, waiterIdParam) {
+        const consoleStyle = `background: no-repeat left center url(https://cdn.iconscout.com/public/images/icon/free/png-128/google-drive-social-media-logo-3e5f787c082474e3-128x128.png);
+                    background-size: 16px;
+                    padding-left: 20px;`;
         // Promise déjà en attente ? => on se place derrière cette promise TODO
         const lastPromise = Promise.resolve(0);
         return lastPromise.then(lastPromiseDelay => {
             const now = new Date();
-            if (!this.apiCall.last) {
+            if (!this.apiCall.last || waiterIdParam !== undefined) {
+                if (waiterIdParam !== undefined) {
+                    console.log(`%c tempo GoogleDrive terminée : ${previousDelay}ms pour le waiter ${waiterIdParam}`, consoleStyle);
+                }
                 this.apiCall.last = now;
                 return Promise.resolve(previousDelay);
             }
             else {
                 // src : https://stackoverflow.com/a/22707551/
-                const delay = this.apiCall.last.getTime() + this.apiCall.minInterval - now.getTime();
+                const delay = this.apiCall.last.getTime() + this.apiCall.minInterval * (this.apiCall.waiters + 1) - now.getTime();
                 if (delay <= 0) {
-                    console.log(`%c tempo GoogleDrive terminée : ${previousDelay}ms`, `background: no-repeat left center url(https://cdn.iconscout.com/public/images/icon/free/png-128/google-drive-social-media-logo-3e5f787c082474e3-128x128.png);
-                        background-size: 16px;
-                        padding-left: 20px;`);
-                    this.apiCall.last = new Date();
+                    console.log(`%c tempo GoogleDrive écoulée : ${previousDelay}ms pour le waiter ${waiterIdParam}`, consoleStyle);
+                    this.apiCall.last = now;
                     return Promise.resolve(previousDelay);
                 }
                 else {
                     //this.apiCall.last = new Date(now.getTime() + delay);
+                    ++this.apiCall.waiters;
+                    const waiterId = this.apiCall.nextWaiterId++;
+                    if (waiterIdParam !== undefined) {
+                        console.warn(`%c le waiter ${waiterIdParam} passe une nouvelle fois en attente : ${waiterId}`, consoleStyle);
+                    }
                     const persist = this;
                     const promise = new Promise(function (resolve) {
-                        //console.log(`tempo GoogleDrive : +${delay}ms...`);
+                        console.debug(`%c tempo GoogleDrive : +${delay}ms... pour le waiter ${waiterId}`, consoleStyle);
                         setTimeout(() => {
-                            persist.tempoApiCall(previousDelay + delay).then(delay => resolve(delay));
+                            --persist.apiCall.waiters;
+                            if (persist.apiCall.waiters) {
+                                console.debug(`%c ${persist.apiCall.waiters} promises encore en attente derrière le waiter ${waiterId}`, consoleStyle);
+                            }
+                            persist.tempoApiCall(previousDelay + delay, waiterId).then(delay => resolve(delay));
                         }, delay);
                     });
                     this.apiCall.lastPromise = promise;
@@ -423,7 +447,7 @@ class GoogleDrivePersistence extends Persistence {
     postDisc(discId, disc) {
         const content = CuePrinter.print(disc.cuesheet);
         let discFolder;
-        return this.getConnection().then(() => this.getDiscFolder(discId))
+        return this.getDiscFolder(discId)
             .then((folder) => {
             discFolder = folder;
             return this.getCueFile(discId);
@@ -431,6 +455,11 @@ class GoogleDrivePersistence extends Persistence {
             .catch(err => {
             // Le disque n'existe pas encore
             return null;
+        })
+            .then(file => {
+            return this.tempoApiCall().then(delay => {
+                return file;
+            });
         })
             .then(file => this.upload({
             id: file ? file.id : undefined,
