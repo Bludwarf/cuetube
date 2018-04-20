@@ -1733,7 +1733,9 @@ angular.module('cuetube').controller('Controller', function($scope, $http, cuetu
 
         // TODO : synchro avec l'ancienne persistance pour ne rien perdre
         persistence.merge(googleDrivePersistence).then(modified => {
-          notify(`Synchro terminée avec ${googleDrivePersistence.title}`);
+          const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
+          console.log(message);
+          notify(message);
           // persistence = googleDrivePersistence;
           // localStorage.setItem("persistence", "GoogleDrive");
           // $scope.init();
