@@ -1,0 +1,58 @@
+.concat(
+                    /** Collections uniquement dans la source */
+                    srcCollectionNames.filter(name => !thisCollectionNames.includes(name)).map(name =>
+                        Promise.resolve()
+                            .then(() => console.log(`Synchro : ajout de la collection ${name}...`))
+                            .then(() => thisCollections[name])
+                            .then(collection => this.postCollection(collection))
+                            .then(collection => {
+                                thisCollections[name] = collection;
+                                thisModified = true;
+                                return collection;
+                            })
+                            .then(collection => {
+                                console.log(`Synchro : collection ${name} ajoutée avec succès`);
+                                return collection;
+                            })
+                            //.catch(err => console.error(`Synchro : échec lors de l'ajout de la collection ${name}`, err))
+                    )
+                    ).concat(
+                    /** Collections communes */
+                    thisCollectionNames.filter(name => srcCollectionNames.includes(name)).map(name =>
+                        Promise.resolve()
+                            .then(() => console.log(`Synchro : diff de la collection ${name}...`))
+                            .then(() => Promise.all([thisCollections[name], srcCollections[name]]))
+                            .then(results => {
+                                const [thisCollection, srcCollection] = results;
+                                console.group(`Synchro : Collection ${name}`);
+                                let thisCollModified = false;
+                                return Promise.all(
+                                    // Disques uniquement dans la source
+                                    srcCollection.discIds.filter(discId => !thisCollection.discIds.includes(discId)).map(discId => {
+                                        console.log(`Synchro : ajout du disque ${discId} à la collection ${name}...`);
+                                        thisCollection.discIds.push(discId);
+                                        thisCollModified = true;
+                                        return discId;
+                                    })
+                                ).then(results => {
+                                    // Si la collection a été modifiée il faut la sauvegarder
+                                    if (thisCollModified) {
+                                        thisModified = true;
+                                        return this.postCollection(thisCollection);
+                                    } else {
+                                        return Promise.resolve(thisCollection);
+                                    }
+                                }).then(collection => {
+                                    if (!thisCollModified) {
+                                        console.log(`Collection ${name} non modifiée`);
+                                    }
+                                    console.groupEnd();
+                                    if (thisCollModified) {
+                                        return collection;
+                                    } else {
+                                        return null;
+                                    }
+                                })
+                            })
+                    )
+                )
