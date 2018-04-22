@@ -2,14 +2,16 @@
 /// <reference path="../@types/GoogleDrive.d.ts" />
 /// <reference path="../services/GapiClient.d.ts" />
 
-import CuePrinter = require('../CuePrinter');
+import {Persistence} from '../persistence';
+import {Disc} from '../Disc';
+import {CuePrinter} from '../CuePrinter';
 import drive = gapi.client.drive;
 
-class GoogleDrivePersistence extends Persistence {
+export class GoogleDrivePersistence extends Persistence {
 
-    private rootFolder = undefined;
-    private collectionsFolder = undefined;
-    private cuesFolder = undefined;
+    private rootFolder: string = undefined;
+    private collectionsFolder: string = undefined;
+    private cuesFolder: string = undefined;
 
     /** exemple : subFolders['16xjNCGVHLYi2Z5J5xzkhcUs0']['Collections'] = (id du sous-dossier "Collections") */
     private subFolders: Map<string, {}> = new Map();
@@ -173,7 +175,7 @@ class GoogleDrivePersistence extends Persistence {
         return this.getFolders()
             .then(folders => this.findGoogleFiles(/.+\.cues/, folders.collectionsFolder.id))
             .then(files => {
-                const collectionsNames = [];
+                const collectionsNames: string[] = [];
                 files.forEach(file => {
                     const collectionName = file.name.slice(0, -5);
                     collectionsNames.push(collectionName);
@@ -270,7 +272,7 @@ class GoogleDrivePersistence extends Persistence {
         const content = collection.discIds.join('\r\n');
         const collectionName = collection.name ? collection.name : Persistence.DEFAULT_COLLECTION;
         const filename = `${collectionName}.cues`;
-        let folder;
+        let folder: drive.File;
         return this.getFolders()
             // Fichier existant ?
             .then(folders => {
@@ -364,7 +366,7 @@ class GoogleDrivePersistence extends Persistence {
             .then(content => super.createDisc(discId, discIndex, CueParser.parse(content)));
     }
 
-    private getCueFile(discId): Promise<drive.File> {
+    private getCueFile(discId: string): Promise<drive.File> {
         const file = this.cuesFiles.get(discId);
         if (file) {
             return Promise.resolve(file);
@@ -500,7 +502,7 @@ class GoogleDrivePersistence extends Persistence {
 
     postDisc(discId: string, disc: Disc): Promise<any> {
         const content = CuePrinter.print(disc.cuesheet);
-        let discFolder;
+        let discFolder: drive.File;
         return this.getDiscFolder(discId)
             .then((folder) => {
                 discFolder = folder;
@@ -578,5 +580,3 @@ function equalsOnlyDefinedFields(actual, expected) {
     }
     return true;
 }
-
-export = GoogleDrivePersistence;

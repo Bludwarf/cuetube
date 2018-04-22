@@ -1,7 +1,9 @@
 ///<reference path="../../node_modules/@types/angular/index.d.ts"/>
+import {Persistence} from '../persistence';
+import {Disc} from 'Disc';
 import CueSheet = cuesheet.CueSheet;
 
-class LocalServerPersistence extends Persistence {
+export class LocalServerPersistence extends Persistence {
 
     constructor($scope: IPlayerScope, $http: ng.IHttpService) {
         super($scope, $http);

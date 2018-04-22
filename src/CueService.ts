@@ -1,4 +1,6 @@
-class CueService {
+import CueSheet = cuesheet.CueSheet;
+
+export class CueService {
 
     constructor(protected $http: ng.IHttpService) {
     }

@@ -1,8 +1,10 @@
+import * as _ from 'underscore';
+import {Disc} from './disc';
 ///<reference path="@types/utils.d.ts"/>
 ///<reference path="CuePrinter.ts"/>
-//import CuePrinter = require('./CuePrinter');
+import {CuePrinter} from './CuePrinter';
 
-abstract class Persistence {
+export abstract class Persistence {
 
     static DEFAULT_COLLECTION = '_default_';
 

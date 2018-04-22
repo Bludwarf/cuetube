@@ -1,4 +1,7 @@
-class LocalStoragePersistence extends Persistence {
+import {Persistence} from '../persistence';
+import {Disc} from '../disc';
+
+export class LocalStoragePersistence extends Persistence {
 
     static DEFAULT_COLLECTION = '_DEFAULT_';
 
@@ -43,7 +46,7 @@ class LocalStoragePersistence extends Persistence {
         }
 
         const rx = /^collection\.(.+)/;
-        const names = [];
+        const names: string[] = [];
         for (let i = 0; i < localStorage.length; i++){
             const key = localStorage.key(i);
             const m = rx.exec(key);

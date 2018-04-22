@@ -3,8 +3,9 @@
  */
 
 /// <reference path="@types/cuesheet.d.ts" />
+import * as _ from 'underscore';
 
-class Disc {
+export class Disc {
     cuesheet: cuesheet.CueSheet;
     _files: Disc.File[] = [];
     index: number = undefined;
@@ -80,7 +81,7 @@ class Disc {
     }
 
     get tracks(): Disc.Track[] {
-        let tracks = [];
+        let tracks: Disc.Track[] = [];
         if (this.files) {
             this.files.forEach(file => {
                 tracks = tracks.concat(file.tracks);
@@ -97,7 +98,7 @@ class Disc {
     }
 
     get disabledTracks(): Disc.Track[] {
-        const tracks = [];
+        const tracks: Disc.Track[] = [];
         this.tracks.forEach(track => {
             if (!track.enabled)
                 tracks.push(track);
@@ -167,7 +168,7 @@ class Disc {
     }
 }
 
-module Disc {
+export module Disc {
 
     export class File {
 

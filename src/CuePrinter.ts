@@ -4,12 +4,12 @@
 // require("./utils");
 
 // FIXME : comment importer utils.js dans le CuePrinter (client) quand on est dans CueService (serveur) ?
-function pad2(i) {
+function pad2(i: any) {
     if (!i) return "00";
     return (i < 10 ? "0" : "") + i;
 }
 
-class CuePrinter {
+export class CuePrinter {
     // TODO avoir la version courante en page statique (purement client)
     /**
      * Attention on remplace ou ajoute un commentaire pour indique la date de génération par CueTube
@@ -93,6 +93,3 @@ function stringValue(string: string): string {
     if (string.match(/\s/)) return `"${string}"`;
     return string;
 }
-
-// FIXME : créer une erreur quand utilisé côté client !
-export = CuePrinter
