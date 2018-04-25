@@ -1,5 +1,5 @@
-// Karma configuration
-// Generated on Thu Jun 15 2017 12:18:26 GMT+0200 (Paris, Madrid (heure d’été))
+// Karma configuration file, see link for more information
+// https://karma-runner.github.io/1.0/config/configuration-file.html
 
 module.exports = function(config) {
   config.set({
@@ -10,45 +10,31 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine'/*, 'requirejs'*/],
-
-
-    // list of files / patterns to load in the browser
-    files: [
-      'bower_components/jquery/dist/jquery.js',
-
-      // Angular
-      'bower_components/angular/angular.min.js',
-      'bower_components/angular-mocks/angular-mocks.js',
-      'bower_components/moment/moment.js', // FIXME : Karma ne le trouve pas dans client/js !
-
-      'client/js/*.js',
-      'client/js/controllers/*.js',
-      'test/**/*.js',
-
-        // Resources JSON
-        'bower_components/karma-read-json/karma-read-json.js',
-        // JSON fixture
-        { pattern:  'samples/**/*.json',
-            watched:  true,
-            served:   true,
-            included: false },
-
-      //'test-main.js'
+    frameworks: ['jasmine', '@angular/cli'],
+    plugins: [
+      require('karma-jasmine'),
+      require('karma-chrome-launcher'),
+      require('karma-jasmine-html-reporter'),
+      require('karma-coverage-istanbul-reporter'),
+      require('@angular/cli/plugins/karma')
     ],
-
-
-    // list of files to exclude
-    exclude: [
-      'client/js/*.min.js',
-      'client/js/app.js'
-    ],
+    client:{
+      clearContext: false // leave Jasmine Spec Runner output visible in browser
+    },
+    coverageIstanbulReporter: {
+      reports: [ 'html', 'lcovonly' ],
+      fixWebpackSourcePaths: true
+    },
+    angularCli: {
+      environment: 'dev'
+    },
 
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-    preprocessors: {
-    },
+    // preprocessors: {
+    // },
+    reporters: ['progress', 'kjhtml'],
 
 
     // test results reporter to use
@@ -81,10 +67,10 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false,
+    singleRun: false
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity
-  })
-}
+    // concurrency: Infinity
+  });
+};

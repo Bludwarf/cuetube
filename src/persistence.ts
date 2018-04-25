@@ -1,14 +1,16 @@
+///<reference path="../node_modules/@types/gapi.youtube/index.d.ts"/>
 import * as _ from 'underscore';
 import {Disc} from './disc';
-///<reference path="@types/utils.d.ts"/>
-///<reference path="CuePrinter.ts"/>
 import {CuePrinter} from './CuePrinter';
+import {PlayerComponent} from './app/player/player.component';
+import {HttpClient} from '@angular/common/http';
+import {Collection} from './Collection';
 
 export abstract class Persistence {
 
     static DEFAULT_COLLECTION = '_default_';
 
-    constructor(protected $scope: IPlayerScope, protected $http: ng.IHttpService) {
+    constructor(protected $scope: PlayerComponent, protected $http: HttpClient) {
     }
 
     /**
@@ -41,7 +43,7 @@ export abstract class Persistence {
             return results.reduce((map, collection) => {
                 map[collection.name] = collection;
                 return map;
-            }, {})
+            }, {});
         });
     }
 
@@ -94,19 +96,20 @@ export abstract class Persistence {
                     key: GOOGLE_KEY,
                     part: 'snippet,contentDetails',//'contentDetails', // contentDetails => durée
                     id: videoId,
-                    maxResults: 1
+                    maxResults: '1'
                 }
-            })
+            }).toPromise()
             // conversion success(data) -> then(res) {data = res.data}
             // conversion error(data) -> catch(res) {data = res.data}
                 .then(res => {
-                    let data = res.data;
-                    if (!data.items || data.items.length !== 1) return reject(new Error("Items not found for videoId " + videoId));
+                    // const data = res.data; // AngularJS
+                    const data = res; // Angular5
+                    if (!data.items || data.items.length !== 1) { return reject(new Error('Items not found for videoId ' + videoId)); }
                     this.$scope.debugData.getVideoSnippet = data;
                     resolve(data.items[0]);
                 }, resKO => {
                     reject(resKO.data);
-                })
+                });
         });
     }
 
@@ -131,22 +134,27 @@ export abstract class Persistence {
     public getPlaylistItems(playlistId: string, GOOGLE_KEY: string): Promise<GoogleApiYouTubePlaylistItemResource[]> {
         return new Promise((resolve, reject) => {
             // TODO : à mettre dans ytparser plutôt non ?
-            this.$http.get('https://www.googleapis.com/youtube/v3/playlistItems', {
+            this.$http.get<GoogleApiYouTubePaginationInfo<GoogleApiYouTubePlaylistItemResource>>(
+                'https://www.googleapis.com/youtube/v3/playlistItems', {
                 params: {
                     key: GOOGLE_KEY,
                     part: 'snippet',//'contentDetails',
                     playlistId: playlistId,
-                    maxResults: 50 // TODO : YouTube n'autorise pas plus que 50
+                    maxResults: '50' // TODO : YouTube n'autorise pas plus que 50
                 }
-            })
+            }).toPromise()
             // conversion success(data) -> then(res) {data = res.data}
                 .then(res => {
-                    const data: any = res.data;
-                    if (data.pageInfo && data.pageInfo.totalResults > data.pageInfo.resultsPerPage) return reject(new Error("Too much results (> 50)"));
-                    resolve(data);
+                    // const data: any = res.data; // AngularJS
+                    const data = res; // Angular5
+                    if (data.pageInfo && data.pageInfo.totalResults > data.pageInfo.resultsPerPage) {
+                        return reject(new Error('Too much results (> 50)'));
+                    }
+                    // resolve(data); // AngularJS
+                    resolve(data.items); // Angular5
                 }, res => {
                     reject(res.data);
-                })
+                });
         });
     }
 
@@ -157,20 +165,20 @@ export abstract class Persistence {
      */
     public async merge(src: Persistence): Promise<boolean> {
 
-        console.group("Synchro entre deux persistances en cours");
+        console.group('Synchro entre deux persistances en cours');
 
         // Synchro des collections
         return Promise.all([this.getCollectionNames(), src.getCollectionNames()]).then(results => {
             const [thisCollectionNames, srcCollectionNames] = results;
 
             // Récup des collections des deux côtés (obligé car on veut tous les disques plus tard)
-            console.log("Récup de toutes les collections des deux côtés...");
+            console.log('Récup de toutes les collections des deux côtés...');
             return Promise.all([
                 thisCollectionNames,
                 this.getCollectionByNames(thisCollectionNames),
                 srcCollectionNames,
                 src.getCollectionByNames(srcCollectionNames)
-            ])
+            ]);
         }).then(results => {
             const [thisCollectionNames, thisCollections, srcCollectionNames, srcCollections] = results;
 
@@ -178,25 +186,23 @@ export abstract class Persistence {
 
             // FIXME : gérer le cas de la collection "_default_"
 
-            let thisModified = false;
+            const thisModified = false;
 
             /** Collections absentes dans la source */
             const onlyInThis = thisCollectionNames.filter(name => !srcCollectionNames.includes(name));
 
             // TODO utilité de cet index ici ?
-            let discIndex = 0;
+            const discIndex = 0;
 
             // Synchro des collections
-            return Promise.all(
-                [thisCollectionNames, thisCollections, srcCollectionNames, srcCollections]
-            ).then(updateCollResults => {
+            return Promise.resolve().then(() => {
 
-                console.log("Début de la synchro des disques...");
-                const [thisCollectionNames, thisCollections, srcCollectionNames, srcCollections, ...modifiedCollections] = updateCollResults;
-
+                console.log('Début de la synchro des disques...');
                 const allCollections = [];
-                for (let name in thisCollections) {
+                for (const name in thisCollections) {
+                    if (thisCollections.hasOwnProperty(name)) {
                     allCollections.push(thisCollections[name]);
+                }
                 }
 
                 // Après synchro toutes les collections se trouvent dans thisCollections
@@ -205,8 +211,8 @@ export abstract class Persistence {
                 //.filter(collection => collection != null)
                     .map(collection => collection.discIds)
                     // Collecte de tous les discId sans doublon
-                    .reduce((allDiscIds, discIds) => {
-                        discIds.forEach(discId => {
+                    .reduce((allDiscIds, discIdsI) => {
+                        discIdsI.forEach(discId => {
                             if (allDiscIds.indexOf(discId) === -1) {
                                 allDiscIds.push(discId);
                             }
@@ -215,20 +221,20 @@ export abstract class Persistence {
                     }, []);
 
                 // Synchro de chaque disque
-                let discIndex = -1;// TODO
+                const nextDiscIndex = -1; // TODO
                 return Promise.all(
                     discIds.map(discId => Promise
                         .resolve(discId)
-                        .then(discId => {
-                            console.log(`Synchro du disque ${discId}...`);
-                            return discId;
+                        .then(discIdI => {
+                            console.log(`Synchro du disque ${discIdI}...`);
+                            return discIdI;
                         })
-                        .then(discId => Promise.all([
-                            this.getDisc(discId, discIndex).catch(e => null),
-                            src.getDisc(discId, discIndex).catch(e => null)
+                        .then(discIdI => Promise.all([
+                            this.getDisc(discIdI, nextDiscIndex).catch(e => null),
+                            src.getDisc(discIdI, nextDiscIndex).catch(e => null)
                         ]))
-                        .then(results => {
-                            const [thisDisc, srcDisc] = results;
+                        .then(discResults => {
+                            const [thisDisc, srcDisc] = discResults;
 
                             // Le disque n'est pas connu par tout le monde
                             if (!thisDisc || !srcDisc) {
@@ -253,11 +259,12 @@ export abstract class Persistence {
                             if (thisCueData === srcCueData) {
                                 console.log(`Disque ${discId} (${srcDisc.title}) inchangé`);
                             } else {
-                                console.log(`Disque ${discId} (${srcDisc.title}) différent. On prend celui de ${src.title}...`, thisCueData, srcCueData);
+                                console.log(`Disque ${discId} (${srcDisc.title}) différent. On prend celui de ${src.title}...`,
+                                    thisCueData, srcCueData);
                             }
                         })
                     )
-                )
+                );
 
             }).then(() => {
                 console.groupEnd();

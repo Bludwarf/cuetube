@@ -1,11 +1,11 @@
-/// <reference path="../@types/gapi.client.drive/index.d.ts" />
-/// <reference path="../@types/GoogleDrive.d.ts" />
-/// <reference path="../services/GapiClient.d.ts" />
-
 import {Persistence} from '../persistence';
 import {Disc} from '../Disc';
 import {CuePrinter} from '../CuePrinter';
 import drive = gapi.client.drive;
+import Player = YT.Player;
+import {PlayerComponent} from '../app/player/player.component';
+import {HttpClient} from '@angular/common/http';
+import {Collection} from '../Collection';
 
 export class GoogleDrivePersistence extends Persistence {
 
@@ -62,17 +62,17 @@ export class GoogleDrivePersistence extends Persistence {
          * Soit 10 req/s donc 1 req toutes les 100 ms
          * @see https://console.developers.google.com/apis/api/drive.googleapis.com/quotas?project=cuetube-bludwarf
          */
-        minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval) || 100, // ms
+        minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval, 10) || 100, // ms
         waiters: 0,
         nextWaiterId: 0
     };
 
-    constructor($scope: IPlayerScope, $http: ng.IHttpService) {
+    constructor($scope: PlayerComponent, $http: HttpClient) {
         super($scope, $http);
     }
 
     get title(): string {
-        return "Google Drive";
+        return 'Google Drive';
     }
 
     /**
@@ -80,12 +80,12 @@ export class GoogleDrivePersistence extends Persistence {
      */
     public init(params: any): Promise<boolean> {
         if (!params || !params.gapiClient) {
-            throw new Error("Veuillez appeler init avec {gapiClient}");
+            throw new Error('Veuillez appeler init avec {gapiClient}');
         }
         return params.gapiClient.init().then(() => {
 
             if (!gapi.client.drive) {
-                alert("Google Drive non initialisé");
+                alert('Google Drive non initialisé');
                 return Promise.resolve(false);
             }
 
@@ -107,14 +107,15 @@ export class GoogleDrivePersistence extends Persistence {
             }));
         }, e => {
             const err : GoogleDriveError = e;
-            if (errorContains(err, {reason: "notFound", location: "fileId"})) {
-                if (confirm('Tu dois créér un dossier "CueTube" dans ton Drive mon gars sinon CueTube pourra pas l\'utiliser. Appuie sur OK quand c\'est fait...')) {
+            if (errorContains(err, {reason: 'notFound', location: 'fileId'})) {
+                if (confirm('Tu dois créér un dossier "CueTube" dans ton Drive mon gars sinon CueTube pourra pas l\'utiliser. ' +
+                    + 'Appuie sur OK quand c\'est fait...')) {
                     return this.getFolders();
                 } else {
                     throw err;
                 }
             }
-            console.error("Erreur GoogleDrivePersistence.getFolders inconnue :");
+            console.error('Erreur GoogleDrivePersistence.getFolders inconnue :');
             console.error(err);
             throw err;
         });
@@ -133,7 +134,7 @@ export class GoogleDrivePersistence extends Persistence {
             if (file) {
                 return file;
             } else {
-                return this.findGoogleFile(name, parentId, true).then(file => fieldObject[field] = file);
+                return this.findGoogleFile(name, parentId, true).then(fileI => fieldObject[field] = fileI);
             }
         });
     }
@@ -184,7 +185,7 @@ export class GoogleDrivePersistence extends Persistence {
                     this.collectionsFiles.set(collectionName, file);
                 });
                 return collectionsNames;
-            })
+            });
     }
 
     /**
@@ -213,7 +214,7 @@ export class GoogleDrivePersistence extends Persistence {
             alt: 'media'
         }))
             .then(res => res.body)
-            .then(body => decodeURIComponent(escape(body))); // fix utf-8 issues : https://groups.google.com/forum/#!topic/google-api-javascript-client/Rb1lJX8yH_U
+            .then(body => utf8Decode(body));
     }
 
     /**
@@ -257,9 +258,9 @@ export class GoogleDrivePersistence extends Persistence {
             return this.getFolders()
                 // Recherche du fichier collection
                 .then(folders => this.findGoogleFile(`${collectionName}.cues`, folders.collectionsFolder.id))
-                .then(file => {
-                    this.collectionsFiles.set(collectionName, file); // cache
-                    return file;
+                .then(fileI => {
+                    this.collectionsFiles.set(collectionName, fileI); // cache
+                    return fileI;
                 });
         }
     }
@@ -287,7 +288,7 @@ export class GoogleDrivePersistence extends Persistence {
             .then(file => {
                 return this.tempoApiCall().then(delay => {
                     return file;
-                })
+                });
             })
             .then(file => this.upload({
                 id: file ? file.id : undefined,
@@ -313,7 +314,7 @@ export class GoogleDrivePersistence extends Persistence {
      *
      * @see https://developers.google.com/drive/v3/web/multipart-upload
      */
-    private upload(metadata: gapi.client.drive.File, data: string): gapi.client.HttpRequest<gapi.client.drive.File> {
+    private upload(metadata: gapi.client.drive.File, data: string): gapi.client.Request<gapi.client.drive.File> {
 
         // TODO : this.tempoApiCall()
 
@@ -327,14 +328,11 @@ export class GoogleDrivePersistence extends Persistence {
                 },
                 body: data
             });
-        }
-
-        // CREATE
-        else {
+        } else {
 
             const boundary = '-------314159265358979323846';
-            const delimiter = "\r\n--" + boundary + "\r\n";
-            const close_delim = "\r\n--" + boundary + "--";
+            const delimiter = '\r\n--' + boundary + '\r\n';
+            const close_delim = '\r\n--' + boundary + '--';
 
             const contentType = 'application/x-cue'; // https://www.filesuffix.com/en/extension/cue
             const multipartRequestBody =
@@ -374,9 +372,9 @@ export class GoogleDrivePersistence extends Persistence {
             return this.getDiscFolder(discId)
                 // Recherche du fichier cue
                 .then(folder => this.findGoogleFile(discId + '.cue', folder.id))
-                .then(file => {
-                    this.cuesFiles.set(discId, file); // cache
-                    return file;
+                .then(fileI => {
+                    this.cuesFiles.set(discId, fileI); // cache
+                    return fileI;
                 });
         }
     }
@@ -384,7 +382,11 @@ export class GoogleDrivePersistence extends Persistence {
     private getDiscFolder(discId: string): Promise<drive.File> {
         return this.getFolders()
             // Recherche des sous-dossiers
-            .then(folders => this.getGoogleFolders([discId[0].toUpperCase(), discId[1].toUpperCase(), discId[2].toUpperCase()], folders.cuesFolder.id))
+            .then(folders => this.getGoogleFolders([
+                discId[0].toUpperCase(),
+                discId[1].toUpperCase(),
+                discId[2].toUpperCase()
+            ], folders.cuesFolder.id))
             .then(subFolders => subFolders[2]);
     }
 
@@ -398,13 +400,13 @@ export class GoogleDrivePersistence extends Persistence {
         const name = names[0];
         return this.getGoogleFolder(name, parentId, name, subFolders).then(file => {
             files.push(file);
-            if (names.length == 1) {
+            if (names.length === 1) {
                 return Promise.resolve(files);
             } else {
                 const nextFieldObject = subFolders[name];
                 return this.getGoogleFolders(names.slice(1), file.id, files, nextFieldObject);
             }
-        })
+        });
     }
 
     /**
@@ -421,7 +423,7 @@ export class GoogleDrivePersistence extends Persistence {
         return this.tempoApiCall().then(delay => {
                 return gapi.client.drive.files.list({
                     q: q
-                })
+                });
             })
             .then(res => res.result.files)
             // Fichier trouvé ?
@@ -441,7 +443,7 @@ export class GoogleDrivePersistence extends Persistence {
                         }).then(res => res.result);
                     }
                 }
-                if (files.length > 1) throw new Error(`Plusieurs disques ${name} trouvés dans Google Drive : ${files.length}`);
+                if (files.length > 1) { throw new Error(`Plusieurs disques ${name} trouvés dans Google Drive : ${files.length}`); }
                 return files[0];
             });
     }
@@ -454,7 +456,8 @@ export class GoogleDrivePersistence extends Persistence {
      */
     public tempoApiCall(previousDelay: number = 0, waiterIdParam?: number): Promise<number> {
 
-        const consoleStyle = `background: no-repeat left center url(https://cdn.iconscout.com/public/images/icon/free/png-128/google-drive-social-media-logo-3e5f787c082474e3-128x128.png);
+        const consoleStyle = `background: no-repeat left center url(https://cdn.iconscout.com/public/images/icon/free/png-128/` +
+          `google-drive-social-media-logo-3e5f787c082474e3-128x128.png);
                     background-size: 16px;
                     padding-left: 20px;`;
 
@@ -488,9 +491,10 @@ export class GoogleDrivePersistence extends Persistence {
                         setTimeout(() => {
                             --persist.apiCall.waiters;
                             if (persist.apiCall.waiters) {
-                                console.debug(`%c ${persist.apiCall.waiters} promises encore en attente derrière le waiter ${waiterId}`, consoleStyle);
+                                console.debug(`%c ${persist.apiCall.waiters} promises encore en attente derrière le waiter ${waiterId}`,
+                                  consoleStyle);
                             }
-                            persist.tempoApiCall(previousDelay + delay, waiterId).then(delay => resolve(delay));
+                            persist.tempoApiCall(previousDelay + delay, waiterId).then(delay0 => resolve(delay0));
                         }, delay);
                     });
                     this.apiCall.lastPromise = promise;
@@ -516,7 +520,7 @@ export class GoogleDrivePersistence extends Persistence {
             .then(file => {
                 return this.tempoApiCall().then(delay => {
                     return file;
-                })
+                });
             })
             .then(file => this.upload({
                 id: file ? file.id : undefined,
@@ -535,33 +539,33 @@ export class GoogleDrivePersistence extends Persistence {
 interface GoogleDriveError {
     result: GoogleDriveErrorResult;
     /** result en string */
-    body: string,
+    body: string;
     /** map : nom du header en minuscule, valeur */
-    "headers": string;
+    'headers': string;
     /** 404 par exemple */
-    "status": number;
-    "statusText":null;
+    'status': number;
+    'statusText': null;
 }
 
 interface GoogleDriveErrorResult {
     error: {
-        "errors": GoogleDriveErrorDetail[],
-        "code": number; //404,
-        "message": string; //"File not found: ."
-    }
+        'errors': GoogleDriveErrorDetail[],
+        'code': number; // 404,
+        'message': string; // "File not found: ."
+    };
 }
 
 interface GoogleDriveErrorDetail {
     /** par exemple "global" */
-    "domain"?: string;
+    'domain'?: string;
     /** par exemple "notFound" */
-    "reason"?: string;
+    'reason'?: string;
     /** par exemple "File not found: ." */
-    "message"?: string;
+    'message'?: string;
     /** par exemple "parameter" */
-    "locationType"?: string;
+    'locationType'?: string;
     /** par exemple "fileId" */
-    "location"?: string;
+    'location'?: string;
 }
 
 function errorContains(error : GoogleDriveError, errorDetail : GoogleDriveErrorDetail) {
@@ -579,4 +583,68 @@ function equalsOnlyDefinedFields(actual, expected) {
         }
     }
     return true;
+}
+
+/**
+ * Encodes multi-byte Unicode string into utf-8 multiple single-byte characters
+ * (BMP / basic multilingual plane only).
+ *
+ * Chars in range U+0080 - U+07FF are encoded in 2 chars, U+0800 - U+FFFF in 3 chars.
+ *
+ * Can be achieved in JavaScript by unescape(encodeURIComponent(str)),
+ * but this approach may be useful in other languages.
+ *
+ * @param   {string} unicodeString - Unicode string to be encoded as UTF-8.
+ * @returns {string} UTF8-encoded string.
+ *
+ * @src https://gist.github.com/chrisveness/bcb00eb717e6382c5608
+ */
+function utf8Encode(unicodeString) {
+  if (typeof unicodeString !== 'string') {
+    throw new TypeError('parameter ‘unicodeString’ is not a string');
+  }
+
+  const utf8String = unicodeString.replace(
+    /[\u0080-\u07ff]/g,  // U+0080 - U+07FF => 2 bytes 110yyyyy, 10zzzzzz
+    function(c) {
+      const cc = c.charCodeAt(0);
+      return String.fromCharCode(0xc0 | cc >> 6, 0x80 | cc & 0x3f); }
+  ).replace(
+    /[\u0800-\uffff]/g,  // U+0800 - U+FFFF => 3 bytes 1110xxxx, 10yyyyyy, 10zzzzzz
+    function(c) {
+      const cc = c.charCodeAt(0);
+      return String.fromCharCode(0xe0 | cc >> 12, 0x80 | cc >> 6 & 0x3F, 0x80 | cc & 0x3f); }
+  );
+  return utf8String;
+}
+
+/**
+ * Decodes utf-8 encoded string back into multi-byte Unicode characters.
+ *
+ * Can be achieved JavaScript by decodeURIComponent(escape(str)),
+ * but this approach may be useful in other languages.
+ *
+ * @param   {string} utf8String - UTF-8 string to be decoded back to Unicode.
+ * @returns {string} Decoded Unicode string.
+ *
+ * @src https://gist.github.com/chrisveness/bcb00eb717e6382c5608
+ */
+function utf8Decode(utf8String) {
+  if (typeof utf8String !== 'string') {
+    throw new TypeError('parameter ‘utf8String’ is not a string');
+  }
+
+  // note: decode 3-byte chars first as decoded 2-byte strings could appear to be 3-byte char!
+  const unicodeString = utf8String.replace(
+    /[\u00e0-\u00ef][\u0080-\u00bf][\u0080-\u00bf]/g,  // 3-byte chars
+    function(c) {  // (note parentheses for precedence)
+      const cc = ((c.charCodeAt(0) & 0x0f) << 12) | ((c.charCodeAt(1) & 0x3f) << 6) | ( c.charCodeAt(2) & 0x3f);
+      return String.fromCharCode(cc); }
+  ).replace(
+    /[\u00c0-\u00df][\u0080-\u00bf]/g,                 // 2-byte chars
+    function(c) {  // (note parentheses for precedence)
+      const cc = (c.charCodeAt(0) & 0x1f) << 6 | c.charCodeAt(1) & 0x3f;
+      return String.fromCharCode(cc); }
+  );
+  return unicodeString;
 }

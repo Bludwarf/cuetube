@@ -1,8 +1,10 @@
 import CueSheet = cuesheet.CueSheet;
+import {HttpClient} from '@angular/common/http';
+import * as CueParser from './scripts/CueParser';
 
 export class CueService {
 
-    constructor(protected $http: ng.IHttpService) {
+    constructor(protected $http: HttpClient) {
     }
 
     // TODO : à factoriser dans une méthode cliente
@@ -12,7 +14,7 @@ export class CueService {
      */
     public static getPath(filename: string): string {
         const encode = CueService.encodePathComponent;
-        return [encode(filename[0]), encode(filename[1]), encode(filename[2]), filename].join("/");
+        return [encode(filename[0]), encode(filename[1]), encode(filename[2]), filename].join('/');
     }
 
     /** Nom d'un élément du chemin d'un fichier cue, normalisé */
@@ -25,7 +27,9 @@ export class CueService {
         const cueUrl = `https://raw.githubusercontent.com/Bludwarf/cuetube/cues/${path}`;
 
         const res = await fetch(cueUrl);
-        if (res.status != 200) throw new Error("HTTP "+res.status);
+        if (res.status !== 200) {
+          throw new Error('HTTP ' + res.status);
+        }
 
         const cueContent = await res.text();
         return CueParser.parse(cueContent);

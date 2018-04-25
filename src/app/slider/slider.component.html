@@ -1,0 +1,1 @@
+<input name="trackPosition" [value]="value" type="range" [min]="min" [max]="max" (change)="player.seekTo($event.target.value)" [readonly]="player.loadingTrack != null" />

@@ -1,16 +1,19 @@
 import {Persistence} from '../persistence';
 import {Disc} from '../disc';
+import {HttpClient} from '@angular/common/http';
+import {PlayerComponent} from '../app/player/player.component';
+import {Collection} from '../Collection';
 
 export class LocalStoragePersistence extends Persistence {
 
     static DEFAULT_COLLECTION = '_DEFAULT_';
 
-    constructor($scope: IPlayerScope, $http: ng.IHttpService) {
+    constructor($scope: PlayerComponent, $http: HttpClient) {
         super($scope, $http);
     }
 
     get title(): string {
-        return "LocalStorage";
+        return 'LocalStorage';
     }
 
     /**
@@ -40,7 +43,7 @@ export class LocalStoragePersistence extends Persistence {
     }
 
     public async getCollectionNames(): Promise<string[]> {
-        const knownNames = this.getItem<string[]>("collectionNames");
+        const knownNames = this.getItem<string[]>('collectionNames');
         if (knownNames) {
             return knownNames;
         }
@@ -61,14 +64,14 @@ export class LocalStoragePersistence extends Persistence {
         try {
             this.setCollectionNames(names);
         } catch (e) {
-            console.warn("Impossible de sauvegarder la liste des collections. Cause :", e);
+            console.warn('Impossible de sauvegarder la liste des collections. Cause :', e);
         }
 
         return names;
     }
 
     public async setCollectionNames(collectionsNames: string[]): Promise<string[]> {
-        this.setItem("collectionsNames", collectionsNames);
+        this.setItem('collectionsNames', collectionsNames);
         return collectionsNames;
     }
 
@@ -92,7 +95,7 @@ export class LocalStoragePersistence extends Persistence {
             try {
                 this.setCollectionNames(collectionNames);
             } catch (e) {
-                console.warn("Impossible de sauvegarder la liste des collections. Cause :", e);
+                console.warn('Impossible de sauvegarder la liste des collections. Cause :', e);
             }
         }
         return collection;
@@ -104,8 +107,7 @@ export class LocalStoragePersistence extends Persistence {
             throw new Error(`Le disque ${discId} n'a pas été trouvé dans le LocalStorage`);
         }
         const data = JSON.parse(json);
-        const disc = super.createDisc(discId, discIndex, data);
-        return disc;
+        return super.createDisc(discId, discIndex, data);
     }
 
     public async postDisc(discId: string, disc): Promise<any> {

@@ -21,7 +21,7 @@ declare module cuesheet {
     class File {
         name: string;
         type: string;
-        tracks: Track[]
+        tracks: Track[];
         rem: string[];
     }
 
