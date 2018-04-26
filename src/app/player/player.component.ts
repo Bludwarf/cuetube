@@ -36,13 +36,6 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   private localPersistence: LocalStoragePersistence;
   private persistence: Persistence;
 
-  /**
-   * Nom de la collection affiché à l'écran
-   * @deprecated à remplacer par currentCollectionNames
-   */
-  private collectionName: string;
-  private collectionNames: string[];
-
   private discsParam: string;
   private discIds: string[];
   public lastCheckedDisc: Disc;
@@ -52,6 +45,14 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   /** Toutes les collections indexées par nom de collection */
   private discIdsByCollection: {[key: string]: string[]} = {};
+
+  /**
+   * Nom de toutes les collections disponibles
+   */
+  private collectionNames: string[] = [];
+  /**
+   * Nom de toutes les collections en cours de lecture
+   */
   private currentCollectionNames = [];
 
   /** Utilisé par la persistance */
@@ -116,7 +117,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       }
   };
 
-  constructor(private http: HttpClient/*, private cuetubeConf*//*, private $ngConfirm*/, private gapiClient: GapiClientService, private zone: NgZone) { }
+  constructor(public http: HttpClient/*, private cuetubeConf*//*, private $ngConfirm*/, private gapiClient: GapiClientService, private zone: NgZone) { }
 
   ngOnInit() {
 
@@ -153,13 +154,6 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     })*/
 
     this.discsParam = getParameterByName('discs', document.location.search);
-
-
-    /**
-     * Nom de la collection affiché à l'écran
-     * @deprecated à remplacer par currentCollectionNames
-     */
-    this.collectionName = this.getCollectionParam() || 'Collection par défaut';
 
     // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
@@ -250,7 +244,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     });
 
     this.videoEnded.subscribe(() => {
-      console.log('$on("video ended"');
+      console.log('on video ended"');
       this.next();
     });
 
@@ -1363,10 +1357,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   }
 
   getDiscsIds(collectionName) {
-    const component = this;
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       // Recherche d'abord dans la mémoire
-      resolve(component.discIdsByCollection[collectionName]);
+      resolve(this.discIdsByCollection[collectionName]);
     }).then(discIds => {
       if (discIds) {
         return discIds;
@@ -1380,9 +1373,8 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     });
   }
 
-  playCollection(collectionName = DEFAULT_COLLECTION) {
-    this.currentCollectionNames = [collectionName];
-    this.collectionName = collectionName;
+  playCollection(collectionName?: string) {
+    this.currentCollectionNames = collectionName ? [collectionName] : [];
     this.loadDiscsFromCollections();
   }
 
@@ -1464,26 +1456,25 @@ export class PlayerComponent implements OnInit, AfterViewInit {
          this.localPersistence : new LocalServerPersistence(this, this.http);
   }
 
-  loadDiscs(discIdsToLoad) {
+  loadDiscs(discIdsToLoad): Promise<Disc[]> {
 
     console.log('Chargement des disques :', discIdsToLoad);
     this.hidePlayer();
 
-    const discLoaders = [];
+    const discLoaders: Promise<Disc>[] = [];
 
     for (let discIndex = 0; discIndex < discIdsToLoad.length; ++discIndex) {
 
       const discId = discIdsToLoad[discIndex];
       const component = this;
 
-      discLoaders[discIndex] = new Promise(function (resolve, reject) {
-        // Recherche d'abord dans la mémoire
-        resolve(component.discsById[discId]);
-      })
+      // Recherche d'abord dans la mémoire
+      discLoaders[discIndex] = new Promise<Disc>((resolve, reject) => resolve(component.discsById[discId]))
 
         .then(cacheDisc => { // Disc en cache ?
           if (cacheDisc) { return cacheDisc; }
 
+          let continueConfirm = true;
           return this.persistence.getDisc(discId, discIndex)
             .then(disc => {
               enrichDisc(disc, discIndex, this);
@@ -1512,7 +1503,10 @@ export class PlayerComponent implements OnInit, AfterViewInit {
             })
             .catch(resKO => {
               console.error('Error GET cuesheet ' + discId + ' via this.http :', resKO || resKO.data);
-              prompt('Veuillez ajouter la cuesheet ' + discId, discId);
+              if (continueConfirm) {
+                continueConfirm = prompt('Veuillez ajouter la cuesheet ' + discId, discId) !== null;
+              }
+              return <Disc>null;
             });
         });
 
@@ -1530,10 +1524,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       // .then(disc => this.discs[discIndex] = disc);
     } // for
 
-    Promise.all(discLoaders.map(p => p.catch(e => {
-
-      return e;
-    })))
+    return Promise.all(discLoaders.map(p => p.catch(e => e)))
       .then(loadedDiscs => {
         this.discs = loadedDiscs;
         console.log('Disques chargés :', loadedDiscs);
@@ -1542,27 +1533,37 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         } else {
           this.showPlayer();
         }
+        return loadedDiscs;
       })
-      .catch(e => console.log(e));
+      .catch(e => {
+        console.log(e);
+        return <Disc[]>null;
+      });
 
   }
 
-  loadDiscsFromCollections() {
+  loadDiscsFromCollections(): Promise<Disc[]> {
     this.hidePlayer();
+    const isDefaultCollection = this.currentCollectionNames.length === 0;
 
     // Historique navigateur
     const state = {
       currentCollectionNames: this.currentCollectionNames
     };
     const title = document.title;
-    document.title = 'CueTube - ' + this.currentCollectionNames.join(' + ');
-    const collectionParam = this.currentCollectionNames.join(',');
-    history.pushState(state, document.title, collectionParam ? '?collection=' + encodeURIComponent(collectionParam) : 'player');
+    if (isDefaultCollection) {
+      document.title = 'CueTube';
+      history.pushState(state, document.title, ''); // TODO donne bien l'URL actuelle dans l'historique ?
+    } else {
+      document.title = 'CueTube - ' + this.currentCollectionNames.join(' + ');
+      const collectionParam = this.currentCollectionNames.join(',');
+      history.pushState(state, document.title, collectionParam ? '?collection=' + encodeURIComponent(collectionParam) : 'player');
+    }
     document.title = title;
 
     // On récupère la liste des disques de toutes les collections actives
     const getDiscsIds = this.currentCollectionNames.map(collectionName => this.getDiscsIds(collectionName));
-    Promise.all(getDiscsIds.map(p => p.catch(e => e)))
+    return Promise.all(getDiscsIds.map(p => p.catch(e => e)))
       .then(discIdsByIndex => discIdsByIndex.reduce((all: Array<string>, array: Array<string>) => {
         // On concatère les disques sans doublons
         array.forEach(item => {
@@ -1576,6 +1577,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       .catch(e => {
         console.error(e);
         alert('Erreur lors du chargement des disques des collections : ' + e);
+        throw e;
       });
   }
 

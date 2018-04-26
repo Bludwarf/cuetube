@@ -48,6 +48,7 @@
     "@types/jasminewd2": "~2.0.2",
     "@types/node": "~6.0.60",
     "codelyzer": "^4.0.1",
+    "gh-pages": "^1.1.0",
     "jasmine-core": "~2.8.0",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~2.0.0",
@@ -63,11 +64,14 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --prod",
+    "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "test:server": "node node_modules/nodemon/bin/nodemon.js --exec jasmine",
-    "test:client": "node node_modules/karma/bin/karma start karma.conf.js"
+    "test:client": "node node_modules/karma/bin/karma start karma.conf.js",
+    "build:prod": "ng build --prod --base-href /cuetube/",
+    "deploy": "npm run gh-pages",
+    "gh-pages": "gh-pages -d dist -b gh-pages"
   }
 }

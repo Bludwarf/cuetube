@@ -12,9 +12,9 @@
                         </div>
                         <div id="collapseOne" class="panel-collapse collapse in">
                             <ul class="list-group">
-                                <li class="list-group-item clickable" (click)="playCollection()"><i>Collection par défaut</i></li>
-                                <li class="list-group-item clickable" *ngFor="let collectionNameI of collectionNames" [class.active]="collectionNameI === collectionName" (click)="playCollection(collectionNameI)">
-                                    <input style="margin-right: 8px;" type="checkbox" [checked]="currentCollectionNames.indexOf(collectionNameI) != -1" (click)="toggleCollection(collectionNameI, $event)" />{{collectionNameI}}
+                                <li class="list-group-item clickable" (click)="playCollection()" [class.active]="currentCollectionNames.length === 0"><i>Collection par défaut</i></li>
+                                <li class="list-group-item clickable" *ngFor="let collectionNameI of collectionNames" [class.active]="currentCollectionNames.indexOf(collectionNameI) !== -1" (click)="playCollection(collectionNameI)">
+                                    <input style="margin-right: 8px;" type="checkbox" [checked]="currentCollectionNames.indexOf(collectionNameI) !== -1" (click)="toggleCollection(collectionNameI, $event)" />{{collectionNameI}}
                                 </li>
                             </ul>
                         </div>

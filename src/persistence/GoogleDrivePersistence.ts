@@ -2,10 +2,10 @@ import {Persistence} from '../persistence';
 import {Disc} from '../Disc';
 import {CuePrinter} from '../CuePrinter';
 import drive = gapi.client.drive;
-import Player = YT.Player;
 import {PlayerComponent} from '../app/player/player.component';
 import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
+import {StringUtils} from '../StringUtils';
 
 export class GoogleDrivePersistence extends Persistence {
 
@@ -62,7 +62,7 @@ export class GoogleDrivePersistence extends Persistence {
          * Soit 10 req/s donc 1 req toutes les 100 ms
          * @see https://console.developers.google.com/apis/api/drive.googleapis.com/quotas?project=cuetube-bludwarf
          */
-        minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval, 10) || 100, // ms
+        minInterval: this.prefs.googleDrive.minInterval && parseInt(this.prefs.googleDrive.minInterval, 10) || 110, // ms
         waiters: 0,
         nextWaiterId: 0
     };
@@ -214,7 +214,7 @@ export class GoogleDrivePersistence extends Persistence {
             alt: 'media'
         }))
             .then(res => res.body)
-            .then(body => utf8Decode(body));
+            .then(body => StringUtils.utf8Decode(body));
     }
 
     /**
@@ -583,68 +583,4 @@ function equalsOnlyDefinedFields(actual, expected) {
         }
     }
     return true;
-}
-
-/**
- * Encodes multi-byte Unicode string into utf-8 multiple single-byte characters
- * (BMP / basic multilingual plane only).
- *
- * Chars in range U+0080 - U+07FF are encoded in 2 chars, U+0800 - U+FFFF in 3 chars.
- *
- * Can be achieved in JavaScript by unescape(encodeURIComponent(str)),
- * but this approach may be useful in other languages.
- *
- * @param   {string} unicodeString - Unicode string to be encoded as UTF-8.
- * @returns {string} UTF8-encoded string.
- *
- * @src https://gist.github.com/chrisveness/bcb00eb717e6382c5608
- */
-function utf8Encode(unicodeString) {
-  if (typeof unicodeString !== 'string') {
-    throw new TypeError('parameter ‘unicodeString’ is not a string');
-  }
-
-  const utf8String = unicodeString.replace(
-    /[\u0080-\u07ff]/g,  // U+0080 - U+07FF => 2 bytes 110yyyyy, 10zzzzzz
-    function(c) {
-      const cc = c.charCodeAt(0);
-      return String.fromCharCode(0xc0 | cc >> 6, 0x80 | cc & 0x3f); }
-  ).replace(
-    /[\u0800-\uffff]/g,  // U+0800 - U+FFFF => 3 bytes 1110xxxx, 10yyyyyy, 10zzzzzz
-    function(c) {
-      const cc = c.charCodeAt(0);
-      return String.fromCharCode(0xe0 | cc >> 12, 0x80 | cc >> 6 & 0x3F, 0x80 | cc & 0x3f); }
-  );
-  return utf8String;
-}
-
-/**
- * Decodes utf-8 encoded string back into multi-byte Unicode characters.
- *
- * Can be achieved JavaScript by decodeURIComponent(escape(str)),
- * but this approach may be useful in other languages.
- *
- * @param   {string} utf8String - UTF-8 string to be decoded back to Unicode.
- * @returns {string} Decoded Unicode string.
- *
- * @src https://gist.github.com/chrisveness/bcb00eb717e6382c5608
- */
-function utf8Decode(utf8String) {
-  if (typeof utf8String !== 'string') {
-    throw new TypeError('parameter ‘utf8String’ is not a string');
-  }
-
-  // note: decode 3-byte chars first as decoded 2-byte strings could appear to be 3-byte char!
-  const unicodeString = utf8String.replace(
-    /[\u00e0-\u00ef][\u0080-\u00bf][\u0080-\u00bf]/g,  // 3-byte chars
-    function(c) {  // (note parentheses for precedence)
-      const cc = ((c.charCodeAt(0) & 0x0f) << 12) | ((c.charCodeAt(1) & 0x3f) << 6) | ( c.charCodeAt(2) & 0x3f);
-      return String.fromCharCode(cc); }
-  ).replace(
-    /[\u00c0-\u00df][\u0080-\u00bf]/g,                 // 2-byte chars
-    function(c) {  // (note parentheses for precedence)
-      const cc = (c.charCodeAt(0) & 0x1f) << 6 | c.charCodeAt(1) & 0x3f;
-      return String.fromCharCode(cc); }
-  );
-  return unicodeString;
 }
