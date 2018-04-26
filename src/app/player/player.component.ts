@@ -5,6 +5,7 @@ import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence
 import {LocalServerPersistence} from '../../persistence/LocalServerPersistence';
 import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
 import {Disc} from '../../disc';
+import {Collection} from '../../Collection';
 import {Persistence} from '../../persistence';
 import {CueService} from '../../CueService';
 import * as _ from 'underscore';
@@ -49,16 +50,16 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   /**
    * Nom de toutes les collections disponibles
    */
-  private collectionNames: string[] = [];
+  collectionNames: string[] = [];
   /**
    * Nom de toutes les collections en cours de lecture
    */
-  private currentCollectionNames = [];
+  currentCollectionNames = [];
 
   /** Utilisé par la persistance */
   public debugData: any;
 
-  private repeatMode: string;
+  repeatMode: string;
 
   public discs: Disc[];
   private discsById: {[key: string]: Disc};
@@ -74,7 +75,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   private isInitYT = false;
 
   /** latence si on passe par this.player.getPlayerStat() */
-  private isPlaying: boolean = undefined;
+  isPlaying: boolean = undefined;
 
   // EVENTS //////////////////////
 
@@ -93,7 +94,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     max: 100
   };
   @ViewChild(SliderComponent)
-  private slider: SliderComponent;
+  slider: SliderComponent;
   private sliderPosition = 0;
 
   private lastCheckedTime: number;
@@ -105,7 +106,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   /** @see YT_STATES */
   private lastPlayerStates: number[] = [];
 
-  private connectedToGoogleDrive = false;
+  connectedToGoogleDrive = false;
 
   private lastToggledTracklist;
 
@@ -1052,7 +1053,12 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     });
   }
 
-  createNewDiscFromVideoOrPlaylist(url, cb) {
+  /**
+   * Création d'un nouveau disque à partir d'une vidéo ou d'une playlist YouTube
+   * @param {string} url? URL de la vidéo/playlist, si vide alors on demande à l'utilisateur
+   * @param cb? callback
+   */
+  createNewDiscFromVideoOrPlaylist(url?: string, cb?: {(collection: Collection)}) {
 
     url = url || prompt('URL de la vidéo/playlist YouTube');
     cb = cb || (err => {
@@ -1119,7 +1125,11 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     }
   }
 
-  createCollection(name) {
+  /**
+   * Création d'une nouvelle collection vide
+   * @param {string} name? nom de la collection, si vide alors on demande à l'utilisateur
+   */
+  createCollection(name?: string) {
     name = name || prompt('Nom de la collection à créer');
     if (name) {
       name = name.trim();
