@@ -192,6 +192,8 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       const disc = file.disc;
       document.title = track.title + ' - CueTube'; // Youtube affiche : disc.title + " - m3u-YouTube"
 
+        $(".background-overlay").css('background-image', `url(${track.file.background})`);
+
       // Notif
       notify((track.title || 'Track ' + track.number), {
         tag: 'onTrackStarted',
@@ -405,7 +407,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         loginBtn.innerText = "Connecté·e";
         this.connectedToGoogleDrive = true;
       }
-    })*/.then(isInit => this.persistence.getCollectionNames()).then(collectionNames => {
+    })*/.then(isInit => this.persistence.getCollectionNames())
+    .then(collectionNames => collectionNames.filter(collectionName => collectionNames && collectionName.toLowerCase() !== DEFAULT_COLLECTION.toLowerCase()))
+    .then(collectionNames => {
       collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
       this.collectionNames = collectionNames;
       console.log('this.$apply(); init');
@@ -535,6 +539,8 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   onYouTubeIframeAPIReady() {
 
+    console.log("YouTube initialisé");
+
     // On cache le masque
     this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
     this.$foreground.hide();
@@ -621,15 +627,21 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * @param track {Disc.Track} piste à charger
+   * @param track {Disc.Track} piste à charger TODO devrait être remplacé par file pour éviter des désynchro
    */
-  loadTrack(track, time?) {
+  loadTrack(track: Disc.Track, time?) {
 
     clearTimeout(this.checkCurrentTimeTimeout); // suppression de tous les timers
 
     const file = track.file;
     const disc = file.disc;
     const multiTrack = file.tracks.length > 1;
+
+    if (time < track.startSeconds || time > track.endSeconds) {
+        console.error(`Impossible de charger la piste #${track.index} du disque ${disc.title} à t=${time} car début=${track.startSeconds} et fin =${track.endSeconds}.`, track);
+        track = file.getTrackAt(time);
+        console.log(`On charge la piste #${track.index} à la place`);
+    }
 
     // On active automatiquement cette piste et ce disque
     disc.enabled = true;
@@ -679,7 +691,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
       if (this.currentTrack === track || player && player.getVideoUrl
         && getParameterByName('v', player.getVideoUrl()) === track.file.videoId) {
-        this.reloadTrack(track);
+        this.seekToTrack(track);
       } else {
         // FIXME : graphiquement on ne voit plus les bornes start et end
         player.loadVideoById({
@@ -698,9 +710,10 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * Charge une piste de la vidéo (file) déjà en cours de lecture
    * @param track {Disc.Track} piste à charger
    */
-  reloadTrack(track) {
+  seekToTrack(track) {
     track = track || this.currentTrack;
     this.loadingTrack = track;
     const start = getYouTubeStartSeconds(track); // YouTube n'accèpte que des entiers
@@ -1243,7 +1256,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     const lastState = this.lastPlayerStates.length ? this.lastPlayerStates[this.lastPlayerStates.length - 1] : undefined;
     this.lastPlayerStates.push(state);
 
-    console.log('player state : ' + state + (YT_STATES[state] ? ':' + YT_STATES[state] : ''));
+    console.log('%c player state : ' + state + (YT_STATES[state] ? ':' + YT_STATES[state] : ''), `background: no-repeat left center url(https://youtube.com/favicon.ico); background-size: 16px; padding-left: 20px;`);
 
     // N'importe quel évènement après un chrono de deleted video => la supprimée n'est pas supprimée
     if (this.deletedVideoTimeout) {
@@ -1383,9 +1396,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     });
   }
 
-  playCollection(collectionName?: string) {
+  playCollection(collectionName?): Promise<Disc[]> {
     this.currentCollectionNames = collectionName ? [collectionName] : [];
-    this.loadDiscsFromCollections();
+    return this.loadDiscsFromCollections();
   }
 
   // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
@@ -1563,16 +1576,17 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     const title = document.title;
     if (isDefaultCollection) {
       document.title = 'CueTube';
-      history.pushState(state, document.title, ''); // TODO donne bien l'URL actuelle dans l'historique ?
+      history.pushState(state, document.title, '/player'); // TODO donne bien l'URL actuelle dans l'historique ?
     } else {
       document.title = 'CueTube - ' + this.currentCollectionNames.join(' + ');
       const collectionParam = this.currentCollectionNames.join(',');
-      history.pushState(state, document.title, collectionParam ? '?collection=' + encodeURIComponent(collectionParam) : 'player');
+      history.pushState(state, document.title, '/player' + collectionParam ? '?collection=' + encodeURIComponent(collectionParam) : 'player');
     }
     document.title = title;
 
     // On récupère la liste des disques de toutes les collections actives
-    const getDiscsIds = this.currentCollectionNames.map(collectionName => this.getDiscsIds(collectionName));
+    const getDiscsIds = this.currentCollectionNames
+      .map(collectionName => this.getDiscsIds(collectionName ? collectionName : DEFAULT_COLLECTION));
     return Promise.all(getDiscsIds.map(p => p.catch(e => e)))
       .then(discIdsByIndex => discIdsByIndex.reduce((all: Array<string>, array: Array<string>) => {
         // On concatère les disques sans doublons
@@ -1658,7 +1672,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     const scope = event ? event.currentScope : this;
 
     if (scope.repeatMode === 'track') {
-      scope.reloadTrack();
+      scope.seekToTrack();
     } else if (scope.shuffle) {
       scope.next();
     } else {

@@ -1,13 +1,19 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
-
+import { RouterModule, Routes } from '@angular/router';
 import { AppComponent } from './app.component';
 import { PlayerComponent } from './player/player.component';
 import 'jquery';
 import {GapiClientService} from './gapi-client.service';
 import { SliderComponent } from './slider/slider.component';
 import {FormsModule} from '@angular/forms';
+
+const appRoutes: Routes = [
+  { path: '',         redirectTo: 'player', pathMatch: 'full' },
+  { path: 'player',   component: PlayerComponent },
+  // { path: 'edit-cue', component: EditCueComponent }
+];
 
 @NgModule({
   declarations: [
@@ -16,6 +22,10 @@ import {FormsModule} from '@angular/forms';
     SliderComponent
   ],
   imports: [
+    RouterModule.forRoot(
+      appRoutes,
+      { enableTracing: true } // <-- debugging purposes only
+    ),
     BrowserModule,
     // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
     HttpClientModule,

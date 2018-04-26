@@ -395,7 +395,7 @@ export module Disc {
         set videoId(value: string) {
       this.name = setParameterByName('v', value, this.name);
         }
-        
+
         newTrack() {
             const tracks = this.disc.tracks;
             const number = tracks.length+1;
@@ -471,17 +471,27 @@ export module Disc {
         }
 
         get icon(): string {
-      return 'https://img.youtube.com/vi/' + this.videoId + '/default.jpg';
+            return 'https://img.youtube.com/vi/' + this.videoId + '/default.jpg';
+        }
+
+        /**
+         * L'image de la vidéo en grande taille pour un fond d'écran
+         * @return {string}
+         */
+        get background(): string {
+            return 'https://img.youtube.com/vi/' + this.videoId + '/hqdefault.jpg';
         }
     }
 
     export class Track {
 
         public enabled: boolean;
+
+        /** Commence à 0 */
         public index: number;
 
-    /** nombre de lecteur de la piste */
-    public played = 0;
+        /** nombre de lecteur de la piste */
+        public played = 0;
 
         /**
          * @param {Disc.File} file fichier parent
