@@ -27,7 +27,7 @@
                 <div id="remain-div">
 
                     <div id="header">
-                        <h1 *ngIf="getCollectionParam()">{{currentCollectionNames.join(' + ')}}</h1>
+                        <h1>{{currentCollectionNames.length ? currentCollectionNames.join(' + ') : '&nbsp;'}}</h1>
                         <div class="buttons">
                             <!--<button (click)="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
                             <button (click)="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
