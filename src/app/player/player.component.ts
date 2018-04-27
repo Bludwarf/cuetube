@@ -1497,7 +1497,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         .then(cacheDisc => { // Disc en cache ?
           if (cacheDisc) { return cacheDisc; }
 
-          let continueConfirm = true;
+          let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
           return this.persistence.getDisc(discId, discIndex)
             .then(disc => {
               enrichDisc(disc, discIndex, this);

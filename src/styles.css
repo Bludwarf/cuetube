@@ -6,3 +6,7 @@
 @import './styles/bootstrap-responsive.min.css';
 @import './styles/angular-confirm.min.css';
 @import './styles/CueTube-icons.css';
+
+a {
+    cursor: pointer;
+}

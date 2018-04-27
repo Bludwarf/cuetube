@@ -55,7 +55,7 @@
                                 <h3 class="disc-performer" *ngIf="disc.performer">{{disc.performer}}</h3>
 
                                 <a href="edit-cue?id={{disc.id}}" target="_blank">Éditer</a>
-                                <a href="#" class="hover-red" (click)="removeDisc(disc)" title="Retirer le disque de cette collection"><span class="glyphter-bin"></span></a>
+                                <a class="hover-red" (click)="removeDisc(disc)" title="Retirer le disque de cette collection"><span class="glyphter-bin"></span></a>
                                 &nbsp;
                                 <a [href]="disc.src" title="Voir sur YouTube" *ngIf="disc.src"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
                                 <div class="columns">
