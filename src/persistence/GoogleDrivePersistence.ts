@@ -7,7 +7,6 @@ import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
 import {StringUtils} from '../StringUtils';
 import * as Queue from 'promise-queue';
-import {queue} from 'rxjs/scheduler/queue';
 
 export class GoogleDrivePersistence extends Persistence {
 
