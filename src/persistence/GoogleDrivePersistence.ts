@@ -1,5 +1,5 @@
 import {Persistence} from '../persistence';
-import {Disc} from '../Disc';
+import {Disc} from '../disc';
 import {CuePrinter} from '../CuePrinter';
 import drive = gapi.client.drive;
 import {PlayerComponent} from '../app/player/player.component';
