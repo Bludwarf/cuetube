@@ -11,6 +11,7 @@ import {CueService} from '../../CueService';
 import * as _ from 'underscore';
 import {GapiClientService} from '../gapi-client.service';
 import {SliderComponent} from '../slider/slider.component';
+import {ytparser} from '../../yt-parser';
 
 const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
 

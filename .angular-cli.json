@@ -27,7 +27,6 @@
         "../node_modules/underscore/underscore-min.js",
         "./scripts/cuesheet.js",
         "./scripts/yt-helper.js",
-        "./scripts/yt-parser.js",
         "./scripts/utils.js",
         "../node_modules/moment/min/moment.min.js",
         "./scripts/CueParser.js"

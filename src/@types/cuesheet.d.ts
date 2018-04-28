@@ -14,8 +14,8 @@ declare module cuesheet {
 
         getCurrentFile(): File;
         getCurrentTrack(): Track;
-        newFile(): File;
-        newTrack(number: number, type: string): Track;
+        newFile(): CueSheet;
+        newTrack(number?: number, type?: string): CueSheet;
     }
 
     class File {
@@ -44,6 +44,8 @@ declare module cuesheet {
     class Index {
         number: number;
         time: Time;
+
+        constructor(number?: number, type?: string);
     }
 
     class Time {
@@ -51,6 +53,6 @@ declare module cuesheet {
         sec: number;
         frame: number;
 
-        constructor(min: number, sec: number, frame: number);
+        constructor(min?: number, sec?: number, frame?: number);
     }
 }
