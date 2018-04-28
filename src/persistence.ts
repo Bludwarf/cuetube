@@ -39,6 +39,7 @@ export abstract class Persistence {
 
     public getCollectionByNames(collectionsNames: string[]): Promise<{[key: string]: Collection}> {
         return Promise.all(collectionsNames.map(name => this.getCollection(name))).then(results => {
+            console.log(collectionsNames, 'results', results);
             // conversion array => map
             return results.reduce((map, collection) => {
                 map[collection.name] = collection;
@@ -77,10 +78,9 @@ export abstract class Persistence {
     }
 
     public async newCollection(collectionName: string): Promise<Collection> {
-        return this.postCollection({
-            name: collectionName,
-            discIds: []
-        });
+        const collection = new Collection(collectionName);
+        collection.discIds = [];
+        return this.postCollection(collection);
     }
 
     public abstract getDisc(discId: string, discIndex: number): Promise<Disc>;
@@ -159,11 +159,11 @@ export abstract class Persistence {
     }
 
     /**
-     * Fusionne la persistence src avec la persistence actuelle.
+     * Fusionne la persistence src avec la persistence actuelle. À la fin les deux persistence sont égales.
      * @param {Persistence} src persistence à intégrer dans la courante
-     * @return {Promise<boolean>} true si la persistence actuelle a été modifiée suite au merge
+     * @return {Promise<boolean>} true si la persistence actuelle a été modifiée suite au sync
      */
-    public async merge(src: Persistence): Promise<boolean> {
+    public async sync(src: Persistence): Promise<boolean> {
 
         console.group('Synchro entre deux persistances en cours');
 

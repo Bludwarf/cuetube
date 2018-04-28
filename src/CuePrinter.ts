@@ -50,35 +50,39 @@ export class CuePrinter {
         }
 
         // files
-        for (let f = 0; f < cue.files.length; ++f) {
-            const file = cue.files[f];
+        if (cue.files) {
+            for (let f = 0; f < cue.files.length; ++f) {
+                const file = cue.files[f];
 
-            if (file.name) {
-                data += 'FILE "' + file.name + '" ' + (file.type || 'MP3') + EOL;
-            }
-
-            for (let t = 0; t < file.tracks.length; ++t) {
-                const track = file.tracks[t];
-                data += PAD + 'TRACK ' + pad2(track.number) + ' ' + (track.type || 'AUDIO') + EOL;
-
-                // performer
-                if (track.performer) {
-                    data += PAD + 'PERFORMER ' + stringValue(track.performer) + EOL;
+                if (file.name) {
+                    data += 'FILE "' + file.name + '" ' + (file.type || 'MP3') + EOL;
                 }
 
-                if (track.title) { data += PAD + PAD + 'TITLE ' + stringValue(track.title) + EOL; }
+                for (let t = 0; t < file.tracks.length; ++t) {
+                    const track = file.tracks[t];
+                    data += PAD + 'TRACK ' + pad2(track.number) + ' ' + (track.type || 'AUDIO') + EOL;
 
-                if (track.rem) {
-                    track.rem.forEach(rem => {
-                        data += PAD + 'REM ' + rem + EOL;
-                    });
-                }
+                    // performer
+                    if (track.performer) {
+                        data += PAD + 'PERFORMER ' + stringValue(track.performer) + EOL;
+                    }
 
-                for (let i = 0; i < track.indexes.length; ++i) {
-                    const index = track.indexes[i];
-                    const time = index.time;
-                    const timecode = pad2(time.min) + ':' + pad2(time.sec) + ':' + pad2(time.frame);
-                    data += PAD + PAD + 'INDEX ' + pad2(index.number) + ' ' + timecode + EOL;
+                    if (track.title) {
+                        data += PAD + PAD + 'TITLE ' + stringValue(track.title) + EOL;
+                    }
+
+                    if (track.rem) {
+                        track.rem.forEach(rem => {
+                            data += PAD + 'REM ' + rem + EOL;
+                        });
+                    }
+
+                    for (let i = 0; i < track.indexes.length; ++i) {
+                        const index = track.indexes[i];
+                        const time = index.time;
+                        const timecode = pad2(time.min) + ':' + pad2(time.sec) + ':' + pad2(time.frame);
+                        data += PAD + PAD + 'INDEX ' + pad2(index.number) + ' ' + timecode + EOL;
+                    }
                 }
             }
         }

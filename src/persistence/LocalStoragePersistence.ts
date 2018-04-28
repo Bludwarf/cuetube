@@ -6,7 +6,7 @@ import {Collection} from '../Collection';
 
 export class LocalStoragePersistence extends Persistence {
 
-    static DEFAULT_COLLECTION = '_DEFAULT_';
+    static DEFAULT_COLLECTION = '_DEFAULT_'; // FIXME utiliser la constante de player.component
 
     constructor($scope: PlayerComponent, $http: HttpClient) {
         super($scope, $http);
