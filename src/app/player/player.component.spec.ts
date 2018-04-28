@@ -7,7 +7,7 @@ import {HttpClientModule} from '@angular/common/http';
 import {AppComponent} from '../app.component';
 import {SliderComponent} from '../slider/slider.component';
 import {GapiClientService} from '../gapi-client.service';
-import 'jquery';
+import * as $ from 'jquery';
 
 describe('PlayerComponent', () => {
   let component: PlayerComponent;

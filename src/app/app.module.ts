@@ -4,7 +4,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
 import { AppComponent } from './app.component';
 import { PlayerComponent } from './player/player.component';
-import 'jquery';
+import * as $ from 'jquery';
 import {GapiClientService} from './gapi-client.service';
 import { SliderComponent } from './slider/slider.component';
 import {FormsModule} from '@angular/forms';
