@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Bludwarf/cuetube.svg?branch=master)](https://travis-ci.org/Bludwarf/cuetube)
+
 # Utilisation
 
 ## Player
