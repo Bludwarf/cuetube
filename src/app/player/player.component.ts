@@ -1408,6 +1408,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         loginBtn.innerText = 'Connexion...';
         // this.hidePlayer();
 
+        const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
         const googleDrivePersistence = new GoogleDrivePersistence(this, this.http);
         this.googleDrivePersistence = googleDrivePersistence; // debug
         googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
@@ -1419,7 +1420,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
                 localStorage.setItem('connectedToGoogleDrive', 'true');
 
                 // synchro avec l'ancienne persistance pour ne rien perdre
-                this.persistence.sync(googleDrivePersistence).then(syncResult => {
+                oldPersistence.sync(googleDrivePersistence).then(syncResult => {
                     const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
                     console.log(message);
                     console.log(syncResult);
@@ -1428,7 +1429,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
                     // On ne change pas de persistence pour accélérer les perfs
                     // puisse qu'on synchronise à chaque démarrage
                     // TODO : attention on crée avec this.persistence et pas localStorage
-                    this.persistence = new LocalAndDistantPersistence(this.persistence, googleDrivePersistence);
+                    this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
                     localStorage.setItem('persistence', 'GoogleDrive');
 
                     this.init();
