@@ -110,7 +110,7 @@ export class LocalStoragePersistence extends Persistence {
         return super.createDisc(discId, discIndex, data);
     }
 
-    public async postDisc(discId: string, disc): Promise<any> {
+    public async postDisc(discId: string, disc): Promise<Disc> {
         localStorage.setItem(`disc.${discId}.cuesheet`, JSON.stringify(disc.cuesheet));
         return disc;
     }

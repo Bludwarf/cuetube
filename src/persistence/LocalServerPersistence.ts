@@ -38,10 +38,8 @@ export class LocalServerPersistence extends Persistence {
     public getCollection(collectionName: string): Promise<Collection> {
         return new Promise((resolve, reject) => {
             this.$http.get<string[]>(`/collection/${collectionName}/discs`).toPromise().then(discIds => {
-                const collection = {
-                    name: collectionName,
-                    discIds: discIds
-                };
+                const collection = new Collection(collectionName);
+                collection.discIds = discIds;
                 resolve(collection);
             }, resKO => {
                 console.error('Error GET collection != 200');
@@ -72,7 +70,7 @@ export class LocalServerPersistence extends Persistence {
     }
 
     // TODO : renvoyer plutôt le disc que le résultat du post
-    public postDisc(discId: string, disc): Promise<any> {
+    public postDisc(discId: string, disc): Promise<Disc> {
         return new Promise((resolve, reject) => {
             this.$http.post(`/${discId}.cue.json`, disc).toPromise().then(resolve, reject);
         });

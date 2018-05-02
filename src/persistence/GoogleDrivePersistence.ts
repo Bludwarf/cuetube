@@ -243,10 +243,9 @@ export class GoogleDrivePersistence extends Persistence {
             })
             // Création de l'objet collection
             .then(discIds => {
-                return {
-                    name: collectionName,
-                    discIds: discIds
-                };
+                const collection = new Collection(collectionName);
+                collection.discIds = discIds;
+                return collection;
             });
     }
 
@@ -480,7 +479,7 @@ export class GoogleDrivePersistence extends Persistence {
         });
     }
 
-    postDisc(discId: string, disc: Disc): Promise<any> {
+    postDisc(discId: string, disc: Disc): Promise<Disc> {
         const content = CuePrinter.print(disc.cuesheet);
         let discFolder: drive.File;
         return this.getDiscFolder(discId)

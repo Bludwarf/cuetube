@@ -12,6 +12,7 @@ import * as _ from 'underscore';
 import {GapiClientService} from '../gapi-client.service';
 import {SliderComponent} from '../slider/slider.component';
 import {ytparser} from '../../yt-parser';
+import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 
 const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
 
@@ -36,6 +37,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   private cueService: CueService;
 
   private localPersistence: LocalStoragePersistence;
+  public googleDrivePersistence: GoogleDrivePersistence; // debug
   private persistence: Persistence;
 
   private discsParam: string;
@@ -1151,10 +1153,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         alert('Cette collection existe déjà mec !');
         return;
       }
-      const collection = {
-        name: name,
-        discIds: []
-      };
+      const collection = new Collection(name);
       this.persistence.postCollection(collection).then(collectionCreee => {
         this.openCollection(name);
       });
@@ -1403,45 +1402,53 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   }
 
   // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
-  connectGoogleDrive() {
+    connectGoogleDrive() {
 
-    const loginBtn = document.getElementById('login-btn');
-    loginBtn.innerText = 'Connexion...';
-    // this.hidePlayer();
+        const loginBtn = document.getElementById('login-btn');
+        loginBtn.innerText = 'Connexion...';
+        // this.hidePlayer();
 
-    const googleDrivePersistence = new GoogleDrivePersistence(this, this.http);
-    googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
+        const googleDrivePersistence = new GoogleDrivePersistence(this, this.http);
+        this.googleDrivePersistence = googleDrivePersistence; // debug
+        googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
 
-      if (isInit) {
-        loginBtn.innerText = 'Connecté·e';
-        this.connectedToGoogleDrive = true;
-        localStorage.setItem('connectedToGoogleDrive', 'true');
+            if (isInit) {
+                notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
+                loginBtn.innerText = 'Connecté·e';
+                this.connectedToGoogleDrive = true;
+                localStorage.setItem('connectedToGoogleDrive', 'true');
 
-        // TODO : synchro avec l'ancienne persistance pour ne rien perdre
-        // this.persistence.merge(googleDrivePersistence).then(modified => {
-        //   const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
-        //   console.log(message);
-        //   notify(message);
-        this.persistence = googleDrivePersistence;
-        localStorage.setItem('persistence', 'GoogleDrive');
-        this.init();
-        // }).catch(err => {
-        //   loginBtn.innerText = "Google Drive";
-        //   // this.showPlayer();
-        //   alert("Erreur de synchro entre la persistance actuelle et Google Drive");
-        //   console.error(err);
-        // });
-      } else {
-        loginBtn.innerText = 'Google Drive';
-        // this.showPlayer();
-      }
-    }).catch(err => {
-      loginBtn.innerText = 'Google Drive';
-      // this.showPlayer();
-      alert('Erreur de connexion à Google Drive');
-      console.error(err);
-    });
-  }
+                // synchro avec l'ancienne persistance pour ne rien perdre
+                this.persistence.sync(googleDrivePersistence).then(syncResult => {
+                    const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
+                    console.log(message);
+                    console.log(syncResult);
+                    notify(message);
+
+                    // On ne change pas de persistence pour accélérer les perfs
+                    // puisse qu'on synchronise à chaque démarrage
+                    // TODO : attention on crée avec this.persistence et pas localStorage
+                    this.persistence = new LocalAndDistantPersistence(this.persistence, googleDrivePersistence);
+                    localStorage.setItem('persistence', 'GoogleDrive');
+
+                    this.init();
+                }).catch(err => {
+                    loginBtn.innerText = 'Connecté·e';
+                    // this.showPlayer();
+                    alert("Erreur de synchro entre la persistance actuelle et Google Drive");
+                    console.error(err);
+                });
+            } else {
+                loginBtn.innerText = 'Google Drive';
+                // this.showPlayer();
+            }
+        }).catch(err => {
+            loginBtn.innerText = 'Google Drive';
+            // this.showPlayer();
+            alert('Erreur de connexion à Google Drive');
+            console.error(err);
+        });
+    }
 
   disconnectGoogleDrive() {
     // TODO

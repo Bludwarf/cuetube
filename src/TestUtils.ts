@@ -1,7 +1,7 @@
 import {Disc} from './disc';
 
 export class TestUtils {
-    static createDisc(id: string, title = id): Disc {
+    static createDisc(id: string, title = id): Disc4Test {
         return new Disc4Test().withId(id).withTitle(title);
     }
 }
