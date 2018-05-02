@@ -583,7 +583,7 @@ export module Disc {
                 return this.file.duration;
             } else {
                 // auto apprentissage de la durée du fichier par : $scope.$on("video started")...
-        console.warn('Impossible de connaitre la fin de la piste #{this.number} sans connaitre la durée de son fichier #{this.file.name}');
+        console.warn(`Impossible de connaitre la fin de la piste ${this.number} sans connaitre la durée de son fichier ${this.file.name}`);
         return undefined;
             }
         }
