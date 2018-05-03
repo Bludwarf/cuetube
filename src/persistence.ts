@@ -380,7 +380,7 @@ function syncCommonCollection(thisCollection: Collection, srcCollection: Collect
     const pushedDiscIds = thisCollection.discIds.filter(discId => !srcCollection.discIds.includes(discId))
         .map(discId => {
             pushOnlyOnce(syncResult.discIds.all, discId);
-            pushOnlyOnce(syncResult.discIds.pulled, discId);
+            pushOnlyOnce(syncResult.discIds.pushed, discId);
             return discId;
         });
     if (pushedDiscIds.length) {
