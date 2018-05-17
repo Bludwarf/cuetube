@@ -1,13 +1,15 @@
 // YouTube Helper
 // require utils.js
 // require yt-parser
-const yth = (function() {
-  const yth = {};
+import {ytparser} from './yt-parser';
+import * as _ from 'underscore';
+
+export class yth {
 
   /**
    * @param options cf options Youtube
    */
-  yth.getSrc = function(vid, origin, options) {
+  static getSrc(vid, origin, options) {
     origin = origin || (location.protocol + '//' + location.host + location.pathname);
     const params = $.extend({
       origin: origin, // origin toujours en premier car tout est placé dans ce paramètre
@@ -30,7 +32,7 @@ const yth = (function() {
    * Conversion d'une liste de piste en tracklist YouTube
    * @param {[Disc.Track]} tracks
    */
-  yth.getTracklist = function(tracks) {
+  static getTracklist(tracks) {
     let lines = [];
     tracks.forEach(track => {
       let timecode = yth.getTimecode(track);
@@ -45,13 +47,13 @@ const yth = (function() {
    *
    * @param tracklist {string}
    * @param file {Disc.File}
-   * @param options
+   * @param [options]
    * @param {boolean} options.artistInTitle comme dans le m3u ?
    * @param {boolean} options.artistBeforeTitle true si l'artiste apparait dans le titre de la chanson
    * @param {boolean} options.containsDuration true si la durée de la piste apparait dans le texte d'entrée
    * @param {boolean} options.durationBeforeTime true si la durée apparait avant le temps de début de la piste
    */
-  yth.setTracklist = function(tracklist, file, options) {
+  static setTracklist(tracklist, file, options?) {
     // TODO : clear file.tracks
     const lines = tracklist.split(/\r?\n/);
     const cueTracks = ytparser.parseTracks(lines, options);
@@ -66,9 +68,7 @@ const yth = (function() {
    * Conversion d'une liste de piste en tracklist YouTube
    * @param {Disc.Track} track
    */
-  yth.getTimecode = function(track) {
+  static getTimecode(track) {
     return formatHMSS(track.startSeconds);
   };
-
-  return yth;
-})();
+}

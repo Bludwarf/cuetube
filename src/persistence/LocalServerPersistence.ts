@@ -1,13 +1,12 @@
 import {Persistence} from '../persistence';
 import {Disc} from '../disc';
 import {HttpClient} from '@angular/common/http';
-import {PlayerComponent} from '../app/player/player.component';
 import {Collection} from '../Collection';
 
 export class LocalServerPersistence extends Persistence {
 
-    constructor($scope: PlayerComponent, $http: HttpClient) {
-        super($scope, $http);
+    constructor($http: HttpClient) {
+        super($http);
     }
 
     get title(): string {

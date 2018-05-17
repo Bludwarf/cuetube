@@ -63,8 +63,8 @@ export class GoogleDrivePersistence extends Persistence {
         })
     };
 
-    constructor($scope: PlayerComponent, $http: HttpClient) {
-        super($scope, $http);
+    constructor($http: HttpClient) {
+        super($http);
     }
 
     get title(): string {

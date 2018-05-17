@@ -3,13 +3,14 @@ import {Disc} from '../disc';
 import {HttpClient} from '@angular/common/http';
 import {PlayerComponent} from '../app/player/player.component';
 import {Collection} from '../Collection';
+import {EditCueComponent} from '../app/edit-cue/edit-cue.component';
 
 export class LocalStoragePersistence extends Persistence {
 
     static DEFAULT_COLLECTION = '_DEFAULT_'; // FIXME utiliser la constante de player.component
 
-    constructor($scope: PlayerComponent, $http: HttpClient) {
-        super($scope, $http);
+    constructor($http: HttpClient) {
+        super($http);
     }
 
     get title(): string {

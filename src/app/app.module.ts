@@ -8,18 +8,20 @@ import * as $ from 'jquery';
 import {GapiClientService} from './gapi-client.service';
 import { SliderComponent } from './slider/slider.component';
 import {FormsModule} from '@angular/forms';
+import { EditCueComponent } from './edit-cue/edit-cue.component';
 
 const appRoutes: Routes = [
   { path: '',         redirectTo: 'player', pathMatch: 'full' },
   { path: 'player',   component: PlayerComponent },
-  // { path: 'edit-cue', component: EditCueComponent }
+  { path: 'edit-cue', component: EditCueComponent }
 ];
 
 @NgModule({
   declarations: [
     AppComponent,
     PlayerComponent,
-    SliderComponent
+    SliderComponent,
+    EditCueComponent
   ],
   imports: [
     RouterModule.forRoot(

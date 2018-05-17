@@ -73,7 +73,7 @@ export class ytparser {
         return newDiscFromVideoSnippet(snippet, videoUrl, contentDetails, options);
     }
 
-    static parseTracks(lines, options) {
+    static parseTracks(lines, options?) {
 
         const tracks = [];
 

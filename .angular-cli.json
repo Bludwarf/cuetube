@@ -26,7 +26,6 @@
         "../node_modules/bootstrap/dist/js/bootstrap.min.js",
         "../node_modules/underscore/underscore-min.js",
         "./scripts/cuesheet.js",
-        "./scripts/yt-helper.js",
         "./scripts/utils.js",
         "../node_modules/moment/min/moment.min.js",
         "./scripts/CueParser.js"
@@ -66,7 +65,7 @@
     "styleExt": "css",
     "component": {},
     "serve": {
-      "port": 3000
+      "port": 4200
     }
   }
 }

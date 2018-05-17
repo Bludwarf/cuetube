@@ -9,8 +9,8 @@ export class MemoryPersistence extends Persistence {
     collections: {[index: string]: Collection} = {};
     discs: {[index: string]: Disc} = {};
 
-    constructor($scope: PlayerComponent, $http: HttpClient) {
-        super($scope, $http);
+    constructor($http: HttpClient) {
+        super($http);
     }
 
     get title(): string {

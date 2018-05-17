@@ -5,12 +5,25 @@ import {CuePrinter} from './CuePrinter';
 import {PlayerComponent} from './app/player/player.component';
 import {HttpClient} from '@angular/common/http';
 import {Collection} from './Collection';
+import {EditCueComponent} from './app/edit-cue/edit-cue.component';
+import {LocalServerPersistence} from './persistence/LocalServerPersistence';
+import {GoogleDrivePersistence} from './persistence/GoogleDrivePersistence';
+import {LocalAndDistantPersistence} from './persistence/LocalAndDistantPersistence';
+import {LocalStoragePersistence} from './persistence/LocalStoragePersistence';
 
 export abstract class Persistence {
 
     static DEFAULT_COLLECTION = '_default_';
 
-    constructor(public $scope: PlayerComponent, public $http: HttpClient) {
+    /**
+     *
+     * @return {Persistence}
+     */
+    static getPersistence(localPersistence: LocalStoragePersistence, http: HttpClient, persistenceName = localStorage.getItem('persistence')): Persistence {
+        return localPersistence;
+    }
+
+    constructor(public $http: HttpClient) {
     }
 
     /**
@@ -117,7 +130,6 @@ export abstract class Persistence {
                     // const data = res.data; // AngularJS
                     const data = res; // Angular5
                     if (!data.items || data.items.length !== 1) { return reject(new Error('Items not found for videoId ' + videoId)); }
-                    this.$scope.debugData.getVideoSnippet = data;
                     resolve(data.items[0]);
                 }, resKO => {
                     reject(resKO.data);

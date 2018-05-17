@@ -128,7 +128,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         // FIXME pour debugger
         this.enrichWindow((<any>window));
 
-        this.localPersistence = new LocalStoragePersistence(this, this.http);
+        this.localPersistence = new LocalStoragePersistence(this.http);
         this.persistence = this.getPersistence();
         this.discsParam = getParameterByName('discs', document.location.search);
 
@@ -330,7 +330,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
               alert("Google Drive non initialisé");
               return;
             }
-            const googleDrivePersistence = new GoogleDrivePersistence(this, this.http);
+            const googleDrivePersistence = new GoogleDrivePersistence(this.http);
 
             // TODO : synchro avec l'ancienne persistance pour ne rien perdre
 
@@ -530,17 +530,14 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     e.stopPropagation(); // pour ne pas appeler document.onclick
   }
 
+    // TODO : remonter dans app
   get $foreground() {
     return $('#foreground-overlay');
   }
 
+    // TODO : remonter dans app
   get $foregroundIcon() {
     return $('#foreground-overlay-icon');
-  }
-
-  showPlayer() {
-    this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
-    this.$foreground.hide();
   }
 
   onYouTubeIframeAPIReady() {
@@ -902,6 +899,13 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // TODO : remonter dans app
+    showPlayer() {
+        this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
+        this.$foreground.hide();
+    }
+
+    // TODO : remonter dans app
   hidePlayer(pauseButton = false) {
     if (pauseButton) {
       this.$foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
@@ -1412,7 +1416,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         // this.hidePlayer();
 
         const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
-        const googleDrivePersistence = new GoogleDrivePersistence(this, this.http);
+        const googleDrivePersistence = new GoogleDrivePersistence(this.http);
         this.googleDrivePersistence = googleDrivePersistence; // debug
         googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
 
@@ -1465,42 +1469,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     loginBtn.innerText = 'Google Drive';
   }
 
-  /**
-   *
-   * @return {Persistence}
-   */
-  getPersistence(persistenceName = localStorage.getItem('persistence')) {
-    if (persistenceName === 'GoogleDrive') {
-      if (!GoogleDrivePersistence) {
-        window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
-      }
-      return new GoogleDrivePersistence(this, this.http);
-    }
-    if (persistenceName === 'LocalStorage') {
-      return this.localPersistence;
-    }
-    if (persistenceName === 'LocalServer') {
-      return new LocalServerPersistence(this, this.http);
-    }
-    if (persistenceName.startsWith('LocalAndDistant')) {
-        const m = /LocalAndDistant\('(\w+)', '(\w+)'\)/.exec(persistenceName);
-        if (m) {
-            const local = this.getPersistence(m[1]);
-            const distant = this.getPersistence(m[2]);
-            if (local !== distant) {
-                return new LocalAndDistantPersistence(local, distant);
-            } else {
-                return local;
-            }
-        }
-        return this.localPersistence;
-    }
-
-    return (
-      window.location.host === 'bludwarf.github.io'
-      || window.location.port !== '3000'
-      || getParameterByName('persistence', document.location.search) === 'LocalStorage') ?
-         this.localPersistence : new LocalServerPersistence(this, this.http);
+    // TODO : remonter dans app
+  getPersistence(): Persistence {
+    return Persistence.getPersistence(this.localPersistence, this.http);
   }
 
   loadDiscs(discIdsToLoad): Promise<Disc[]> {

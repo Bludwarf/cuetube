@@ -540,7 +540,7 @@ export module Disc {
             return this.cuesheetTrack.performer;
         }
         set performer(value: string) {
-            this.cuesheetTrack.performer = value;
+            this.cuesheetTrack.performer = value != null && value.length ? value : null;
         }
 
         get indexInTime(): number {

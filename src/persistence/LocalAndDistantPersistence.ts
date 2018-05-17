@@ -10,7 +10,7 @@ import {Collection} from '../Collection';
 export class LocalAndDistantPersistence<L extends Persistence,D extends Persistence> extends Persistence {
 
     constructor(public local: L, public distant: D) {
-        super(local.$scope, local.$http);
+        super(local.$http);
     }
 
     get title(): string {
