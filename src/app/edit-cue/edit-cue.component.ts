@@ -8,6 +8,7 @@ import {LocalServerPersistence} from '../../persistence/LocalServerPersistence';
 import {Persistence} from '../../persistence';
 import * as _ from 'underscore';
 import {yth} from '../../yt-helper';
+import {AppComponent} from '../app.component';
 
 @Component({
     selector: 'app-edit-cue',
@@ -71,7 +72,7 @@ export class EditCueComponent implements OnInit {
 
     // TODO : remonter dans app
     getPersistence(): Persistence {
-        return Persistence.getPersistence(this.localPersistence, this.http);
+        return AppComponent.getPersistence(this.localPersistence, this.http);
     }
 
     save() {

@@ -2,10 +2,8 @@
 import * as _ from 'underscore';
 import {Disc} from './disc';
 import {CuePrinter} from './CuePrinter';
-import {PlayerComponent} from './app/player/player.component';
 import {HttpClient} from '@angular/common/http';
 import {Collection} from './Collection';
-import {EditCueComponent} from './app/edit-cue/edit-cue.component';
 import {LocalServerPersistence} from './persistence/LocalServerPersistence';
 import {GoogleDrivePersistence} from './persistence/GoogleDrivePersistence';
 import {LocalAndDistantPersistence} from './persistence/LocalAndDistantPersistence';
@@ -14,14 +12,6 @@ import {LocalStoragePersistence} from './persistence/LocalStoragePersistence';
 export abstract class Persistence {
 
     static DEFAULT_COLLECTION = '_default_';
-
-    /**
-     *
-     * @return {Persistence}
-     */
-    static getPersistence(localPersistence: LocalStoragePersistence, http: HttpClient, persistenceName = localStorage.getItem('persistence')): Persistence {
-        return localPersistence;
-    }
 
     constructor(public $http: HttpClient) {
     }

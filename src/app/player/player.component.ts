@@ -13,6 +13,7 @@ import {GapiClientService} from '../gapi-client.service';
 import {SliderComponent} from '../slider/slider.component';
 import {ytparser} from '../../yt-parser';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
+import {AppComponent} from '../app.component';
 
 const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
 
@@ -1471,7 +1472,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
     // TODO : remonter dans app
   getPersistence(): Persistence {
-    return Persistence.getPersistence(this.localPersistence, this.http);
+    return AppComponent.getPersistence(this.localPersistence, this.http);
   }
 
   loadDiscs(discIdsToLoad): Promise<Disc[]> {
