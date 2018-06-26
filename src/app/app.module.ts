@@ -11,7 +11,7 @@ import {FormsModule} from '@angular/forms';
 import { EditCueComponent } from './edit-cue/edit-cue.component';
 
 const appRoutes: Routes = [
-  { path: '',         redirectTo: 'player' },
+  { path: '',         redirectTo: 'player', pathMatch: 'full' },
   { path: 'player',   component: PlayerComponent },
   { path: 'edit-cue', component: EditCueComponent }
 ];
