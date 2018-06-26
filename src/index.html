@@ -15,6 +15,16 @@
   <script src="https://apis.google.com/js/platform.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 </head>
+<script>
+    // See http://www.backalleycoder.com/2016/05/13/sghpa-the-single-page-app-hack-for-github-pages/
+    (function(){
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+            history.replaceState(null, null, redirect);
+        }
+    })();
+</script>
 <body>
   <app-root></app-root>
 </body>
