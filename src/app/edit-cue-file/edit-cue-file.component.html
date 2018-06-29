@@ -1,0 +1,52 @@
+<div class="file">
+    <a href="{{file.name}}" target="_blank">
+        <img src="https://img.youtube.com/vi/{{file.videoId}}/default.jpg" title="Voir la vidéo sur YouTube" />
+    </a>
+    <fieldset>
+        <legend>
+            <input title="id de la vidéo dans YouTube (paramètre v dans l'URL)" class="form-control" type="text" [name]="fileName" [(ngModel)]="file.videoId"/>
+        </legend>
+
+        <ul class="nav nav-tabs" *ngIf="file.disc.files.length == 1">
+            <li class="active"><a data-toggle="tab" href="#tracks">Pistes</a></li>
+            <li><a data-toggle="tab" href="#tracklist">Tracklist</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="tracks" class="tab-pane in active">
+                <fieldset *ngFor="let track of file.tracks; let index = index" class="track">
+                    <!-- FIXME on est obligé d'ajouter un attribut name car [(ngModel)] ne fonctionne pas avec les primivites -->
+                    <input type="number" min="0" max="999" [name]="'trackTimeMin'+index" class="form-control min" placeholder="MMM" [(ngModel)]="track.min" maxlength="3" /> :
+                    <input type="number" min="0" max="59"  [name]="'trackTimeSec'+index" class="form-control sec" placeholder="SS"  [(ngModel)]="track.sec" maxlength="2" /> -
+                    <input type="text" [name]="'trackTitle'+index" class="form-control title" placeholder="title" [(ngModel)]="track.title" />
+                    <input type="text" [name]="'trackPerformer'+index" class="form-control performer" placeholder="performer" [(ngModel)]="track.performer" />
+                    <button class="btn" (click)="track.remove()" title="Supprimer cette piste">
+                        <span class="glyphicon glyphicon-remove" style="color: #600700;"></span>
+                    </button>
+                    <!-- TODO : pouvoir insérer une piste après n'importe quelle piste (et pas seulement la dernière -->
+                    <button class="btn" (click)="file.newTrack()" title="Ajouter une piste">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                </fieldset>
+            </div>
+
+            <div id="tracklist" class="tab-pane" *ngIf="file.disc.files.length == 1">
+                <p>Liste des pistes au format YouTube</p>
+
+                <p>Utilise le bouton suivant pour copier-coller cette liste dans un commentaire YouTube. Les utilisateurs pourront alors naviguer directement sur chaque piste de la vidéo.</p>
+                <button class="btn" style="margin-bottom: 1em;" (click)="prompt('Copie cette tracklist pour la coller dans un commentaire de la vidéo sur YouTube', getTracklist(file.tracks))">Copier</button>
+
+                <p>
+                    Utilise l'espace ci-dessous pour importer une liste depuis la description de la vidéo YouTube ou d'un commentaire.
+                    Une fois terminé, appuie sur le bouton Appliquer pour identifier toutes les pistes de la vidéo dans CueTube.
+                    Les pistes apparaissent dans l'onglet "Piste" juste à gauche de cet onglet "Tracklist".
+                </p>
+                <div class="textarea-wrapper" style="margin-bottom: 1em;">
+                    <textarea class="form-control" style="width: 100%;" rows="{{file.tracks.length}}" placeholder="Import d'une tracklist YouTube">{{getTracklist(file.tracks)}}</textarea>
+                </div>
+                <button class="btn btn-primary" style="margin-bottom: 1em;" (click)="setTracklistFromButton($event, file)">Appliquer</button>
+            </div>
+        </div>
+
+    </fieldset>
+</div>

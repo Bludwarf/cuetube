@@ -89,23 +89,6 @@ export class EditCueComponent implements OnInit {
         });
     }
 
-    getTracklist(tracks) {
-        return yth.getTracklist(tracks);
-    }
-
-    prompt(text, placeholder) {
-        return prompt(text, placeholder);
-    }
-
-    setTracklist(tracklist, file) {
-        yth.setTracklist(tracklist, file);
-    }
-    setTracklistFromButton($event, file) {
-        const button = $event.currentTarget;
-        const $textarea = $('textarea', button.parent);
-        this.setTracklist($textarea.val(), file);
-    }
-
     // TODO : remonter dans app
     showPlayer() {
         this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
