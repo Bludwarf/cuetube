@@ -9,6 +9,7 @@ import {GapiClientService} from './gapi-client.service';
 import { SliderComponent } from './slider/slider.component';
 import {FormsModule} from '@angular/forms';
 import { EditCueComponent } from './edit-cue/edit-cue.component';
+import { EditCueFileComponent } from './edit-cue-file/edit-cue-file.component';
 
 const appRoutes: Routes = [
   { path: '',         component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
@@ -21,7 +22,8 @@ const appRoutes: Routes = [
     AppComponent,
     PlayerComponent,
     SliderComponent,
-    EditCueComponent
+    EditCueComponent,
+    EditCueFileComponent
   ],
   imports: [
     RouterModule.forRoot(
