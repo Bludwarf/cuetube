@@ -53,8 +53,8 @@
                     <div id="tracks" class="tab-pane in active">
                         <fieldset *ngFor="let track of file.tracks; let index = index" class="track">
                             <!-- FIXME on est obligé d'ajouter un attribut name car [(ngModel)] ne fonctionne pas avec les primivites -->
-                            <input type="number" min="0" max="999" [name]="'trackTimeMin'+index" class="form-control min" placeholder="MMM" [(ngModel)]="track.indexes[0].time.min" maxlength="3" /> :
-                            <input type="number" min="0" max="59"  [name]="'trackTimeSec'+index" class="form-control sec" placeholder="SS"  [(ngModel)]="track.indexes[0].time.sec" maxlength="2" /> -
+                            <input type="number" min="0" max="999" [name]="'trackTimeMin'+index" class="form-control min" placeholder="MMM" [(ngModel)]="track.min" maxlength="3" /> :
+                            <input type="number" min="0" max="59"  [name]="'trackTimeSec'+index" class="form-control sec" placeholder="SS"  [(ngModel)]="track.sec" maxlength="2" /> -
                             <input type="text" [name]="'trackTitle'+index" class="form-control title" placeholder="title" [(ngModel)]="track.title" />
                             <input type="text" [name]="'trackPerformer'+index" class="form-control performer" placeholder="performer" [(ngModel)]="track.performer" />
                             <button class="btn" (click)="track.remove()" title="Supprimer cette piste">

@@ -665,5 +665,21 @@ export module Disc {
 
       e.stopPropagation();
     }
+
+        set min(value: number) {
+            this.indexes[0].time.min = value;
+        }
+
+        get min(): number {
+            return this.indexes[0].time.min;
+        }
+
+        set sec(value: number) {
+            this.indexes[0].time.sec = value;
+        }
+
+        get sec(): number {
+            return this.indexes[0].time.sec;
+        }
   }
 }
