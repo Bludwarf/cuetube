@@ -7,7 +7,7 @@ body {
 }
 
 form {
-    width: 67em;
+    width: 68em;
     margin: auto auto;
 }
 
@@ -46,14 +46,14 @@ input.performer {
 input.min,
 input.sec {
     padding-left: 0;
-    padding-right: 5px;
+    padding-right: 0;
     text-align: right;
 }
 input.min {
-    width: 2em !important;
+    width: 7.5ex !important;
 }
 input.sec {
-    width: 2em !important;
+    width: 6.5ex !important;
 }
 
 button.save {
