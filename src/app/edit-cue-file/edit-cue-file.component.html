@@ -4,7 +4,7 @@
     </a>
     <fieldset>
         <legend>
-            <input title="id de la vidéo dans YouTube (paramètre v dans l'URL)" class="form-control" type="text" [name]="fileName" [(ngModel)]="file.videoId"/>
+            <input title="id de la vidéo dans YouTube (paramètre v dans l'URL)" class="form-control" type="text" name="fileName" [(ngModel)]="file.videoId"/>
         </legend>
 
         <ul class="nav nav-tabs" *ngIf="file.disc.files.length == 1">
