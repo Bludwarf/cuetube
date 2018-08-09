@@ -21,6 +21,7 @@ export class AppComponent {
      * @return {Persistence}
      */
     static getPersistence(localPersistence: LocalStoragePersistence, http: HttpClient, persistenceName = localStorage.getItem('persistence')): Persistence {
+        console.log(`getPersistence(persistenceName = "${persistenceName}")`);
         if (persistenceName === 'GoogleDrive') {
             if (!GoogleDrivePersistence) {
                 window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
