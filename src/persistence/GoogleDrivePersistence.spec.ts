@@ -38,7 +38,7 @@ describe('GoogleDrivePersistence', () => {
     fixture = TestBed.createComponent(PlayerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-    persistence = new GoogleDrivePersistence(component, component.http);
+    persistence = new GoogleDrivePersistence(component.http);
   });
 
   it('should create', () => {

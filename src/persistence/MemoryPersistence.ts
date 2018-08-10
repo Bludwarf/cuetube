@@ -39,6 +39,7 @@ export class MemoryPersistence extends Persistence {
 
     postDisc(discId: string, disc): Promise<Disc> {
         this.discs[discId] = disc;
+        this.syncState.discs.push(disc); // FIXME à remonter dans persistence
         return Promise.resolve(disc);
     }
 

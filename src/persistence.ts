@@ -8,10 +8,13 @@ import {LocalServerPersistence} from './persistence/LocalServerPersistence';
 import {GoogleDrivePersistence} from './persistence/GoogleDrivePersistence';
 import {LocalAndDistantPersistence} from './persistence/LocalAndDistantPersistence';
 import {LocalStoragePersistence} from './persistence/LocalStoragePersistence';
+import {md5} from './md5';
 
 export abstract class Persistence {
 
     static DEFAULT_COLLECTION = '_default_';
+
+    readonly syncState: SyncState = new SyncState();
 
     constructor(public $http: HttpClient) {
     }
@@ -100,7 +103,7 @@ export abstract class Persistence {
         return Promise.all(discIds.map(discId => this.getDisc(discId, startingDiscIndex++)));
     }
 
-    // FIXME : disc devrait être un Disc et Promise une Promise<Disc>
+    // FIXME : disc devrait être un Disc
     public abstract postDisc(discId: string, disc): Promise<Disc>;
 
     public getVideo(videoId: string, GOOGLE_KEY: string): Promise<GoogleApiYouTubeVideoResource> {
@@ -272,6 +275,7 @@ export abstract class Persistence {
                     pushOnlyOnce(syncResult.discs.all, srcDisc);
 
                     // Comparaison de la cuesheet pour diff
+                    // FIXME utiliser plutôt toJSON car print affiche la date courante !
                     const thisCueData = CuePrinter.print(thisDisc.cuesheet);
                     const srcCueData = CuePrinter.print(srcDisc.cuesheet);
                     if (thisCueData === srcCueData) {
@@ -356,6 +360,119 @@ export class SyncResultPart<T> {
         pushed: [],
         notModified: []
     };
+}
+
+export class SyncState {
+
+    readonly discs: SyncStateDiscs = new SyncStateDiscs(this);
+    readonly collections: SyncStateCollections = new SyncStateCollections(this);
+
+    /** date de la dernière modif d'un élément */
+    public lastmod: Date;
+}
+
+export abstract class SyncStateElements<T> {
+
+    // On utilise plus de Map car elle se converti très mal en JSON
+    // cf commentaires : http://2ality.com/2015/08/es6-map-json.html
+    readonly elementsById: {[key: string]: SyncStateElement<T>} = {};
+
+    /** date de la dernière modif d'un élément */
+    public lastmod: Date;
+
+    constructor(public parent: SyncState) {
+    }
+
+    /**
+     * Ajoute un élément ou le met à jour uniquement s'il a été modifié
+     * @return l'élément synchronisé avec des infos sur sa synchronisation
+     */
+    push(element: T): SyncStateElement<T> {
+        const id = this.getId(element);
+        let ssElement;
+        if (!(id in this.elementsById)) {
+            ssElement = new SyncStateElement<T>(element, this);
+            this.elementsById[id] = ssElement;
+            return ssElement;
+        } else {
+            const ssElement = this.elementsById[id];
+            if (ssElement.hasChanged(element)) {
+                ssElement.update(element);
+            }
+            return ssElement;
+        }
+    }
+
+    /**
+     * @param {T} element
+     * @return {string} l'id dans la map qui stocke l'état de chaque élément
+     */
+    abstract getId(element: T): string;
+    abstract getChecksum(element: T): string;
+
+    // TODO méthodes save et load dans la persistence qui utilise un SyncState
+
+    toJSON(): any {
+        const clone = _.extend({}, this);
+        delete clone.parent;
+        return clone;
+    }
+}
+
+export class SyncStateElement<T> {
+
+    public readonly created = new Date();
+    public lastmod = new Date();
+    public checksum;
+    constructor(syncedElement: T, public parent: SyncStateElements<T>) {
+        this.checksum = this.parent.getChecksum(syncedElement);
+    }
+
+    hasChanged(syncedElement: T): any {
+        return this.checksum !== this.parent.getChecksum(syncedElement);
+    }
+    update(syncedElement: T): this {
+        this.checksum = this.parent.getChecksum(syncedElement);
+        this.lastmod = new Date();
+        this.parent.lastmod = this.lastmod;
+        this.parent.parent.lastmod = this.lastmod;
+        return this;
+    }
+
+    toJSON(): any {
+        const clone = _.extend({}, this);
+        delete clone.parent;
+        return clone;
+    }
+}
+
+export class SyncStateDiscs extends SyncStateElements<Disc> {
+
+    constructor(public parent: SyncState) {
+        super(parent);
+    }
+
+    getId(disc: Disc): string {
+        return disc.id;
+    }
+
+    getChecksum(disc: Disc): string {
+        return md5(disc.toJSON());
+    }
+}
+export class SyncStateCollections extends SyncStateElements<Collection> {
+
+    constructor(public parent: SyncState) {
+        super(parent);
+    }
+
+    getId(collection: Collection): string {
+        return collection.name;
+    }
+
+    getChecksum(collection: Collection): string {
+        return md5(JSON.stringify(collection));
+    }
 }
 
 function syncCommonCollection(thisCollection: Collection, srcCollection: Collection, syncResult: SyncResult) {

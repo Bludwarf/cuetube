@@ -4,6 +4,7 @@ import Collection from './Collection';
 import {Disc} from './disc';
 import {TestUtils} from './TestUtils';
 import {SyncResult} from './persistence';
+import * as _ from 'underscore';
 //const Queue = require('promise-queue');
 
 describe('persistence', () => {
@@ -35,10 +36,10 @@ describe('persistence', () => {
         distantNotModCommonCollection.push(localEqualDisc);
 
         // Local
-        const local = new MemoryPersistence(null, null);
+        const local = new MemoryPersistence(null);
 
         // Distant
-        const distant = new MemoryPersistence(null, null);
+        const distant = new MemoryPersistence(null);
 
         Promise.all([
             // Collections
@@ -224,6 +225,170 @@ describe('persistence', () => {
             ]);
 
         }).then(res => done());
+    });
+
+    /**
+     * Chaque persistance doit stocker son état actuel et l'actualiser à chaque modif (post)
+     */
+    it('should save current persistence state', (done) => {
+
+        const p = new MemoryPersistence(null);
+
+        // Disques
+        const thriller = TestUtils.createDisc('Thriller')
+            .withFile("Disque 1")
+            .withTrack("Bilie Jean")
+            .endTrack()
+            .endFile();
+        const darkSideOfTheMoon = TestUtils.createDisc('The Dark Side of the Moon')
+            .withFile("Disque 1")
+            .withTrack("Cluster One")
+            .endTrack()
+            .endFile();
+        const secretWorld = TestUtils.createDisc('Secret World')
+            .withFile("Disque 1")
+            .withTrack("Come Talk To Me")
+            .endTrack()
+            .endFile();
+
+        // Collections
+        const collectionVide = new Collection("Collection vide");
+        const collectionComplete = new Collection("Collection complète");
+        collectionComplete.pushDiscs(thriller, darkSideOfTheMoon);
+
+        let lastState: any = {};
+
+        // Création dans la persistence
+        Promise.all([
+            p.postDisc(thriller.id, thriller),
+            p.postDisc(darkSideOfTheMoon.id, darkSideOfTheMoon),
+            p.postCollection(collectionVide),
+            p.postCollection(collectionComplete)
+        ]).then((res) => {
+
+            // Attendus
+            expect(p.syncState).not.toBeNull();
+            expect(p.syncState.discs).not.toBeNull();
+            expect(p.syncState.discs.elementsById).not.toBeNull();
+            const discs = p.syncState.discs.elementsById;
+
+            // Disques
+            expect(_.size(discs)).toBe(2);
+
+            // Thriller
+            const thrillerState = discs[thriller.id];
+            expect(thrillerState).not.toBeNull();
+            expect(thrillerState.created).not.toBeNull();
+            expect(thrillerState.lastmod).not.toBeNull();
+            expect(thrillerState.checksum).not.toBeNull();
+            lastState.thriller = {
+                created: thrillerState.created,
+                lastmod: thrillerState.lastmod,
+                checksum: thrillerState.checksum
+            };
+
+            // Dark Side
+            const darkSideState = discs[darkSideOfTheMoon.id];
+            expect(darkSideState).not.toBeNull();
+            expect(darkSideState.created).not.toBeNull();
+            expect(darkSideState.lastmod).not.toBeNull();
+            expect(darkSideState.checksum).not.toBeNull();
+            lastState.darkSideOfTheMoon = {
+                created: darkSideState.created,
+                lastmod: darkSideState.lastmod,
+                checksum: darkSideState.checksum
+            }
+
+            // TODO : collection
+
+        }).then(res => {
+
+            // On pousse Thriller sans le modifier
+            p.postDisc(thriller.id, thriller);
+
+        }).then(res => {
+
+            const discs = p.syncState.discs.elementsById;
+            expect(_.size(discs)).toBe(2);
+
+            // Thriller ne doit pas avoir changé
+            const thrillerState = discs[thriller.id];
+            expect(thrillerState).not.toBeNull();
+            expect(thrillerState.created).toBe(lastState.thriller.created);
+            expect(thrillerState.lastmod).toBe(lastState.thriller.lastmod);
+            expect(thrillerState.checksum).toBe(lastState.thriller.checksum);
+
+            // Ni DarkSide
+            const darkSideState = discs[darkSideOfTheMoon.id];
+            expect(darkSideState).not.toBeNull();
+            expect(darkSideState.created).toBe(lastState.darkSideOfTheMoon.created);
+            expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
+            expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
+
+        }).then(res => {
+
+            // On modifie vraiment Thriller
+            thriller.files[0].tracks[0].title = "Bily Gin";
+            p.postDisc(thriller.id, thriller);
+
+        }).then(res => {
+
+            const discs = p.syncState.discs.elementsById;
+            expect(_.size(discs)).toBe(2);
+
+            // Seul Thriller doit avoir changé
+            const thrillerState = discs[thriller.id];
+            expect(thrillerState).not.toBeNull();
+            expect(thrillerState.created).toBe(lastState.thriller.created);
+            expect(thrillerState.lastmod).not.toBe(lastState.thriller.lastmod);
+            expect(thrillerState.checksum).not.toBe(lastState.thriller.checksum);
+            lastState.thriller = {
+                created: thrillerState.created,
+                lastmod: thrillerState.lastmod,
+                checksum: thrillerState.checksum
+            };
+
+            // Et pas DarkSide
+            const darkSideState = discs[darkSideOfTheMoon.id];
+            expect(darkSideState).not.toBeNull();
+            expect(darkSideState.created).toBe(lastState.darkSideOfTheMoon.created);
+            expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
+            expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
+
+        }).then(res => {
+
+            // Ajout du disque Secret World
+            p.postDisc(secretWorld.id, secretWorld);
+
+        }).then(res => {
+
+            const discs = p.syncState.discs.elementsById;
+            expect(_.size(discs)).toBe(3);
+
+            // Seul Secret World doit avoir changé
+            const secretWorldState = discs[secretWorld.id];
+            expect(secretWorldState).not.toBeNull();
+            expect(secretWorldState.created).not.toBeNull();
+            expect(secretWorldState.lastmod).not.toBeNull();
+            expect(secretWorldState.checksum).not.toBeNull();
+
+            // Et pas les autres
+            const thrillerState = discs[thriller.id];
+            expect(thrillerState).not.toBeNull();
+            expect(thrillerState.created).toBe(lastState.thriller.created);
+            expect(thrillerState.lastmod).toBe(lastState.thriller.lastmod);
+            expect(thrillerState.checksum).toBe(lastState.thriller.checksum);
+
+            // Et pas les autres
+            const darkSideState = discs[darkSideOfTheMoon.id];
+            expect(darkSideState).not.toBeNull();
+            expect(darkSideState.created).toBe(lastState.darkSideOfTheMoon.created);
+            expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
+            expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
+
+        })
+            .then(res => console.log("syncState", JSON.stringify(p.syncState)))
+            .then(res => done());
     });
 
 });

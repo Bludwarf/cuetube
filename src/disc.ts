@@ -11,7 +11,7 @@ export class Disc {
     _files: Disc.File[] = [];
     index: number = undefined;
     /** pour choisir les vidéos à lire */
-  enabled = true;
+    enabled = true;
     /** Disc-ID dans le format cuesheet */
     discId: string;
 
@@ -126,8 +126,8 @@ export class Disc {
 
     // TODO : Pour éviter le problème : TypeError: Converting circular structure to JSON
     //noinspection JSUnusedGlobalSymbols
-    toJSON(): any {
-        return this.cuesheet;
+    toJSON(): string {
+        return JSON.stringify(this.cuesheet);
     }
 
     setRem(key: string, value: any): void {
@@ -349,7 +349,7 @@ export module Disc {
          * @param {number} index index de la piste dans ce fichier
          * @param {cuesheet.File} cuesheetFile File dans le fichier cue tel que parsé par cue-parser
          */
-        constructor(public disc: Disc, public index: number, public cuesheetFile: cuesheet.File) {
+        constructor(public disc: Disc, public index: number, public cuesheetFile?: cuesheet.File) {
             if (!this.cuesheetFile) {
         this.cuesheetFile = new cuesheet.File();
             }
@@ -497,7 +497,7 @@ export module Disc {
          * @param {Disc.File} file fichier parent
          * @param {cuesheet.Track} cuesheetTrack piste telle que parsée par cue-parser
          */
-        constructor(public file: File, public cuesheetTrack: cuesheet.Track) {
+        constructor(public file: File, public cuesheetTrack?: cuesheet.Track) {
             const fileTracks = this.file.tracks;
             this.index = fileTracks.length;
 

@@ -38,7 +38,7 @@ export class EditCueComponent implements OnInit {
         let creationMode = false;
 
         const params = {
-            id: getParameterByName('id')
+            id: getParameterByName('id', undefined)
         };
         if (!params.id) {
             alert("Veuillez indiquer l'id du disque à modifier");
