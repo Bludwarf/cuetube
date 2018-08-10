@@ -5,12 +5,14 @@ import {Collection} from '../Collection';
 
 export class LocalServerPersistence extends Persistence {
 
+    public static readonly TITLE = 'LocalServer';
+
     constructor($http: HttpClient) {
         super($http);
     }
 
     get title(): string {
-        return 'Serveur local';
+        return LocalServerPersistence.TITLE;
     }
 
     public getCollectionNames(): Promise<string[]> {

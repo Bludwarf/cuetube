@@ -9,12 +9,14 @@ import {Collection} from '../Collection';
  */
 export class LocalAndDistantPersistence<L extends Persistence,D extends Persistence> extends Persistence {
 
+    public static readonly TITLE = 'LocalAndDistant';
+
     constructor(public local: L, public distant: D) {
         super(local.$http);
     }
 
     get title(): string {
-        return 'LocalAndDistant';
+        return LocalAndDistantPersistence.TITLE;
     }
 
     getCollection(collectionName: string): Promise<Collection> {

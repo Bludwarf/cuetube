@@ -10,6 +10,8 @@ import * as Queue from 'promise-queue';
 
 export class GoogleDrivePersistence extends Persistence {
 
+    public static readonly TITLE = 'Google Drive';
+
     private rootFolder: string = undefined;
     private collectionsFolder: string = undefined;
     private cuesFolder: string = undefined;
@@ -68,7 +70,7 @@ export class GoogleDrivePersistence extends Persistence {
     }
 
     get title(): string {
-        return 'Google Drive';
+        return GoogleDrivePersistence.TITLE;
     }
 
     /**

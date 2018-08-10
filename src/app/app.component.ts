@@ -21,20 +21,19 @@ export class AppComponent {
      * @return {Persistence}
      */
     static getPersistence(localPersistence: LocalStoragePersistence, http: HttpClient, persistenceName = localStorage.getItem('persistence')): Persistence {
-        console.log(`getPersistence(persistenceName = "${persistenceName}")`);
-        if (persistenceName === 'GoogleDrive') {
+        if (persistenceName === GoogleDrivePersistence.TITLE) {
             if (!GoogleDrivePersistence) {
                 window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
             }
             return new GoogleDrivePersistence(http);
         }
-        if (persistenceName === 'LocalStorage') {
+        if (persistenceName === LocalStoragePersistence.TITLE) {
             return localPersistence;
         }
-        if (persistenceName === 'LocalServer') {
+        if (persistenceName === LocalServerPersistence.TITLE) {
             return new LocalServerPersistence(http);
         }
-        if (persistenceName && persistenceName.startsWith('LocalAndDistant')) {
+        if (persistenceName && persistenceName.startsWith(LocalAndDistantPersistence.TITLE)) {
             const m = /LocalAndDistant\('(\w+)', '(\w+)'\)/.exec(persistenceName);
             if (m) {
                 const local = AppComponent.getPersistence(localPersistence, http, m[1]);

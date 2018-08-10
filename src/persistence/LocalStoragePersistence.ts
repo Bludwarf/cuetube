@@ -7,6 +7,7 @@ import {EditCueComponent} from '../app/edit-cue/edit-cue.component';
 
 export class LocalStoragePersistence extends Persistence {
 
+    public static readonly TITLE = 'LocalStorage';
     static DEFAULT_COLLECTION = '_DEFAULT_'; // FIXME utiliser la constante de player.component
 
     constructor($http: HttpClient) {
@@ -14,7 +15,7 @@ export class LocalStoragePersistence extends Persistence {
     }
 
     get title(): string {
-        return 'LocalStorage';
+        return LocalStoragePersistence.TITLE;
     }
 
     /**

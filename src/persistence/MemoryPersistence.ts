@@ -6,6 +6,8 @@ import {Collection} from '../Collection';
 
 export class MemoryPersistence extends Persistence {
 
+    public static readonly TITLE = 'Memory';
+
     collections: {[index: string]: Collection} = {};
     discs: {[index: string]: Disc} = {};
 
@@ -14,7 +16,7 @@ export class MemoryPersistence extends Persistence {
     }
 
     get title(): string {
-        return "Memory";
+        return MemoryPersistence.TITLE;
     }
 
     postCollection(collection: Collection): Promise<Collection> {
