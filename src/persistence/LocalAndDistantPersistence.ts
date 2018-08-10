@@ -30,8 +30,8 @@ export class LocalAndDistantPersistence<L extends Persistence,D extends Persiste
     }
 
     postCollection(collection: Collection): Promise<Collection> {
-        this.distant.postCollection(collection);
-        return this.local.postCollection(collection);
+        this.distant.saveCollection(collection);
+        return this.local.saveCollection(collection);
     }
 
     postDisc(discId: string, disc): Promise<Disc> {

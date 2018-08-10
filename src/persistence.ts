@@ -57,10 +57,16 @@ export abstract class Persistence {
         });
     }
 
-    public abstract postCollection(collection: Collection): Promise<Collection>;
+    public saveCollection(collection: Collection): Promise<Collection> {
+        return this.postCollection(collection).then(savedCollection => {
+            this.syncState.collections.push(savedCollection);
+            return savedCollection;
+        })
+    }
+    protected abstract postCollection(collection: Collection): Promise<Collection>;
 
-    postCollections(collections: Collection[]): Promise<Collection[]> {
-        return Promise.all(collections.map(collection => this.postCollection(collection)));
+    saveCollections(collections: Collection[]): Promise<Collection[]> {
+        return Promise.all(collections.map(collection => this.saveCollection(collection)));
     }
 
     public async getCollectionDiscIds(collectionName: string): Promise<string[]> {
@@ -70,7 +76,7 @@ export abstract class Persistence {
         let collection: Collection = await this.getCollection(collectionName);
         if (!collection) {
             collection = new Collection(collectionName);
-            this.postCollection(collection);
+            this.saveCollection(collection);
         }
         return collection.discIds;
     }
@@ -80,20 +86,25 @@ export abstract class Persistence {
      * @param {string[]} discIds id des disques présents dans cette collection, annule et remplace les précédents
      * @return {Promise<string[]>}
      */
-    public async postCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
+    public saveCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
         if (!collectionName) {
             collectionName = Persistence.DEFAULT_COLLECTION;
         }
-        const collection: Collection = await this.getCollection(collectionName) || new Collection(collectionName);
-        collection.discIds = discIds;
-        this.postCollection(collection);
-        return collection.discIds;
+        return this.getCollection(collectionName).then(collection => {
+            if (!collection) {
+                collection = new Collection(collectionName)
+            }
+            return collection;
+        }).then(collection => {
+            collection.discIds = discIds;
+            return this.saveCollection(collection)
+        }).then(collection => collection.discIds);
     }
 
     public async newCollection(collectionName: string): Promise<Collection> {
         const collection = new Collection(collectionName);
         collection.discIds = [];
-        return this.postCollection(collection);
+        return this.saveCollection(collection);
     }
 
     public abstract getDisc(discId: string, discIndex: number): Promise<Disc>;
@@ -305,9 +316,9 @@ export abstract class Persistence {
                 // Sauvegardes dans this
                 Promise.all([
                     // Collections créés dans this
-                    syncResult.collections.pulled.map(collection => this.postCollection(collection)),
+                    syncResult.collections.pulled.map(collection => this.saveCollection(collection)),
                     // Collections modifiées dans this
-                    syncResult.collections.common.pulled.map(collection => this.postCollection(collection)),
+                    syncResult.collections.common.pulled.map(collection => this.saveCollection(collection)),
                     // Disques créés dans this
                     syncResult.discs.pulled.map(disc => this.saveDisc(disc.id, disc)),
                     // Disques modifiés dans this
@@ -317,9 +328,9 @@ export abstract class Persistence {
                 // Sauvegardes dans src
                 Promise.all([
                     // Collections créés dans src
-                    syncResult.collections.pushed.map(collection => src.postCollection(collection)),
+                    syncResult.collections.pushed.map(collection => src.saveCollection(collection)),
                     // Collections modifiées dans src
-                    syncResult.collections.common.pushed.map(collection => src.postCollection(collection)),
+                    syncResult.collections.common.pushed.map(collection => src.saveCollection(collection)),
                     // Disques créés dans src
                     syncResult.discs.pushed.map(disc => src.saveDisc(disc.id, disc)),
                     // Disques modifiés dans src

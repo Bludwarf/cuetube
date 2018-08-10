@@ -43,8 +43,8 @@ describe('persistence', () => {
 
         Promise.all([
             // Collections
-            local.postCollections([localCollection, localCommonCollection, localNotModCommonCollection]),
-            distant.postCollections([distantCollection, distantCommonCollection, distantNotModCommonCollection]),
+            local.saveCollections([localCollection, localCommonCollection, localNotModCommonCollection]),
+            distant.saveCollections([distantCollection, distantCommonCollection, distantNotModCommonCollection]),
             // Disques
             local.saveDisc(localDisc.id, localDisc),
             local.saveDisc(localEqualDisc.id, localEqualDisc),
@@ -262,8 +262,8 @@ describe('persistence', () => {
         Promise.all([
             p.saveDisc(thriller.id, thriller),
             p.saveDisc(darkSideOfTheMoon.id, darkSideOfTheMoon),
-            p.postCollection(collectionVide),
-            p.postCollection(collectionComplete)
+            p.saveCollection(collectionVide),
+            p.saveCollection(collectionComplete)
         ]).then((res) => {
 
             // Attendus

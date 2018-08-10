@@ -997,7 +997,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
           console.log('Ajout du disque dans la collection ' + collectionName);
           discIds.push(disc.id);
-          this.persistence.postCollectionDiscIds(collectionName, discIds).then(discIdsI => {
+          this.persistence.saveCollectionDiscIds(collectionName, discIds).then(discIdsI => {
             console.log('Disque ajouté avec succès dans la collection ' + collectionName);
           }, resKO => {
             alert('Erreur lors de l\'ajout du disque dans la collection ' + collectionName);
@@ -1162,7 +1162,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         return;
       }
       const collection = new Collection(name);
-      this.persistence.postCollection(collection).then(collectionCreee => {
+      this.persistence.saveCollection(collection).then(collectionCreee => {
         this.openCollection(name);
       });
     }
@@ -1342,7 +1342,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
           if (index === -1) { return discIdsI; }
 
           discIdsI.splice(index, 1);
-          return this.persistence.postCollectionDiscIds(collectionName, discIdsI);
+          return this.persistence.saveCollectionDiscIds(collectionName, discIdsI);
         })
         .then(discIds => {
           this.discIdsByCollection[collectionName] = discIds;

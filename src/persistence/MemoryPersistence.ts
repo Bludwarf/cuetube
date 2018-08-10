@@ -19,7 +19,6 @@ export class MemoryPersistence extends Persistence {
 
     postCollection(collection: Collection): Promise<Collection> {
         this.collections[collection.name] = collection;
-        this.syncState.collections.push(collection); // TODO à remonter dans persistence
         return Promise.resolve(collection);
     }
 
@@ -30,7 +29,7 @@ export class MemoryPersistence extends Persistence {
     setCollectionNames(collectionsNames: string[]): Promise<string[]> {
         return Promise.all(collectionsNames.map(collectionName => {
             const collection = new Collection(collectionName);
-            return this.postCollection(collection);
+            return this.saveCollection(collection);
         })).then(res => collectionsNames);
     }
 
