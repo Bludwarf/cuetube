@@ -76,7 +76,7 @@ export class EditCueComponent implements OnInit {
     }
 
     save() {
-        this.persistence.postDisc(this.disc.id, this.disc).then(disc => {
+        this.persistence.saveDisc(this.disc.id, this.disc).then(disc => {
             alert('Disque sauvegardé !');
             if (this.creationMode) {
                 this.creationMode = false;

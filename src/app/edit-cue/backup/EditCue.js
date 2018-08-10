@@ -71,7 +71,7 @@ function EditCue($scope, $http, gapiClient) {
     });
 
     $scope.save = function() {
-        persistence.postDisc($scope.disc.id, $scope.disc).then(disc => {
+        persistence.saveDisc($scope.disc.id, $scope.disc).then(disc => {
             alert('Disque sauvegardé !');
             if (creationMode) {
                 creationMode = false;

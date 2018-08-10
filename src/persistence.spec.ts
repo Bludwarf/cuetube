@@ -46,12 +46,12 @@ describe('persistence', () => {
             local.postCollections([localCollection, localCommonCollection, localNotModCommonCollection]),
             distant.postCollections([distantCollection, distantCommonCollection, distantNotModCommonCollection]),
             // Disques
-            local.postDisc(localDisc.id, localDisc),
-            local.postDisc(localEqualDisc.id, localEqualDisc),
-            local.postDisc(localDiffDisc.id, localDiffDisc),
-            distant.postDisc(distantDisc.id, distantDisc),
-            distant.postDisc(distantEqualDisc.id, distantEqualDisc),
-            distant.postDisc(distantDiffDisc.id, distantDiffDisc),
+            local.saveDisc(localDisc.id, localDisc),
+            local.saveDisc(localEqualDisc.id, localEqualDisc),
+            local.saveDisc(localDiffDisc.id, localDiffDisc),
+            distant.saveDisc(distantDisc.id, distantDisc),
+            distant.saveDisc(distantEqualDisc.id, distantEqualDisc),
+            distant.saveDisc(distantDiffDisc.id, distantDiffDisc),
         ]).then(res => local.sync(distant))
         .then(syncResult => {
 
@@ -260,8 +260,8 @@ describe('persistence', () => {
 
         // Création dans la persistence
         Promise.all([
-            p.postDisc(thriller.id, thriller),
-            p.postDisc(darkSideOfTheMoon.id, darkSideOfTheMoon),
+            p.saveDisc(thriller.id, thriller),
+            p.saveDisc(darkSideOfTheMoon.id, darkSideOfTheMoon),
             p.postCollection(collectionVide),
             p.postCollection(collectionComplete)
         ]).then((res) => {
@@ -304,7 +304,7 @@ describe('persistence', () => {
         }).then(res => {
 
             // On pousse Thriller sans le modifier
-            p.postDisc(thriller.id, thriller);
+            p.saveDisc(thriller.id, thriller);
 
         }).then(res => {
 
@@ -329,7 +329,7 @@ describe('persistence', () => {
 
             // On modifie vraiment Thriller
             thriller.files[0].tracks[0].title = "Bily Gin";
-            p.postDisc(thriller.id, thriller);
+            p.saveDisc(thriller.id, thriller);
 
         }).then(res => {
 
@@ -358,7 +358,7 @@ describe('persistence', () => {
         }).then(res => {
 
             // Ajout du disque Secret World
-            p.postDisc(secretWorld.id, secretWorld);
+            p.saveDisc(secretWorld.id, secretWorld);
 
         }).then(res => {
 

@@ -104,7 +104,13 @@ export abstract class Persistence {
     }
 
     // FIXME : disc devrait être un Disc
-    public abstract postDisc(discId: string, disc): Promise<Disc>;
+    public saveDisc(discId: string, disc): Promise<Disc> {
+        return this.postDisc(discId, disc).then(savedDisc => {
+            this.syncState.discs.push(savedDisc);
+            return savedDisc;
+        });
+    }
+    protected abstract postDisc(discId: string, disc): Promise<Disc>;
 
     public getVideo(videoId: string, GOOGLE_KEY: string): Promise<GoogleApiYouTubeVideoResource> {
         return new Promise((resolve, reject) => {
@@ -303,9 +309,9 @@ export abstract class Persistence {
                     // Collections modifiées dans this
                     syncResult.collections.common.pulled.map(collection => this.postCollection(collection)),
                     // Disques créés dans this
-                    syncResult.discs.pulled.map(disc => this.postDisc(disc.id, disc)),
+                    syncResult.discs.pulled.map(disc => this.saveDisc(disc.id, disc)),
                     // Disques modifiés dans this
-                    syncResult.discs.common.pulled.map(disc => this.postDisc(disc.id, disc))
+                    syncResult.discs.common.pulled.map(disc => this.saveDisc(disc.id, disc))
                 ]),
 
                 // Sauvegardes dans src
@@ -315,9 +321,9 @@ export abstract class Persistence {
                     // Collections modifiées dans src
                     syncResult.collections.common.pushed.map(collection => src.postCollection(collection)),
                     // Disques créés dans src
-                    syncResult.discs.pushed.map(disc => src.postDisc(disc.id, disc)),
+                    syncResult.discs.pushed.map(disc => src.saveDisc(disc.id, disc)),
                     // Disques modifiés dans src
-                    syncResult.discs.common.pushed.map(disc => src.postDisc(disc.id, disc))
+                    syncResult.discs.common.pushed.map(disc => src.saveDisc(disc.id, disc))
                 ]),
 
             ]);

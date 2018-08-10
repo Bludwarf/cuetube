@@ -833,7 +833,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     // Annulé ?
     if (!video.snippet.title || !video.snippet.channelTitle || !video.contentDetails.duration) { return; }
 
-    this.persistence.postDisc(videoId, video).then(() => {
+    this.persistence.saveDisc(videoId, video).then(() => {
       // POST OK
       alert('POST OK');
     }, () => {
@@ -1068,7 +1068,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
     console.log('Création du disc...', disc);
     // TODO : pouvoir passer le disc en JSON -> problème de circular ref
-    this.persistence.postDisc(disc.id, disc).then(createdDisc => {
+    this.persistence.saveDisc(disc.id, disc).then(createdDisc => {
       this.createDisc(disc);
       if (cb) { cb(null, disc); }
     }, resKO => {

@@ -35,8 +35,8 @@ export class LocalAndDistantPersistence<L extends Persistence,D extends Persiste
     }
 
     postDisc(discId: string, disc): Promise<Disc> {
-        this.distant.postDisc(discId, disc);
-        return this.local.postDisc(discId, disc);
+        this.distant.saveDisc(discId, disc);
+        return this.local.saveDisc(discId, disc);
     }
 
     setCollectionNames(collectionsNames: string[]): Promise<string[]> {

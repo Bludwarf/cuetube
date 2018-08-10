@@ -19,6 +19,7 @@ export class MemoryPersistence extends Persistence {
 
     postCollection(collection: Collection): Promise<Collection> {
         this.collections[collection.name] = collection;
+        this.syncState.collections.push(collection); // TODO à remonter dans persistence
         return Promise.resolve(collection);
     }
 
@@ -39,7 +40,6 @@ export class MemoryPersistence extends Persistence {
 
     postDisc(discId: string, disc): Promise<Disc> {
         this.discs[discId] = disc;
-        this.syncState.discs.push(disc); // FIXME à remonter dans persistence
         return Promise.resolve(disc);
     }
 
