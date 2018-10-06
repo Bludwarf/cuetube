@@ -309,7 +309,7 @@ export abstract class Persistence {
                                 return Promise.all([this.getCollection(collectionName), src.getCollection(collectionName)])
                                     .then(collections => syncCommonCollection(collections[0], collections[1], syncResult));
                             } else {
-                                return Promise.resolve();
+                                return Promise.resolve(null);
                             }
                         }))
                 ]);
@@ -353,7 +353,7 @@ export abstract class Persistence {
                                 return Promise.all([this.getDisc(id, discIndex), src.getDisc(id, discIndex)])
                                     .then(discs => syncCommonDisc(discs[0], discs[1], syncResult));
                             } else {
-                                return Promise.resolve();
+                                return Promise.resolve(null);
                             }
                         }))
                 ]);
@@ -387,6 +387,14 @@ export abstract class Persistence {
                     syncResult.discs.common.pushed.map(disc => src.saveDisc(disc.id, disc))
                 ]),
 
+            ]);
+
+        }).then(results => {
+
+            console.log("Sauvegarde de l'état de synchro dans les deux persistances...");
+            return Promise.all([
+                this.saveSyncState(),
+                src.saveSyncState()
             ]);
 
         }).then(results => {
@@ -589,7 +597,7 @@ export class SyncStateCollections extends SyncStateElements<Collection> {
  * @param {SyncResult} syncResult
  * @return {Collection} thisCollection
  */
-function syncCommonCollection(thisCollection: Collection, srcCollection: Collection, syncResult: SyncResult) {
+function syncCommonCollection(thisCollection: Collection, srcCollection: Collection, syncResult: SyncResult): Collection {
 
     console.log(`Synchro des collections communes`, thisCollection, srcCollection);
 
@@ -629,7 +637,7 @@ function syncCommonCollection(thisCollection: Collection, srcCollection: Collect
  * @param {SyncResult} syncResult
  * @return {Disc} thisDisc
  */
-function syncCommonDisc(thisDisc: Disc, srcDisc: Disc, syncResult: SyncResult) {
+function syncCommonDisc(thisDisc: Disc, srcDisc: Disc, syncResult: SyncResult): Disc {
     // Comparaison de la cuesheet pour diff
     // FIXME utiliser plutôt toJSON car print affiche la date courante !
     const thisCueData = CuePrinter.print(thisDisc.cuesheet);
