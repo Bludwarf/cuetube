@@ -1,4 +1,4 @@
-import {Persistence} from '../persistence';
+import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {HttpClient} from '@angular/common/http';
 import {PlayerComponent} from '../app/player/player.component';
@@ -46,6 +46,10 @@ export class MemoryPersistence extends Persistence {
 
     getDisc(discId: string, discIndex: number): Promise<Disc> {
         return Promise.resolve(this.discs[discId]);
+    }
+
+    protected loadSyncState(): Promise<SyncState> {
+        return Promise.resolve(new SyncState());
     }
 
 }

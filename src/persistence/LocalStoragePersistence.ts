@@ -1,4 +1,4 @@
-import {Persistence} from '../persistence';
+import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {HttpClient} from '@angular/common/http';
 import {PlayerComponent} from '../app/player/player.component';
@@ -115,5 +115,11 @@ export class LocalStoragePersistence extends Persistence {
     public async postDisc(discId: string, disc): Promise<Disc> {
         localStorage.setItem(`disc.${discId}.cuesheet`, JSON.stringify(disc.cuesheet));
         return disc;
+    }
+
+    protected loadSyncState(): Promise<SyncState> {
+        // FIXME implement
+        console.error("LocalServerPersistence.loadSyncState TO IMPLEMENT");
+        return Promise.resolve(new SyncState());
     }
 }

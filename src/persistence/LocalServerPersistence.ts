@@ -1,4 +1,4 @@
-import {Persistence} from '../persistence';
+import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
@@ -75,5 +75,11 @@ export class LocalServerPersistence extends Persistence {
         return new Promise((resolve, reject) => {
             this.$http.post(`/${discId}.cue.json`, disc).toPromise().then(resolve, reject);
         });
+    }
+
+    protected loadSyncState(): Promise<SyncState> {
+        // FIXME implement
+        console.error("LocalServerPersistence.loadSyncState TO IMPLEMENT");
+        return Promise.resolve(new SyncState());
     }
 }

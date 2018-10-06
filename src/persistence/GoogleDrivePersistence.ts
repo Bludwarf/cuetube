@@ -1,4 +1,4 @@
-import {Persistence} from '../persistence';
+import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {CuePrinter} from '../CuePrinter';
 import drive = gapi.client.drive;
@@ -12,9 +12,7 @@ export class GoogleDrivePersistence extends Persistence {
 
     public static readonly TITLE = 'Google Drive';
 
-    private rootFolder: string = undefined;
-    private collectionsFolder: string = undefined;
-    private cuesFolder: string = undefined;
+    private syncStateFile: gapi.client.drive.File = undefined;
 
     /** exemple : subFolders['16xjNCGVHLYi2Z5J5xzkhcUs0']['Collections'] = (id du sous-dossier "Collections") */
     private subFolders: Map<string, {}> = new Map();
@@ -91,6 +89,10 @@ export class GoogleDrivePersistence extends Persistence {
         });
     }
 
+    private getRootFolder(): Promise<drive.File> {
+        return this.getGoogleFolder('CueTube', null, 'rootFolder');
+    }
+
     private getFolders(): Promise<{
         collectionsFolder: drive.File,
         cuesFolder: drive.File,
@@ -128,7 +130,7 @@ export class GoogleDrivePersistence extends Persistence {
     }
 
     /**
-     * On crée automatiquement le dossier s'il n'existe pas
+     * On crée automatiquement le dossier s'il n'existe pas, on met en cache le dossier trouvé
      * @param {string} name
      * @param {string} parentId
      * @param field
@@ -505,6 +507,18 @@ export class GoogleDrivePersistence extends Persistence {
                 console.log(`Disque ${disc.title} sauvegardé dans Google Drive`, file);
                 return disc;
             });
+    }
+
+    protected loadSyncState(): Promise<SyncState> {
+        return Promise.resolve(this.syncStateFile).then(syncStateFile => {
+            if (!syncStateFile) {
+                return this.getRootFolder()
+                    .then(rootFolder => this.findGoogleFile('syncState.json', rootFolder.id))
+            } else {
+                return syncStateFile;
+            }
+        }).then(syncStateFile => this.getFileContent(syncStateFile.id))
+            .then(content => SyncState.load(content));
     }
 
 }

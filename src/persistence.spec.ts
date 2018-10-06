@@ -3,7 +3,7 @@ import {MemoryPersistence} from './persistence/MemoryPersistence';
 import Collection from './Collection';
 import {Disc} from './disc';
 import {TestUtils} from './TestUtils';
-import {SyncResult} from './persistence';
+import {SyncResult, SyncState} from './persistence';
 import * as _ from 'underscore';
 //const Queue = require('promise-queue');
 
@@ -59,14 +59,6 @@ describe('persistence', () => {
 
             const expected: SyncResult = {
                 collections: {
-                    all: [
-                        distantCollection,
-                        localCollection,
-                        localCommonCollection,
-                        distantCommonCollection,
-                        localNotModCommonCollection,
-                        distantNotModCommonCollection
-                    ],
                     pulled: [
                         distantCollection
                     ],
@@ -74,61 +66,15 @@ describe('persistence', () => {
                         localCollection
                     ],
                     common: {
-                        all: [
-                            localCommonCollection,
-                            distantCommonCollection,
-                            localNotModCommonCollection,
-                            distantNotModCommonCollection
-                        ],
                         pulled: [
                             distantCommonCollection
                         ],
                         pushed: [
                             localCommonCollection
-                        ],
-                        notModified: [
-                            localNotModCommonCollection,
-                            distantNotModCommonCollection
-                        ]
-                    }
-                },
-                discIds: {
-                    all: [
-                        distantDisc.id,
-                        localDisc.id,
-                        localEqualDisc.id,
-                        localDiffDisc.id
-                    ],
-                    pulled: [
-                        distantDisc.id
-                    ],
-                    pushed: [
-                        localDisc.id
-                    ],
-                    common: {
-                        all: [
-                            localEqualDisc.id,
-                            localDiffDisc.id
-                        ],
-                        pulled: [
-                        ],
-                        pushed: [
-                        ],
-                        notModified: [
-                            localEqualDisc.id,
-                            localDiffDisc.id
                         ]
                     }
                 },
                 discs: {
-                    all: [
-                        distantDisc,
-                        localDisc,
-                        localEqualDisc,
-                        distantEqualDisc,
-                        localDiffDisc,
-                        distantDiffDisc
-                    ],
                     pulled: [
                         distantDisc,
                     ],
@@ -136,20 +82,10 @@ describe('persistence', () => {
                         localDisc
                     ],
                     common: {
-                        all: [
-                            localEqualDisc,
-                            distantEqualDisc,
-                            localDiffDisc,
-                            distantDiffDisc
-                        ],
                         pulled: [
                             distantDiffDisc
                         ],
                         pushed: [
-                        ],
-                        notModified: [
-                            localEqualDisc,
-                            distantEqualDisc
                         ]
                     }
                 }
@@ -233,6 +169,7 @@ describe('persistence', () => {
     it('should save current persistence state', (done) => {
 
         const p = new MemoryPersistence(null);
+        let syncState;
 
         // Disques
         const thriller = TestUtils.createDisc('Thriller')
@@ -259,18 +196,23 @@ describe('persistence', () => {
         let lastState: any = {};
 
         // Création dans la persistence
-        Promise.all([
-            p.saveDisc(thriller.id, thriller),
-            p.saveDisc(darkSideOfTheMoon.id, darkSideOfTheMoon),
-            p.saveCollection(collectionVide),
-            p.saveCollection(collectionComplete)
-        ]).then((res) => {
+        p.getSyncState().then(loadedSyncState => {
+            expect(loadedSyncState).not.toBeNull();
+            syncState = loadedSyncState;
+        }).then(res => {
+            return Promise.all([
+                p.saveDisc(thriller.id, thriller),
+                p.saveDisc(darkSideOfTheMoon.id, darkSideOfTheMoon),
+                p.saveCollection(collectionVide),
+                p.saveCollection(collectionComplete)
+            ]);
+        }).then(res => {
 
             // Attendus
-            expect(p.syncState).not.toBeNull();
-            expect(p.syncState.discs).not.toBeNull();
-            expect(p.syncState.discs.elementsById).not.toBeNull();
-            const discs = p.syncState.discs.elementsById;
+            expect(syncState).not.toBeNull();
+            expect(syncState.discs).not.toBeNull();
+            expect(syncState.discs.elementsById).not.toBeNull();
+            const discs = syncState.discs.elementsById;
 
             // Disques
             expect(_.size(discs)).toBe(2);
@@ -304,11 +246,11 @@ describe('persistence', () => {
         }).then(res => {
 
             // On pousse Thriller sans le modifier
-            p.saveDisc(thriller.id, thriller);
+            return p.saveDisc(thriller.id, thriller);
 
         }).then(res => {
 
-            const discs = p.syncState.discs.elementsById;
+            const discs = syncState.discs.elementsById;
             expect(_.size(discs)).toBe(2);
 
             // Thriller ne doit pas avoir changé
@@ -329,11 +271,11 @@ describe('persistence', () => {
 
             // On modifie vraiment Thriller
             thriller.files[0].tracks[0].title = "Bily Gin";
-            p.saveDisc(thriller.id, thriller);
+            return p.saveDisc(thriller.id, thriller);
 
         }).then(res => {
 
-            const discs = p.syncState.discs.elementsById;
+            const discs = syncState.discs.elementsById;
             expect(_.size(discs)).toBe(2);
 
             // Seul Thriller doit avoir changé
@@ -358,11 +300,11 @@ describe('persistence', () => {
         }).then(res => {
 
             // Ajout du disque Secret World
-            p.saveDisc(secretWorld.id, secretWorld);
+            return p.saveDisc(secretWorld.id, secretWorld);
 
         }).then(res => {
 
-            const discs = p.syncState.discs.elementsById;
+            const discs = syncState.discs.elementsById;
             expect(_.size(discs)).toBe(3);
 
             // Seul Secret World doit avoir changé
@@ -371,6 +313,12 @@ describe('persistence', () => {
             expect(secretWorldState.created).not.toBeNull();
             expect(secretWorldState.lastmod).not.toBeNull();
             expect(secretWorldState.checksum).not.toBeNull();
+
+            lastState.secretWorld = {
+                created: secretWorldState.created,
+                lastmod: secretWorldState.lastmod,
+                checksum: secretWorldState.checksum
+            };
 
             // Et pas les autres
             const thrillerState = discs[thriller.id];
@@ -386,8 +334,30 @@ describe('persistence', () => {
             expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
             expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
 
+        }).then(res => {
+
+            // Sauvegarde du disque Secret World sans modification
+            return p.saveDisc(secretWorld.id, secretWorld);
+
+        }).then(res => {
+
+            const discs = syncState.discs.elementsById;
+            expect(_.size(discs)).toBe(3);
+
+            // Secret World ne doit pas avoir changé
+            const secretWorldState = discs[secretWorld.id];
+            expect(secretWorldState).not.toBeNull();
+            expect(secretWorldState.created).toBe(lastState.secretWorld.created);
+            expect(secretWorldState.lastmod).toBe(lastState.secretWorld.lastmod);
+            expect(secretWorldState.checksum).toBe(lastState.secretWorld.checksum);
         })
-            .then(res => console.log("syncState", JSON.stringify(p.syncState)))
+
+            // Assertions sur le JSON
+            .then(res => JSON.stringify(syncState))
+            .then(json => {
+                const loadedSyncState = SyncState.load(json);
+                expect(loadedSyncState).toEqual(syncState);
+            })
             .then(res => done());
     });
 
