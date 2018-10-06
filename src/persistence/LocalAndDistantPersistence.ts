@@ -27,6 +27,10 @@ export class LocalAndDistantPersistence<L extends Persistence,D extends Persiste
         return this.local.getCollectionNames();
     }
 
+    getDiscIds(): Promise<string[]> {
+        return this.local.getDiscIds();
+    }
+
     getDisc(discId: string, discIndex: number): Promise<Disc> {
         return this.local.getDisc(discId, discIndex);
     }
@@ -54,5 +58,9 @@ export class LocalAndDistantPersistence<L extends Persistence,D extends Persiste
 
     protected loadSyncState(): Promise<SyncState> {
         throw new Error("IllegalUsage");
+    }
+
+    public saveSyncState(): Promise<SyncState> {
+        return this.distant.saveSyncState();
     }
 }

@@ -17,7 +17,10 @@ export class GoogleDrivePersistence extends Persistence {
     /** exemple : subFolders['16xjNCGVHLYi2Z5J5xzkhcUs0']['Collections'] = (id du sous-dossier "Collections") */
     private subFolders: Map<string, {}> = new Map();
 
+    /** fichiers GoogleDrive représentant des collections indexés par Collection.name */
     private collectionsFiles: Map<string, gapi.client.drive.File> = new Map();
+
+    /** fichiers GoogleDrive représentant des disques indexés par Disc.id */
     private cuesFiles: Map<string, gapi.client.drive.File> = new Map(); // TODO : init
 
     private prefs = {
@@ -182,7 +185,7 @@ export class GoogleDrivePersistence extends Persistence {
 
     getCollectionNames(): Promise<string[]> {
         return this.getFolders()
-            .then(folders => this.findGoogleFiles(/.+\.cues/, folders.collectionsFolder.id))
+            .then(folders => this.findGoogleFiles(/.+\.cues$/, folders.collectionsFolder.id))
             .then(files => {
                 const collectionsNames: string[] = [];
                 files.forEach(file => {
@@ -193,6 +196,26 @@ export class GoogleDrivePersistence extends Persistence {
                     this.collectionsFiles.set(collectionName, file);
                 });
                 return collectionsNames;
+            });
+    }
+
+    getDiscIds(): Promise<string[]> {
+        return this.getFolders()
+            .then(folders => Promise.all([
+                this.findGoogleFiles(/.+\.cue$/, folders.cuesFolder.id),
+                this.findGoogleFiles(/.+\.cue$/, folders.plCuesFolder.id),
+            ]))
+            .then(files => files[0].concat(files[1]))
+            .then(files => {
+                const discIds: string[] = [];
+                files.forEach(file => {
+                    const discId = file.name.slice(0, -4);
+                    discIds.push(discId);
+
+                    // Sauvegarde de l'id dans Google Drive du disque
+                    this.cuesFiles.set(discId, file);
+                });
+                return discIds;
             });
     }
 
@@ -519,6 +542,41 @@ export class GoogleDrivePersistence extends Persistence {
             }
         }).then(syncStateFile => this.getFileContent(syncStateFile.id))
             .then(content => SyncState.load(content));
+    }
+
+    public saveSyncState(): Promise<SyncState> {
+
+        let rootFolder, syncState, content;
+        const filename = 'syncState.json';
+        let folder: drive.File;
+        return Promise.all([
+            this.getRootFolder(),
+            this.getSyncState()
+        ]).then(res => {
+            [rootFolder, syncState] = res;
+            content = JSON.stringify(syncState);
+            return res;
+        })
+        // Fichier existant ?
+            .then(res => {
+                return this.findGoogleFile(filename, rootFolder.id); // TODO cache comme les collection ou les disques
+            })
+            .catch(err => {
+                // Le fichier n'existe pas encore
+                return null;
+            })
+            .then(file => {
+                return this.gapiCall(this.upload({
+                    id: file ? file.id : undefined,
+                    name: filename,
+                    mimeType: 'text/plain',
+                    parents: [rootFolder.id]
+                }, content), `saveSyncState`);
+            })
+            .then(file => {
+                console.log(`SyncState sauvegardé dans Google Drive`, file);
+                return syncState;
+            });
     }
 
 }

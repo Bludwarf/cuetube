@@ -10,6 +10,7 @@ export class MemoryPersistence extends Persistence {
 
     collections: {[index: string]: Collection} = {};
     discs: {[index: string]: Disc} = {};
+    private syncState = new SyncState();
 
     constructor($http: HttpClient) {
         super($http);
@@ -53,7 +54,12 @@ export class MemoryPersistence extends Persistence {
     }
 
     protected loadSyncState(): Promise<SyncState> {
-        return Promise.resolve(new SyncState());
+        return Promise.resolve(this.syncState);
+    }
+
+    public async saveSyncState(): Promise<SyncState> {
+        console.log(`syncState "sauvegardé" : ${JSON.stringify(this.syncState, null, 4)}`);
+        return this.syncState
     }
 
 }

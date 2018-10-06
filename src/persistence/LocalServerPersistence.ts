@@ -26,6 +26,17 @@ export class LocalServerPersistence extends Persistence {
         });
     }
 
+    public getDiscIds(): Promise<string[]> {
+        return new Promise((resolve, reject) => {
+            this.$http.get<string[]>(`/discIds`).toPromise().then(discIds => {
+                resolve(discIds);
+            }, resKO => {
+                console.error('Error GET discIds != 200');
+                return reject(resKO);
+            });
+        });
+    }
+
     public setCollectionNames(collectionsNames: string[]): Promise<string[]> {
         return new Promise((resolve, reject) => {
             this.$http.post<string[]>(`/collectionNames`, collectionsNames).toPromise().then(res => {
@@ -79,7 +90,11 @@ export class LocalServerPersistence extends Persistence {
 
     protected loadSyncState(): Promise<SyncState> {
         // FIXME implement
-        console.error("LocalServerPersistence.loadSyncState TO IMPLEMENT");
-        return Promise.resolve(new SyncState());
+        throw new Error("LocalServerPersistence.loadSyncState TO IMPLEMENT");
+    }
+
+    saveSyncState(): Promise<SyncState> {
+        // FIXME implement
+        throw new Error("LocalServerPersistence.saveSyncState TO IMPLEMENT");
     }
 }

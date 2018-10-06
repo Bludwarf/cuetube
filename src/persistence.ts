@@ -45,14 +45,18 @@ export abstract class Persistence {
     private buildSyncState(): Promise<SyncState> {
         // On doit chercher toutes les collections et tous les disques
         return Promise.all([
-            this.getAllCollectionsByNames()
+            this.getAllCollectionsByNames(),
+            this.getAllDiscs()
         ]).then(res => {
-            const [collectionsByNames] = res;
+            const [collectionsByNames, discs] = res;
             const syncState = new SyncState();
             _.each(collectionsByNames, collection => syncState.collections.push(collection));
+            _.each(discs, disc => syncState.discs.push(disc));
             return syncState;
         })
     }
+
+    public abstract saveSyncState(): Promise<SyncState>;
 
     constructor(public $http: HttpClient) {
     }
@@ -101,6 +105,13 @@ export abstract class Persistence {
             return this.getSyncState().then(syncState => {
                 syncState.collections.push(savedCollection);
                 return savedCollection;
+            }).then(savedCollection => {
+                // TODO ajout d'un débrayage en cas de batch save
+                console.log("Sauvegarde de l'état de la synchro...");
+                return this.saveSyncState().then(syncState => {
+                    console.log("Sauvegarde de l'état de la synchro OK");
+                    return savedCollection;
+                });
             });
         })
     }
@@ -161,6 +172,13 @@ export abstract class Persistence {
             return this.getSyncState().then(syncState => {
                 syncState.discs.push(savedDisc);
                 return savedDisc;
+            }).then(savedDisc => {
+                // TODO ajout d'un débrayage en cas de batch save
+                console.log("Sauvegarde de l'état de la synchro...");
+                return this.saveSyncState().then(syncState => {
+                    console.log("Sauvegarde de l'état de la synchro OK");
+                    return savedDisc;
+                });
             });
         });
     }
@@ -265,25 +283,25 @@ export abstract class Persistence {
                 return Promise.all([
 
                     /** Collections absentes dans this */
-                    srcCollectionNames.filter(name => !thisCollectionNames.includes(name))
+                    Promise.all(srcCollectionNames.filter(name => !thisCollectionNames.includes(name))
                         .map(srcCollectionName => {
                             return src.getCollection(srcCollectionName).then(srcCollection => {
                                 syncResult.collections.pulled.push(srcCollection);
                                 return srcCollection;
                             });
-                        }),
+                        })),
 
                     /** Collections absentes dans la source */
-                    thisCollectionNames.filter(name => !srcCollectionNames.includes(name))
+                    Promise.all(thisCollectionNames.filter(name => !srcCollectionNames.includes(name))
                         .map(thisCollectionName => {
                             return this.getCollection(thisCollectionName).then(thisCollection => {
                                 syncResult.collections.pushed.push(thisCollection);
                                 return thisCollection;
                             });
-                        }),
+                        })),
 
                     /** Collections en commun */
-                    thisCollectionNames.filter(name => srcCollectionNames.includes(name))
+                    Promise.all(thisCollectionNames.filter(name => srcCollectionNames.includes(name))
                         .map(collectionName => {
                             const thisChecksum = thisSyncState.collections.elementsById[collectionName].checksum;
                             const srcChecksum = srcSyncState.collections.elementsById[collectionName].checksum;
@@ -293,7 +311,7 @@ export abstract class Persistence {
                             } else {
                                 return Promise.resolve();
                             }
-                        })
+                        }))
                 ]);
 
             }).then(results => {
@@ -309,25 +327,25 @@ export abstract class Persistence {
                 return Promise.all([
 
                     /** Disques absents dans this */
-                    srcDiscIds.filter(id => !thisDiscIds.includes(id))
+                    Promise.all(srcDiscIds.filter(id => !thisDiscIds.includes(id))
                         .map(id => {
                             return src.getDisc(id, discIndex).then(srcDisc => {
                                 syncResult.discs.pulled.push(srcDisc);
                                 return srcDisc;
                             });
-                        }),
+                        })),
 
                     /** Disques absents dans la source */
-                    thisDiscIds.filter(id => !srcDiscIds.includes(id))
+                    Promise.all(thisDiscIds.filter(id => !srcDiscIds.includes(id))
                         .map(id => {
                             return this.getDisc(id, discIndex).then(thisDisc => {
                                 syncResult.discs.pushed.push(thisDisc);
                                 return thisDisc;
                             });
-                        }),
+                        })),
 
                     /** Disques en commun */
-                    thisDiscIds.filter(id => srcDiscIds.includes(id))
+                    Promise.all(thisDiscIds.filter(id => srcDiscIds.includes(id))
                         .map(id => {
                             const thisChecksum = thisSyncState.discs.elementsById[id].checksum;
                             const  srcChecksum = srcSyncState.discs.elementsById[id].checksum;
@@ -337,7 +355,7 @@ export abstract class Persistence {
                             } else {
                                 return Promise.resolve();
                             }
-                        })
+                        }))
                 ]);
 
         }).then(results => {
