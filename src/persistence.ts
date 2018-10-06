@@ -23,8 +23,8 @@ export abstract class Persistence {
                     // Chargement de l'état de synchro si pas encore fait
                     return this.loadSyncState()
                         .catch(e => {
-                            console.warn("Erreur de chargement du syncState", e);
-                            return new SyncState();
+                            console.warn("Impossible de charger le syncState : on le reconstruit...", e);
+                            return this.buildSyncState();
                         })
                         .then(loadedSyncState => {
                             // Quelqu'un a peut-être déjà initialisé _syncState ?
@@ -36,6 +36,22 @@ export abstract class Persistence {
                 }
                 return existingSyncState;
             });
+    }
+
+    /**
+     * Construit pour la fois 1ère l'état de synchro s'il n'a jamais été calculé
+     * @return {Promise<SyncState>}
+     */
+    private buildSyncState(): Promise<SyncState> {
+        // On doit chercher toutes les collections et tous les disques
+        return Promise.all([
+            this.getAllCollectionsByNames()
+        ]).then(res => {
+            const [collectionsByNames] = res;
+            const syncState = new SyncState();
+            _.each(collectionsByNames, collection => syncState.collections.push(collection));
+            return syncState;
+        })
     }
 
     constructor(public $http: HttpClient) {
@@ -55,6 +71,7 @@ export abstract class Persistence {
     }
 
     public abstract getCollectionNames(): Promise<string[]>;
+    public abstract getDiscIds(): Promise<string[]>;
 
     /**
      *
@@ -364,8 +381,18 @@ export abstract class Persistence {
 
     /**
      * Charge l'état actuel de cette persistence pour faciliter la synchronisation
+     * @throws Error si aucun état actuel
      */
     protected abstract loadSyncState(): Promise<SyncState>;
+
+    public getAllCollectionsByNames(): Promise<{[key: string]: Collection}> {
+        return this.getCollectionNames().then(collectionNames => this.getCollectionByNames(collectionNames));
+    }
+
+    public getAllDiscs(): Promise<Disc[]> {
+        const discIndex = 0; // TODO interêt ?
+        return this.getDiscIds().then(discIds => this.getDiscs(discIds, discIndex));
+    }
 }
 
 export class SyncResult {

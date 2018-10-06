@@ -39,6 +39,10 @@ export class MemoryPersistence extends Persistence {
         return Promise.resolve(Object.keys(this.collections));
     }
 
+    getDiscIds(): Promise<string[]> {
+        return Promise.resolve(Object.keys(this.discs));
+    }
+
     postDisc(discId: string, disc): Promise<Disc> {
         this.discs[discId] = disc;
         return Promise.resolve(disc);
