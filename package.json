@@ -27,7 +27,7 @@
     "@types/youtube": "0.0.31",
     "async": "~0.2.8",
     "body-parser": "^1.15.2",
-    "bootstrap": "^3.3.7",
+    "bootstrap": ">=4.1.2",
     "browserify": "^13.3.0",
     "core-js": "^2.4.1",
     "cue-parser": "0.0.4",
