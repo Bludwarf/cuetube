@@ -158,7 +158,7 @@ export class LocalStoragePersistence extends Persistence {
     }
 
     protected async loadSyncState(): Promise<SyncState> {
-        return SyncState.load(localStorage.getItem('syncState'));
+        return await SyncState.load(localStorage.getItem('syncState'));
     }
 
     saveSyncState(): Promise<SyncState> {

@@ -47,13 +47,18 @@ export abstract class Persistence {
         return Promise.all([
             this.getAllCollectionsByNames(),
             this.getAllDiscs()
-        ]).then(res => {
-            const [collectionsByNames, discs] = res;
-            const syncState = new SyncState();
-            _.each(collectionsByNames, collection => syncState.collections.push(collection));
-            _.each(discs, disc => syncState.discs.push(disc));
-            return syncState;
-        })
+        ])
+            .catch(e => {
+                console.error("Erreur lors du buildSyncState", e);
+                throw e;
+            })
+            .then(res => {
+                const [collectionsByNames, discs] = res;
+                const syncState = new SyncState();
+                _.each(collectionsByNames, collection => syncState.collections.push(collection));
+                _.each(discs, disc => syncState.discs.push(disc));
+                return syncState;
+            })
     }
 
     public abstract saveSyncState(): Promise<SyncState>;
