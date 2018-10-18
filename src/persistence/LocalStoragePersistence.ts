@@ -1,4 +1,4 @@
-import {Persistence} from '../persistence';
+import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {HttpClient} from '@angular/common/http';
 import {PlayerComponent} from '../app/player/player.component';
@@ -72,9 +72,40 @@ export class LocalStoragePersistence extends Persistence {
         return names;
     }
 
+    public async getDiscIds(): Promise<string[]> {
+        const knownIds = this.getItem<string[]>('discIds');
+        if (knownIds) {
+            return knownIds;
+        }
+
+        const rx = /^disc\.(.+)/;
+        const ids: string[] = [];
+        for (let i = 0; i < localStorage.length; i++){
+            const key = localStorage.key(i);
+            const m = rx.exec(key);
+            if (m) {
+                const name = m[1];
+                ids.push(name);
+            }
+        }
+
+        try {
+            this.setDiscIds(ids);
+        } catch (e) {
+            console.warn('Impossible de sauvegarder la liste des ids de disques. Cause :', e);
+        }
+
+        return ids;
+    }
+
     public async setCollectionNames(collectionsNames: string[]): Promise<string[]> {
         this.setItem('collectionsNames', collectionsNames);
         return collectionsNames;
+    }
+
+    public async setDiscIds(discsIds: string[]): Promise<string[]> {
+        this.setItem('discsIds', discsIds);
+        return discsIds;
     }
 
     public async getCollection(collectionName: string): Promise<Collection> {
@@ -114,6 +145,26 @@ export class LocalStoragePersistence extends Persistence {
 
     public async postDisc(discId: string, disc): Promise<Disc> {
         localStorage.setItem(`disc.${discId}.cuesheet`, JSON.stringify(disc.cuesheet));
+        const discIds = await this.getDiscIds();
+        if (discIds.indexOf(discId) === -1) {
+            discIds.push(discId);
+            try {
+                this.setDiscIds(discIds);
+            } catch (e) {
+                console.warn('Impossible de sauvegarder la liste des ids de disques. Cause :', e);
+            }
+        }
         return disc;
+    }
+
+    protected async loadSyncState(): Promise<SyncState> {
+        return await SyncState.load(localStorage.getItem('syncState'));
+    }
+
+    saveSyncState(): Promise<SyncState> {
+        return this.getSyncState().then(syncState => {
+            localStorage.setItem('syncState', JSON.stringify(syncState));
+            return syncState;
+        })
     }
 }

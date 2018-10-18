@@ -1,4 +1,4 @@
-import {Persistence} from '../persistence';
+import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
@@ -21,6 +21,17 @@ export class LocalServerPersistence extends Persistence {
                 resolve(collectionNames);
             }, resKO => {
                 console.error('Error GET collectionNames != 200');
+                return reject(resKO);
+            });
+        });
+    }
+
+    public getDiscIds(): Promise<string[]> {
+        return new Promise((resolve, reject) => {
+            this.$http.get<string[]>(`/discIds`).toPromise().then(discIds => {
+                resolve(discIds);
+            }, resKO => {
+                console.error('Error GET discIds != 200');
                 return reject(resKO);
             });
         });
@@ -75,5 +86,15 @@ export class LocalServerPersistence extends Persistence {
         return new Promise((resolve, reject) => {
             this.$http.post(`/${discId}.cue.json`, disc).toPromise().then(resolve, reject);
         });
+    }
+
+    protected loadSyncState(): Promise<SyncState> {
+        // FIXME implement
+        throw new Error("LocalServerPersistence.loadSyncState TO IMPLEMENT");
+    }
+
+    saveSyncState(): Promise<SyncState> {
+        // FIXME implement
+        throw new Error("LocalServerPersistence.saveSyncState TO IMPLEMENT");
     }
 }

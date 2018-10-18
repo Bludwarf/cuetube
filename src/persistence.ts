@@ -14,7 +14,54 @@ export abstract class Persistence {
 
     static DEFAULT_COLLECTION = '_default_';
 
-    readonly syncState: SyncState = new SyncState();
+    private _syncState: SyncState;
+
+    public getSyncState(): Promise<SyncState> {
+        return Promise.resolve(this._syncState)
+            .then(existingSyncState => {
+                if (!existingSyncState) {
+                    // Chargement de l'état de synchro si pas encore fait
+                    return this.loadSyncState()
+                        .catch(e => {
+                            console.warn("Impossible de charger le syncState : on le reconstruit...", e);
+                            return this.buildSyncState();
+                        })
+                        .then(loadedSyncState => {
+                            // Quelqu'un a peut-être déjà initialisé _syncState ?
+                            if (!this._syncState) {
+                                this._syncState = loadedSyncState;
+                            }
+                            return this._syncState;
+                        });
+                }
+                return existingSyncState;
+            });
+    }
+
+    /**
+     * Construit pour la fois 1ère l'état de synchro s'il n'a jamais été calculé
+     * @return {Promise<SyncState>}
+     */
+    private buildSyncState(): Promise<SyncState> {
+        // On doit chercher toutes les collections et tous les disques
+        return Promise.all([
+            this.getAllCollectionsByNames(),
+            this.getAllDiscs()
+        ])
+            .catch(e => {
+                console.error("Erreur lors du buildSyncState", e);
+                throw e;
+            })
+            .then(res => {
+                const [collectionsByNames, discs] = res;
+                const syncState = new SyncState();
+                _.each(collectionsByNames, collection => syncState.collections.push(collection));
+                _.each(discs, disc => syncState.discs.push(disc));
+                return syncState;
+            })
+    }
+
+    public abstract saveSyncState(): Promise<SyncState>;
 
     constructor(public $http: HttpClient) {
     }
@@ -33,6 +80,7 @@ export abstract class Persistence {
     }
 
     public abstract getCollectionNames(): Promise<string[]>;
+    public abstract getDiscIds(): Promise<string[]>;
 
     /**
      *
@@ -59,8 +107,17 @@ export abstract class Persistence {
 
     public saveCollection(collection: Collection): Promise<Collection> {
         return this.postCollection(collection).then(savedCollection => {
-            this.syncState.collections.push(savedCollection);
-            return savedCollection;
+            return this.getSyncState().then(syncState => {
+                syncState.collections.push(savedCollection);
+                return savedCollection;
+            }).then(savedCollection => {
+                // TODO ajout d'un débrayage en cas de batch save
+                console.log("Sauvegarde de l'état de la synchro...");
+                return this.saveSyncState().then(syncState => {
+                    console.log("Sauvegarde de l'état de la synchro OK");
+                    return savedCollection;
+                });
+            });
         })
     }
     protected abstract postCollection(collection: Collection): Promise<Collection>;
@@ -117,8 +174,17 @@ export abstract class Persistence {
     // FIXME : disc devrait être un Disc
     public saveDisc(discId: string, disc): Promise<Disc> {
         return this.postDisc(discId, disc).then(savedDisc => {
-            this.syncState.discs.push(savedDisc);
-            return savedDisc;
+            return this.getSyncState().then(syncState => {
+                syncState.discs.push(savedDisc);
+                return savedDisc;
+            }).then(savedDisc => {
+                // TODO ajout d'un débrayage en cas de batch save
+                console.log("Sauvegarde de l'état de la synchro...");
+                return this.saveSyncState().then(syncState => {
+                    console.log("Sauvegarde de l'état de la synchro OK");
+                    return savedDisc;
+                });
+            });
         });
     }
     protected abstract postDisc(discId: string, disc): Promise<Disc>;
@@ -201,112 +267,101 @@ export abstract class Persistence {
 
         console.group('Synchro entre deux persistances en cours');
         const syncResult = new SyncResult();
+        let thisSyncState : SyncState, srcSyncState : SyncState;
 
         // Synchro des collections
-        return Promise.all([this.getCollectionNames(), src.getCollectionNames()]).then(results => {
-            const [thisCollectionNames, srcCollectionNames] = results;
-
-            // Récup des collections des deux côtés (obligé car on veut tous les disques plus tard)
-            console.log('Récup de toutes les collections des deux côtés...');
-            return Promise.all([
-                thisCollectionNames,
-                this.getCollectionByNames(thisCollectionNames),
-                srcCollectionNames,
-                src.getCollectionByNames(srcCollectionNames)
-            ]);
-        }).then(results => {
-            const [thisCollectionNames, thisCollections, srcCollectionNames, srcCollections] = results;
-
-            console.log('Début de la synchro des collections...');
-
-            /** Collections absentes dans this */
-            srcCollectionNames.filter(name => !thisCollectionNames.includes(name))
-                .map(srcCollectionName => {
-                    const srcCollection = srcCollections[srcCollectionName];
-                    syncResult.collections.all.push(srcCollection);
-                    syncResult.collections.pulled.push(srcCollection);
-                    return srcCollection;
-                });
-
-            /** Collections absentes dans la source */
-            thisCollectionNames.filter(name => !srcCollectionNames.includes(name))
-                .map(thisCollectionName => {
-                    const thisCollection = thisCollections[thisCollectionName];
-                    syncResult.collections.all.push(thisCollection);
-                    syncResult.collections.pushed.push(thisCollection);
-                    return thisCollection;
-                });
-
-            /** Collections en commun */
-            thisCollectionNames.filter(name => srcCollectionNames.includes(name))
-                .map(collectionName => {
-                    const thisCollection = thisCollections[collectionName];
-                    const srcCollection = srcCollections[collectionName];
-                    return syncCommonCollection(thisCollection, srcCollection, syncResult);
-                });
-
-            return results;
-
-        }).then(results => {
-
-            console.log('Récup de toutes les disques communs...');
-
-            // Récup de tous les disques en commun pour comparer
-            const discIndex = -1; // TODO intérêt ?
-            return Promise.all(syncResult.discIds.all
-                .map(discId => Promise.all([
-                    this.getDisc(discId, discIndex).catch(e => null), // disc dans this
-                    src.getDisc(discId, discIndex).catch(e => null)  // disc dans src
-                ])));
-
-        }).then(discPairs => {
-
-            console.log('Début de la synchro des disques...');
-
-            discPairs.map(discPair => {
-                const [thisDisc, srcDisc] = discPair;
-
-                // Cas qui ne devrait pas arriver !
-                if (!thisDisc && !srcDisc) {
-                    console.error("Un disque n'a été trouvé ni dans this ni dans src");
-                    return null;
-                }
-
-                // Disque absent dans this
-                if (!thisDisc) {
-                    pushOnlyOnce(syncResult.discs.pulled, srcDisc);
-                    pushOnlyOnce(syncResult.discs.all, srcDisc);
-                }
-
-                // Disque absent dans src
-                if (!srcDisc) {
-                    pushOnlyOnce(syncResult.discs.pushed, thisDisc);
-                    pushOnlyOnce(syncResult.discs.all, thisDisc);
-                }
-
-                // Disque en commun
-                if (thisDisc && srcDisc) {
-                    pushOnlyOnce(syncResult.discs.common.all, thisDisc);
-                    pushOnlyOnce(syncResult.discs.common.all, srcDisc);
-                    pushOnlyOnce(syncResult.discs.all, thisDisc);
-                    pushOnlyOnce(syncResult.discs.all, srcDisc);
-
-                    // Comparaison de la cuesheet pour diff
-                    // FIXME utiliser plutôt toJSON car print affiche la date courante !
-                    const thisCueData = CuePrinter.print(thisDisc.cuesheet);
-                    const srcCueData = CuePrinter.print(srcDisc.cuesheet);
-                    if (thisCueData === srcCueData) {
-                        console.log(`Disque ${srcDisc.id} (${srcDisc.title}) inchangé`);
-                        pushOnlyOnce(syncResult.discs.common.notModified, thisDisc);
-                        pushOnlyOnce(syncResult.discs.common.notModified, srcDisc);
-                    } else {
-                        console.log(`Disque ${srcDisc.id} (${srcDisc.title}) différent. On prend celui de ${src.title}...`,
-                            thisCueData, srcCueData);
-                        pushOnlyOnce(syncResult.discs.common.pulled, srcDisc);
-                    }
-
-                }
+        return Promise.all([this.getSyncState(), src.getSyncState()])
+            .then(syncStates => {
+                [thisSyncState, srcSyncState] = syncStates;
+                return syncStates;
             })
+            .then(syncStates => {
+                const thisCollectionNames = _.keys(thisSyncState.collections.elementsById);
+                const  srcCollectionNames = _.keys( srcSyncState.collections.elementsById);
+                return [thisCollectionNames, srcCollectionNames];
+            })
+            .then(results => {
+                const [thisCollectionNames, srcCollectionNames] = results;
+
+                console.log('Début de la synchro des collections...');
+
+                return Promise.all([
+
+                    /** Collections absentes dans this */
+                    Promise.all(srcCollectionNames.filter(name => !thisCollectionNames.includes(name))
+                        .map(srcCollectionName => {
+                            return src.getCollection(srcCollectionName).then(srcCollection => {
+                                syncResult.collections.pulled.push(srcCollection);
+                                return srcCollection;
+                            });
+                        })),
+
+                    /** Collections absentes dans la source */
+                    Promise.all(thisCollectionNames.filter(name => !srcCollectionNames.includes(name))
+                        .map(thisCollectionName => {
+                            return this.getCollection(thisCollectionName).then(thisCollection => {
+                                syncResult.collections.pushed.push(thisCollection);
+                                return thisCollection;
+                            });
+                        })),
+
+                    /** Collections en commun */
+                    Promise.all(thisCollectionNames.filter(name => srcCollectionNames.includes(name))
+                        .map(collectionName => {
+                            const thisChecksum = thisSyncState.collections.elementsById[collectionName].checksum;
+                            const srcChecksum = srcSyncState.collections.elementsById[collectionName].checksum;
+                            if (thisChecksum !== srcChecksum) {
+                                return Promise.all([this.getCollection(collectionName), src.getCollection(collectionName)])
+                                    .then(collections => syncCommonCollection(collections[0], collections[1], syncResult));
+                            } else {
+                                return Promise.resolve(null);
+                            }
+                        }))
+                ]);
+
+            }).then(results => {
+                const thisDiscIds = _.keys(thisSyncState.discs.elementsById);
+                const  srcDiscIds = _.keys( srcSyncState.discs.elementsById);
+                return [thisDiscIds, srcDiscIds];
+            }).then(results => {
+
+                const [thisDiscIds, srcDiscIds] = results;
+
+                console.log('Début de la synchro des disques...');
+                const discIndex = -1; // TODO intérêt ?
+                return Promise.all([
+
+                    /** Disques absents dans this */
+                    Promise.all(srcDiscIds.filter(id => !thisDiscIds.includes(id))
+                        .map(id => {
+                            return src.getDisc(id, discIndex).then(srcDisc => {
+                                syncResult.discs.pulled.push(srcDisc);
+                                return srcDisc;
+                            });
+                        })),
+
+                    /** Disques absents dans la source */
+                    Promise.all(thisDiscIds.filter(id => !srcDiscIds.includes(id))
+                        .map(id => {
+                            return this.getDisc(id, discIndex).then(thisDisc => {
+                                syncResult.discs.pushed.push(thisDisc);
+                                return thisDisc;
+                            });
+                        })),
+
+                    /** Disques en commun */
+                    Promise.all(thisDiscIds.filter(id => srcDiscIds.includes(id))
+                        .map(id => {
+                            const thisChecksum = thisSyncState.discs.elementsById[id].checksum;
+                            const  srcChecksum = srcSyncState.discs.elementsById[id].checksum;
+                            if (thisChecksum !== srcChecksum) {
+                                return Promise.all([this.getDisc(id, discIndex), src.getDisc(id, discIndex)])
+                                    .then(discs => syncCommonDisc(discs[0], discs[1], syncResult));
+                            } else {
+                                return Promise.resolve(null);
+                            }
+                        }))
+                ]);
 
         }).then(results => {
 
@@ -341,41 +396,55 @@ export abstract class Persistence {
 
         }).then(results => {
 
+            console.log("Sauvegarde de l'état de synchro dans les deux persistances...");
+            return Promise.all([
+                this.saveSyncState(),
+                src.saveSyncState()
+            ]);
+
+        }).then(results => {
+
             // TODO : post dans les deux persistences
             return syncResult;
 
         });
     }
+
+    /**
+     * Charge l'état actuel de cette persistence pour faciliter la synchronisation
+     * @throws Error si aucun état actuel
+     */
+    protected abstract loadSyncState(): Promise<SyncState>;
+
+    public getAllCollectionsByNames(): Promise<{[key: string]: Collection}> {
+        return this.getCollectionNames().then(collectionNames => this.getCollectionByNames(collectionNames));
+    }
+
+    public getAllDiscs(): Promise<Disc[]> {
+        const discIndex = 0; // TODO interêt ?
+        return this.getDiscIds().then(discIds => this.getDiscs(discIds, discIndex));
+    }
 }
 
 export class SyncResult {
     collections = new SyncResultPart<Collection>();
-    discIds = new SyncResultPart<string>();
     discs = new SyncResultPart<Disc>();
 }
 
 export class SyncResultPart<T> {
-    /** tous les objets comparés */
-    all: T[] = [];
     /** existaient que dans src */
     pulled: T[] = [];
     /** existaient que dans this */
     pushed: T[] = [];
     /** objets en commun avec une autre source peut être modifiés */
     common: {
-        /** tous les objets en commun avec une autre source (modifiés + non modifiés) */
-        all: T[];
         /** modifiés dans this */
         pulled: T[];
         /** modifiés dans src */
         pushed: T[];
-        /** non modifiés */
-        notModified: T[];
     } = {
-        all: [],
         pulled: [],
         pushed: [],
-        notModified: []
     };
 }
 
@@ -386,6 +455,22 @@ export class SyncState {
 
     /** date de la dernière modif d'un élément */
     public lastmod: Date;
+
+    /**
+     * @param json objet ou chaîne JSON
+     * @return {SyncState}
+     */
+    public static load(json: any): SyncState {
+        if (typeof json === 'string') {
+            json = JSON.parse(json);
+        }
+        // TODO : sale... moche... bouh ! => reprendre cycle.js et voir s'il propose une méthode pour parse
+        const syncState = new SyncState();
+        syncState.lastmod = new Date(json.lastmod);
+        syncState.collections.load(json.collections);
+        syncState.discs.load(json.discs);
+        return syncState;
+    }
 }
 
 export abstract class SyncStateElements<T> {
@@ -395,7 +480,7 @@ export abstract class SyncStateElements<T> {
     readonly elementsById: {[key: string]: SyncStateElement<T>} = {};
 
     /** date de la dernière modif d'un élément */
-    public lastmod: Date;
+    public lastmod: Date = new Date();
 
     constructor(public parent: SyncState) {
     }
@@ -434,15 +519,26 @@ export abstract class SyncStateElements<T> {
         delete clone.parent;
         return clone;
     }
+
+    load(json: any) {
+        this.lastmod = new Date(json.lastmod);
+        _.each(json.elementsById, (elementJSON, key) => {
+            const element = new SyncStateElement<T>(undefined, this);
+            element.load(elementJSON);
+            this.elementsById[key] = element;
+        })
+    }
 }
 
 export class SyncStateElement<T> {
 
-    public readonly created = new Date();
+    public /* readonly */ created = new Date();
     public lastmod = new Date();
     public checksum;
     constructor(syncedElement: T, public parent: SyncStateElements<T>) {
-        this.checksum = this.parent.getChecksum(syncedElement);
+        if (syncedElement) {
+            this.checksum = this.parent.getChecksum(syncedElement);
+        }
     }
 
     hasChanged(syncedElement: T): any {
@@ -460,6 +556,13 @@ export class SyncStateElement<T> {
         const clone = _.extend({}, this);
         delete clone.parent;
         return clone;
+    }
+
+
+    load(json: any) {
+        _.extend(this, json);
+        this.created = new Date(this.created);
+        this.lastmod = new Date(this.lastmod);
     }
 }
 
@@ -492,51 +595,34 @@ export class SyncStateCollections extends SyncStateElements<Collection> {
     }
 }
 
-function syncCommonCollection(thisCollection: Collection, srcCollection: Collection, syncResult: SyncResult) {
+/**
+ * Synchro de deux collections qui sont différentes (checksum)
+ * @param {Collection} thisCollection
+ * @param {Collection} srcCollection
+ * @param {SyncResult} syncResult
+ * @return {Collection} thisCollection
+ */
+function syncCommonCollection(thisCollection: Collection, srcCollection: Collection, syncResult: SyncResult): Collection {
 
     console.log(`Synchro des collections communes`, thisCollection, srcCollection);
 
-    pushOnlyOnce(syncResult.collections.all, thisCollection);
-    pushOnlyOnce(syncResult.collections.all, srcCollection);
-    pushOnlyOnce(syncResult.collections.common.all, thisCollection);
-    pushOnlyOnce(syncResult.collections.common.all, srcCollection);
-
     /** Disques absents dans this */
     const pulledDiscIds = srcCollection.discIds.filter(discId => !thisCollection.discIds.includes(discId))
-        .map(discId => {
-            pushOnlyOnce(syncResult.discIds.all, discId);
-            pushOnlyOnce(syncResult.discIds.pulled, discId);
-            return discId;
-        });
+        .map(discId => discId);
     if (pulledDiscIds.length) {
         syncResult.collections.common.pulled.push(srcCollection);
     }
 
     /** Disques absents dans la source */
     const pushedDiscIds = thisCollection.discIds.filter(discId => !srcCollection.discIds.includes(discId))
-        .map(discId => {
-            pushOnlyOnce(syncResult.discIds.all, discId);
-            pushOnlyOnce(syncResult.discIds.pushed, discId);
-            return discId;
-        });
+        .map(discId => discId);
     if (pushedDiscIds.length) {
         pushOnlyOnce(syncResult.collections.common.pushed, thisCollection);
     }
 
-    // Collection non modifiées si aucune diff
-    if (!pulledDiscIds.length && !pushedDiscIds.length) {
-        pushOnlyOnce(syncResult.collections.common.notModified, thisCollection);
-        pushOnlyOnce(syncResult.collections.common.notModified, srcCollection);
-    }
-
     /** Disques en commun */
     const notModifiedDiscIds = thisCollection.discIds.filter(discId => srcCollection.discIds.includes(discId))
-        .map(discId => {
-            pushOnlyOnce(syncResult.discIds.all, discId);
-            pushOnlyOnce(syncResult.discIds.common.all, discId);
-            pushOnlyOnce(syncResult.discIds.common.notModified, discId);
-            return discId;
-        });
+        .map(discId => discId);
 
     // Modification des collections
     if (pulledDiscIds.length || pushedDiscIds.length) {
@@ -547,6 +633,29 @@ function syncCommonCollection(thisCollection: Collection, srcCollection: Collect
     }
 
     return thisCollection;
+}
+
+/**
+ * Synchro de deux disques qui sont différents (checksum)
+ * @param {Disc} thisDisc
+ * @param {Disc} srcDisc
+ * @param {SyncResult} syncResult
+ * @return {Disc} thisDisc
+ */
+function syncCommonDisc(thisDisc: Disc, srcDisc: Disc, syncResult: SyncResult): Disc {
+    // Comparaison de la cuesheet pour diff
+    // FIXME utiliser plutôt toJSON car print affiche la date courante !
+    const thisCueData = CuePrinter.print(thisDisc.cuesheet);
+    const srcCueData = CuePrinter.print(srcDisc.cuesheet);
+    if (thisCueData === srcCueData) {
+        console.log(`Disque ${srcDisc.id} (${srcDisc.title}) inchangé`);
+    } else {
+        console.log(`Disque ${srcDisc.id} (${srcDisc.title}) différent. On prend celui de la source...`,
+            thisCueData, srcCueData);
+        pushOnlyOnce(syncResult.discs.common.pulled, srcDisc);
+    }
+
+    return thisDisc;
 }
 
 function pushOnlyOnce<T>(array: T[], item: T) {

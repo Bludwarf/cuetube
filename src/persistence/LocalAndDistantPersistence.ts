@@ -1,4 +1,4 @@
-import {Persistence} from '../persistence';
+import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {Collection} from '../Collection';
 
@@ -27,22 +27,40 @@ export class LocalAndDistantPersistence<L extends Persistence,D extends Persiste
         return this.local.getCollectionNames();
     }
 
+    getDiscIds(): Promise<string[]> {
+        return this.local.getDiscIds();
+    }
+
     getDisc(discId: string, discIndex: number): Promise<Disc> {
         return this.local.getDisc(discId, discIndex);
     }
 
-    postCollection(collection: Collection): Promise<Collection> {
+    public saveCollection(collection: Collection): Promise<Collection> {
         this.distant.saveCollection(collection);
         return this.local.saveCollection(collection);
     }
+    postCollection(collection: Collection): Promise<Collection> {
+        throw new Error("IllegalUsage");
+    }
 
-    postDisc(discId: string, disc): Promise<Disc> {
+    public saveDisc(discId: string, disc): Promise<Disc> {
         this.distant.saveDisc(discId, disc);
         return this.local.saveDisc(discId, disc);
+    }
+    postDisc(discId: string, disc): Promise<Disc> {
+        throw new Error("IllegalUsage");
     }
 
     setCollectionNames(collectionsNames: string[]): Promise<string[]> {
         this.distant.setCollectionNames(collectionsNames);
         return this.local.setCollectionNames(collectionsNames);
+    }
+
+    protected loadSyncState(): Promise<SyncState> {
+        throw new Error("IllegalUsage");
+    }
+
+    public saveSyncState(): Promise<SyncState> {
+        return this.distant.saveSyncState();
     }
 }

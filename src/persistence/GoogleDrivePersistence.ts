@@ -1,4 +1,4 @@
-import {Persistence} from '../persistence';
+import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {CuePrinter} from '../CuePrinter';
 import drive = gapi.client.drive;
@@ -12,14 +12,15 @@ export class GoogleDrivePersistence extends Persistence {
 
     public static readonly TITLE = 'Google Drive';
 
-    private rootFolder: string = undefined;
-    private collectionsFolder: string = undefined;
-    private cuesFolder: string = undefined;
+    private syncStateFile: gapi.client.drive.File = undefined;
 
     /** exemple : subFolders['16xjNCGVHLYi2Z5J5xzkhcUs0']['Collections'] = (id du sous-dossier "Collections") */
     private subFolders: Map<string, {}> = new Map();
 
+    /** fichiers GoogleDrive représentant des collections indexés par Collection.name */
     private collectionsFiles: Map<string, gapi.client.drive.File> = new Map();
+
+    /** fichiers GoogleDrive représentant des disques indexés par Disc.id */
     private cuesFiles: Map<string, gapi.client.drive.File> = new Map(); // TODO : init
 
     private prefs = {
@@ -91,6 +92,10 @@ export class GoogleDrivePersistence extends Persistence {
         });
     }
 
+    private getRootFolder(): Promise<drive.File> {
+        return this.getGoogleFolder('CueTube', null, 'rootFolder');
+    }
+
     private getFolders(): Promise<{
         collectionsFolder: drive.File,
         cuesFolder: drive.File,
@@ -128,7 +133,7 @@ export class GoogleDrivePersistence extends Persistence {
     }
 
     /**
-     * On crée automatiquement le dossier s'il n'existe pas
+     * On crée automatiquement le dossier s'il n'existe pas, on met en cache le dossier trouvé
      * @param {string} name
      * @param {string} parentId
      * @param field
@@ -180,7 +185,7 @@ export class GoogleDrivePersistence extends Persistence {
 
     getCollectionNames(): Promise<string[]> {
         return this.getFolders()
-            .then(folders => this.findGoogleFiles(/.+\.cues/, folders.collectionsFolder.id))
+            .then(folders => this.findGoogleFiles(/.+\.cues$/, folders.collectionsFolder.id))
             .then(files => {
                 const collectionsNames: string[] = [];
                 files.forEach(file => {
@@ -191,6 +196,26 @@ export class GoogleDrivePersistence extends Persistence {
                     this.collectionsFiles.set(collectionName, file);
                 });
                 return collectionsNames;
+            });
+    }
+
+    getDiscIds(): Promise<string[]> {
+        return this.getFolders()
+            .then(folders => Promise.all([
+                this.findGoogleFiles(/.+\.cue$/, folders.cuesFolder.id),
+                this.findGoogleFiles(/.+\.cue$/, folders.plCuesFolder.id),
+            ]))
+            .then(files => files[0].concat(files[1]))
+            .then(files => {
+                const discIds: string[] = [];
+                files.forEach(file => {
+                    const discId = file.name.slice(0, -4);
+                    discIds.push(discId);
+
+                    // Sauvegarde de l'id dans Google Drive du disque
+                    this.cuesFiles.set(discId, file);
+                });
+                return discIds;
             });
     }
 
@@ -504,6 +529,53 @@ export class GoogleDrivePersistence extends Persistence {
             .then(file => {
                 console.log(`Disque ${disc.title} sauvegardé dans Google Drive`, file);
                 return disc;
+            });
+    }
+
+    protected loadSyncState(): Promise<SyncState> {
+        return Promise.resolve(this.syncStateFile).then(syncStateFile => {
+            if (!syncStateFile) {
+                return this.getRootFolder()
+                    .then(rootFolder => this.findGoogleFile('syncState.json', rootFolder.id))
+            } else {
+                return syncStateFile;
+            }
+        }).then(syncStateFile => this.getFileContent(syncStateFile.id))
+            .then(content => SyncState.load(content));
+    }
+
+    public saveSyncState(): Promise<SyncState> {
+
+        let rootFolder, syncState, content;
+        const filename = 'syncState.json';
+        let folder: drive.File;
+        return Promise.all([
+            this.getRootFolder(),
+            this.getSyncState()
+        ]).then(res => {
+            [rootFolder, syncState] = res;
+            content = JSON.stringify(syncState);
+            return res;
+        })
+        // Fichier existant ?
+            .then(res => {
+                return this.findGoogleFile(filename, rootFolder.id); // TODO cache comme les collection ou les disques
+            })
+            .catch(err => {
+                // Le fichier n'existe pas encore
+                return null;
+            })
+            .then(file => {
+                return this.gapiCall(this.upload({
+                    id: file ? file.id : undefined,
+                    name: filename,
+                    mimeType: 'text/plain',
+                    parents: [rootFolder.id]
+                }, content), `saveSyncState`);
+            })
+            .then(file => {
+                console.log(`SyncState sauvegardé dans Google Drive`, file);
+                return syncState;
             });
     }
 
