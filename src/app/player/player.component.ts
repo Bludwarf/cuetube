@@ -129,6 +129,8 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         // FIXME pour debugger
         this.enrichWindow((<any>window));
 
+        this.checkLocalStorage();
+
         this.localPersistence = new LocalStoragePersistence(this.http);
         this.persistence = this.getPersistence();
         this.discsParam = getParameterByName('discs', document.location.search);
@@ -486,7 +488,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
           .catch(e => console.log(e));
       } else if (localStorage.getItem('discIds')) {
         console.log('On charge les disques enregistrés dans le localStorage');
-        this.discIds = localStorage.getItem('discIds').split(',');
+        this.discIds = JSON.parse(localStorage.getItem('discIds'));
         this.loadDiscs(this.discIds);
       } else {
         this.playCollection();
@@ -505,6 +507,20 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     // Tracklist togglée
     this.lastToggledTracklist = null;
   }
+
+    /**
+     * Fonction qui corrige le localStorage qui pourrait contenir d'anciennes valeurs
+     * avant la correction des bugs suivants :
+     *   - #156 : on récup l'ancien format de discIds au cas où
+     */
+    checkLocalStorage() {
+        // #156 : on récup l'ancien format de discIds au cas où
+        let discIds = localStorage.getItem("discIds");
+        if (discIds && discIds.match(/^[^\[]/)) {
+            discIds = JSON.stringify(discIds.split(','));
+            localStorage.setItem("discIds", discIds);
+        }
+    }
 
   /**
    * Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
@@ -1176,11 +1192,11 @@ export class PlayerComponent implements OnInit, AfterViewInit {
    * Sauvegarde l'état actuel dans le localStorage
    */
   save() {
-    localStorage.setItem('discIds', this.discs
+    localStorage.setItem('discIds', JSON.stringify(this.discs
       .filter(disc => disc)
       .map(disc => disc.id)
       .filter(id => id)
-      .toString()); // Angular fait chier : _.pluck(this.discs, 'id')
+      .toString())); // Angular fait chier : _.pluck(this.discs, 'id')
     localStorage.setItem('shuffle', '' + this.shuffle);
     if (this.repeatMode) {
         localStorage.setItem('repeatMode', this.repeatMode);
