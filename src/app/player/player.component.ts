@@ -359,8 +359,8 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       component.save();
     };
 
-    // Raccourcis clavier
-    window.onkeypress = function(event) {
+    // Raccourcis clavier. Ne pas utiliser onkeypress (#159).
+    window.onkeydown = function(event) {
       const code = event.code;
       switch (code) {
         case 'Space':
@@ -368,12 +368,6 @@ export class PlayerComponent implements OnInit, AfterViewInit {
           event.stopPropagation();
           event.preventDefault();
           break;
-      }
-    };
-
-    window.onkeydown = function(event) {
-      const code = event.code;
-      switch (code) {
         case 'ArrowUp':
           component.previous();
           break;
