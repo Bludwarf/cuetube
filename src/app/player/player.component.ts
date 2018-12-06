@@ -70,8 +70,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   public shuffle = true;
   private history = [];
+  public previousTrack: Disc.Track = null;
   public currentTrack: Disc.Track = null;
-  public loadingTrack: Disc.Track = null;
+  public trackIsLoading: boolean = false;
   loadingDiscIndex: number;
   loadingFileIndex: number;
 
@@ -189,7 +190,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         this.trackStarted.subscribe(() => {
             console.log('on video started');
             const player = this.player;
-            const track: Disc.Track = this.loadingTrack || this.currentTrack; // loadingTrack vide si manual seeking
+            const track: Disc.Track = this.currentTrack; // loadingTrack vide si manual seeking
 
             // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
             const file = track.file;
@@ -224,8 +225,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
             this.loadingDiscIndex = null;
             this.loadingFileIndex = null;
-            this.loadingTrack = null;
-            this.currentTrack = track;
+            this.trackIsLoading = false;
 
             this.trackPlaying.emit();
         });
@@ -251,7 +251,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
             console.log('on video playing');
 
             // On vient en fait de démarrer une nouvelle piste ?
-            if (this.loadingTrack) {
+            if (this.trackIsLoading) {
                 return this.trackStarted.emit();
             } else {
                 return this.trackPlaying.emit();
@@ -674,7 +674,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     const end = multiTrack ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
     if (start || end) { console.log(`Piste ${track.number} du disque ${disc.id} (de ${start}s à ${end}s) : ${track.title}`); }
 
-    this.loadingTrack = track;
+    this.previousTrack = this.currentTrack;
+    this.currentTrack = track;
+    this.trackIsLoading = true;
     if (!this.player) {
       const component = this;
       // On peut récupérer cette variable a posteriori avec : YT.get("player")
@@ -703,7 +705,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       const player = this.player;
 
       // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
-      if (this.currentTrack === track || player && player.getVideoUrl
+      if (this.previousTrack === this.currentTrack || player && player.getVideoUrl
         && getParameterByName('v', player.getVideoUrl()) === track.file.videoId) {
         this.seekToTrack(track);
       } else {
@@ -729,7 +731,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
    */
   seekToTrack(track) {
     track = track || this.currentTrack;
-    this.loadingTrack = track;
+    this.trackIsLoading = true;
     const start = getYouTubeStartSeconds(track); // YouTube n'accèpte que des entiers
     this.seekTo(start ? start : 0); // start undefined quand video non multitrack
   }
@@ -1288,10 +1290,10 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     // on vérifie lastPlayedVideoIndex car cet évènement est souvent appelé deux fois
     // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
     // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
-    if (state === YT.PlayerState.ENDED && (!this.loadingTrack ||
-        this.loadingTrack.disc.index !== this.currentTrack.disc.index &&
-        this.loadingTrack.file.index !== this.currentTrack.file.index &&
-        this.loadingTrack.index !== this.currentTrack.index)) {
+    if (state === YT.PlayerState.ENDED && (!this.trackIsLoading ||
+        this.previousTrack.disc.index !== this.currentTrack.disc.index &&
+        this.previousTrack.file.index !== this.currentTrack.file.index &&
+        this.previousTrack.index !== this.currentTrack.index)) {
       // est-ce que la vidéo était en lecture actuellement ?
       if (lastState === YT.PlayerState.PLAYING) {
         this.videoEnded.emit();

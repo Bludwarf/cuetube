@@ -117,7 +117,7 @@
         <div id="player-position">
 
             <div id="player-position-start" class="text">
-                <span title="Durée écoulée depuis le début de la piste">{{slider.max && !loadingTrack ? formatHMSS(slider.value - slider.min) : '0:00'}}</span> / <span title="Durée totale de la piste">{{slider.max && !loadingTrack ? formatHMSS(slider.max - slider.min) : '0:00'}}</span>
+                <span title="Durée écoulée depuis le début de la piste">{{slider.max && !trackIsLoading ? formatHMSS(slider.value - slider.min) : '0:00'}}</span> / <span title="Durée totale de la piste">{{slider.max && !trackIsLoading ? formatHMSS(slider.max - slider.min) : '0:00'}}</span>
             </div>
 
             <div id="player-position-slider">
