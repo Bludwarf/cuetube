@@ -1226,6 +1226,8 @@ export class PlayerComponent implements OnInit, AfterViewInit {
         }
     });
 
+    localStorage.setItem('connectedToGoogleDrive', JSON.stringify(this.connectedToGoogleDrive));
+
     console.log('Sauvegarde terminée');
   }
 
