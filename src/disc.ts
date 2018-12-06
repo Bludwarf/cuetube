@@ -37,13 +37,20 @@ export class Disc {
 
     // TODO : bien séparer enabled et playable
     get enabled(): boolean {
-        if (this.disabledByYouTubeFiles.length === this.files.length) {
+        if (this.disabledByYouTube) {
             return false;
         } else if (this.disabledTracks.length === this.tracks.length) {
             return false;
         } else {
             return this.enabledByUser;
         }
+    }
+
+    /**
+     * @return true si le disque ne contient que des vidéos désactivées sur YouTube
+     */
+    get disabledByYouTube(): boolean {
+        return this.disabledByYouTubeFiles.length === this.files.length;
     }
 
     get files(): Disc.File[] {

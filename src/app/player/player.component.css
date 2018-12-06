@@ -227,6 +227,12 @@ body {
   opacity: 0.4;
 }
 
+.disabled-by-youtube-video-cache {
+    background-image: url(/assets/img/disabledByYouTube.gif);
+    background-position: center center;
+    background-size: contain;
+}
+
 .disc-thumb {
   position: relative;
 }
