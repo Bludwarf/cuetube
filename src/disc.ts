@@ -11,7 +11,7 @@ export class Disc {
     _files: Disc.File[] = [];
     index: number = undefined;
     /** pour choisir les vidéos à lire */
-    enabled = true;
+    public enabledByUser = true;
     /** Disc-ID dans le format cuesheet */
     discId: string;
 
@@ -32,6 +32,17 @@ export class Disc {
                 const cueFile = this.cuesheet.files[i];
                 this.files.push(new Disc.File(this, i, cueFile));
             }
+        }
+    }
+
+    // TODO : bien séparer enabled et playable
+    get enabled(): boolean {
+        if (this.disabledByYouTubeFiles.length === this.files.length) {
+            return false;
+        } else if (this.disabledTracks.length === this.tracks.length) {
+            return false;
+        } else {
+            return this.enabledByUser;
         }
     }
 
@@ -110,10 +121,26 @@ export class Disc {
         return _.some(this.tracks, (track) => track.enabled);
     }
 
+    /**
+     * @return tous les fichiers désactivés sur YouTube
+     */
+    get disabledByYouTubeFiles(): Disc.File[] {
+        const files: Disc.File[] = [];
+        this.files.forEach(file => {
+            if (file.disabledByYouTube) {
+                files.push(file);
+            }
+        });
+        return files;
+    }
+
+    /**
+     * @return toutes les pistes désactivées par l'utilisateur uniquement
+     */
     get disabledTracks(): Disc.Track[] {
         const tracks: Disc.Track[] = [];
         this.tracks.forEach(track => {
-            if (!track.enabled) {
+            if (!track.enabledByUser) {
                 tracks.push(track);
             }
         });
@@ -258,7 +285,6 @@ export class Disc {
     }
 
     load() {
-        this.enabled = true;
         const track = this.nextTrack(this.player.shuffle, this.player.currentTrack);
         if (track) {
             this.player.loadTrack(track);
@@ -276,9 +302,9 @@ export class Disc {
 
         // Ctrl + Click => activer/désactiver disque
         if (e.ctrlKey) {
-            return this.enabled = !this.enabled;
+            return this.enabledByUser = !this.enabledByUser;
         } else if (e.altKey) {
-            this.enabled = !this.enabled;
+            this.enabledByUser = !this.enabledByUser;
             // Cochage => on décoche tous les autres
             // et vice-versa
             for (let i = 0; i < this.player.discs.length; ++i) {
@@ -286,7 +312,7 @@ export class Disc {
                 if (!discI || discI === this) {
                     continue;
                 }
-                discI.enabled = !this.enabled;
+                discI.enabledByUser = !this.enabledByUser;
             }
         } else {
             return this.openTracklist(e, this);
@@ -301,7 +327,7 @@ export class Disc {
             if (!discI) {
                 return;
             }
-            discI.enabled = discI === this;
+            discI.enabledByUser = discI === this;
         });
 
         this.load();
@@ -319,7 +345,7 @@ export class Disc {
                 if (!discI || discI === this) {
                     continue;
                 }
-                discI.enabled = !input.checked;
+                discI.enabledByUser = !input.checked;
             }
         }
 
@@ -333,7 +359,7 @@ export class Disc {
                 if (!discI || discI === this) {
                     return;
                 }
-                discI.enabled = input.checked;
+                discI.enabledByUser = input.checked;
             });
         }
 
@@ -365,6 +391,9 @@ export module Disc {
         public duration: number;
 
         private _tracksInTime: Track[] = undefined; // cache pour tracksInTime
+
+        /** pour choisir automatiquement les fichiers à lire ou non (désactivés de YouTube) */
+        disabledByYouTube = undefined;
 
         /**
          * @param {Disc} disc disque parent
@@ -484,16 +513,8 @@ export module Disc {
             });
         }
 
-        /**
-         * Désactive toutes les pistes de ce fichier.
-         * Si toutes les pistes sont désactivées on désactive aussi le disque
-         * @param {boolean} enabled
-         */
-        set enabled(enabled: boolean) {
-            this.tracks.forEach(track => track.enabled = enabled);
-            if (!enabled && this.tracks.length === this.disc.tracks.length) {
-                this.disc.enabled = false;
-            }
+        get enabled(): boolean {
+            return this.disabledByYouTube !== undefined ? !this.disabledByYouTube : true;
         }
 
         get icon(): string {
@@ -511,7 +532,7 @@ export module Disc {
 
     export class Track {
 
-        public enabled: boolean;
+        public enabledByUser: boolean = true;
 
         /** Commence à 0 */
         public index: number;
@@ -535,7 +556,17 @@ export module Disc {
                     this.cuesheetTrack.title = null;
                 }
             }
-            this.enabled = this.file.disc.enabled;
+        }
+
+        get enabled(): boolean {
+            // Si la vidéo est désactivée sur YouTube alors on ne pourra plus l'activer
+            if (this.file.disabledByYouTube) {
+                return false;
+            } else if (this.enabledByUser !== undefined) {
+                return this.enabledByUser
+            } else {
+                return true;
+            }
         }
 
         /** Numéro de la piste parmi toutes les pistes du disque (commence à 1) */
@@ -681,7 +712,7 @@ export module Disc {
                     if (!trackI || trackI === this) {
                         continue;
                     }
-                    trackI.enabled = !input.checked;
+                    trackI.enabledByUser = !input.checked;
                 }
             }
 
@@ -695,7 +726,7 @@ export module Disc {
                     if (!trackI || trackI === this) {
                         return;
                     }
-                    trackI.enabled = input.checked;
+                    trackI.enabledByUser = input.checked;
                 });
             }
 

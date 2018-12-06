@@ -293,7 +293,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
             const file = this.currentTrack.file;
             console.error(`La vidéo ${file.videoId} du disque "${file.disc.title}" n'existe plus sur YouTube.`
                 + ` On la désactive et on passe à la suivante...`);
-            file.enabled = false;
+            file.disabledByYouTube = true;
             this.next();
         });
 
@@ -658,8 +658,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     }
 
     // On active automatiquement cette piste et ce disque
-    disc.enabled = true;
-    track.enabled = true;
+    disc.enabledByUser = true;
+    file.disabledByYouTube = false; // On tente également de réactiver la vidéo pour voir si elle est de nouveau dispo sur YouTube
+    track.enabledByUser = true;
 
     // Suppression dans la liste des suivants auto
     if (this.shuffle) {
@@ -1210,13 +1211,18 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     this.discs.forEach((disc) => {
         const storage: any = {};
 
-        if (!disc.enabled) {
-            storage.enabled = false;
+        if (!disc.enabledByUser) {
+            storage.enabledByUser = false;
+        }
+
+        const disabledFiles = disc.disabledByYouTubeFiles;
+        if (disabledFiles && disabledFiles.length) {
+            storage.disabledByYouTubeFileIndices = disabledFiles.map((file) => file.index);
         }
 
         const disabledTrackIndices = disc.disabledTracks;
         if (disabledTrackIndices && disabledTrackIndices.length) {
-            storage.disabledTrackIndices = disc.disabledTracks.map((track) => track.number - 1);
+            storage.disabledTrackIndices = disabledTrackIndices.map((track) => track.number - 1);
         }
 
         _.extend(storage, {
@@ -1516,13 +1522,24 @@ export class PlayerComponent implements OnInit, AfterViewInit {
               const savedString = localStorage.getItem('disc.' + disc.id);
               if (savedString) {
                 const saved = JSON.parse(savedString);
+                // rétrocompa avant #160
                 if (saved.enabled !== undefined) {
-                  disc.enabled = saved.enabled;
+                  disc.enabledByUser = saved.enabled;
+                }
+                // après #160
+                if (saved.enabledByUser !== undefined) {
+                  disc.enabledByUser = saved.enabledByUser;
+                }
+                if (saved.disabledByYouTubeFileIndices) {
+                    const files = disc.files;
+                    saved.disabledByYouTubeFileIndices.forEach((fileIndex) => {
+                        files[fileIndex].disabledByYouTube = true;
+                    });
                 }
                 if (saved.disabledTrackIndices) {
                   const tracks = disc.tracks;
                   saved.disabledTrackIndices.forEach((trackIndex) => {
-                    tracks[trackIndex].enabled = false;
+                    tracks[trackIndex].enabledByUser = false;
                   });
                 }
                 _.extend(disc, {
@@ -1778,7 +1795,6 @@ function enrichDisc(disc, discIndex, player: PlayerComponent) {
     for (let trackIndex = 0; trackIndex < file.tracks.length; ++trackIndex) {
       const track = file.tracks[trackIndex];
 
-      track.enabled = disc.enabled; // pour choisir les pistes à lire
       Object.defineProperties(track, {
         isCurrent: {
           get: function () {

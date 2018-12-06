@@ -63,7 +63,7 @@
                                         <!-- TODO : *ngFor sans créer d'élément div dans un li ? -->
                                         <div *ngFor="let file of disc.files">
                                             <li *ngFor="let track of file.tracks" class="track" [class.active]="track == currentTrack" [class.disabled]="!track.enabled" (click)="loadTrack(track)">
-                                                <input type="checkbox" [(ngModel)]="track.enabled" (click)="track.afterClickCheckbox($event)" />
+                                                <input type="checkbox" [(ngModel)]="track.enabledByUser" (click)="track.afterClickCheckbox($event)" />
                                                 <span>{{track.title || "Track "+track.number}}</span>
                                             </li>
                                         </div>
