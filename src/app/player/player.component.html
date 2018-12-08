@@ -46,7 +46,7 @@
                       <div *ngFor="let disc of discs">
                         <div *ngIf="disc" class="disc-wrapper" [attr.data-index]="index" [attr.data-discId]="disc.discId" [class.active]="currentTrack && disc.id === currentTrack.disc.id" [class.inTracklist]="discInTracklist && disc === discInTracklist">
                             <div class="disc-thumb" (click)="disc.clickThumb($event)" (dblclick)="disc.doubleClickThumb($event)" title="{{disc.title}}. Cliquer pour ouvrir la liste des pistes de l'album">
-                                <input type="checkbox" [(ngModel)]="disc.enabled" CHECKED (click)="disc.afterClickThumbCheckbox($event)" title="Cocher cette case pour activer/désactiver ce disque. 'Alt' pour inverser la sélection des autres disques. 'Shift' pour sélectionner un ensemble de disques qui se suivent."/>
+                                <input type="checkbox" [(ngModel)]="disc.enabledByUser" CHECKED (click)="disc.afterClickThumbCheckbox($event)" title="Cocher cette case pour activer/désactiver ce disque. 'Alt' pour inverser la sélection des autres disques. 'Shift' pour sélectionner un ensemble de disques qui se suivent."/>
                                 <div class="disabled-video-cache" [class.disabled-by-youtube-video-cache]="disc.disabledByYouTube" *ngIf="!disc.enabled"></div>
                                 <img class="" [src]="'https://img.youtube.com/vi/'+disc.videoId+'/default.jpg'" />
                             </div>
