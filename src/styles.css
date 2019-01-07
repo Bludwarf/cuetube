@@ -10,3 +10,18 @@
 a {
     cursor: pointer;
 }
+
+.hover-red:hover * {
+  color: red;
+}
+.glyphicon {
+  margin-right:10px;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable-glyphicon {
+  cursor: pointer;
+}

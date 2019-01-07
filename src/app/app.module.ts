@@ -10,6 +10,7 @@ import { SliderComponent } from './slider/slider.component';
 import {FormsModule} from '@angular/forms';
 import { EditCueComponent } from './edit-cue/edit-cue.component';
 import { EditCueFileComponent } from './edit-cue-file/edit-cue-file.component';
+import { PlayerCollectionsComponent } from './player-collections/player-collections.component';
 
 const appRoutes: Routes = [
   { path: '',         component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
@@ -23,7 +24,8 @@ const appRoutes: Routes = [
     PlayerComponent,
     SliderComponent,
     EditCueComponent,
-    EditCueFileComponent
+    EditCueFileComponent,
+    PlayerCollectionsComponent
   ],
   imports: [
     RouterModule.forRoot(

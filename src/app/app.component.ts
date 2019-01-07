@@ -47,10 +47,13 @@ export class AppComponent {
             return localPersistence;
         }
 
-        return (
-            window.location.host === 'bludwarf.github.io'
-            || window.location.port !== '3000'
-            || getParameterByName('persistence', document.location.search) === 'LocalStorage') ?
-            localPersistence : new LocalServerPersistence(http);
+        // Prod
+        if (window.location.host === 'bludwarf.github.io' || window.location.port !== '3000') {
+            return localPersistence;
+        }
+
+        // Cas par défaut
+        const persistenceParam = getParameterByName('persistence', document.location.search);
+        return persistenceParam === LocalServerPersistence.TITLE ? new LocalServerPersistence(http) : localPersistence;
     }
 }

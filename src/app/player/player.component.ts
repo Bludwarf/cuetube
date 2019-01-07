@@ -14,6 +14,7 @@ import {SliderComponent} from '../slider/slider.component';
 import {ytparser} from '../../yt-parser';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {AppComponent} from '../app.component';
+import {from} from 'rxjs/observable/from';
 
 const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
 
@@ -55,10 +56,17 @@ export class PlayerComponent implements OnInit, AfterViewInit {
    * Nom de toutes les collections disponibles
    */
   collectionNames: string[] = [];
+
+  @Output()
+  public collectionNamesChange = new EventEmitter<string[]>();
+
   /**
    * Nom de toutes les collections en cours de lecture
    */
   currentCollectionNames = [];
+
+  @Output()
+  public currentCollectionNamesChange = new EventEmitter<string[]>();
 
   /** Utilisé par la persistance */
   public debugData: any;
@@ -72,7 +80,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   private history = [];
   public previousTrack: Disc.Track = null;
   public currentTrack: Disc.Track = null;
-  public trackIsLoading: boolean = false;
+  public trackIsLoading = false;
   loadingDiscIndex: number;
   loadingFileIndex: number;
 
@@ -123,7 +131,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       }
   };
 
-  constructor(public http: HttpClient/*, private cuetubeConf*//*, private $ngConfirm*/, private gapiClient: GapiClientService, private zone: NgZone) { }
+  constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone) { }
 
     ngOnInit() {
 
@@ -415,6 +423,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     .then(collectionNames => {
       collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
       this.collectionNames = collectionNames;
+      this.collectionNamesChange.emit(collectionNames);
       console.log('this.$apply(); init');
       return collectionNames;
     }).catch(e => {
@@ -446,6 +455,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
           alert('Les collections suivantes n\'ont pas été trouvées : ' + unknownCollectionNames.join(', '));
         }
         this.currentCollectionNames = collectionNames;
+        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
 
         const promises = [];
         this.discIdsByCollection = {};
@@ -462,6 +472,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
                   this.persistence.newCollection(collectionParamI).then(collection => {
                     this.collectionNames = this.collectionNames || [];
                     this.collectionNames.push(collectionParamI);
+                    this.collectionNamesChange.emit(this.collectionNames);
                     console.log('this.$apply(); init2');
                   }).catch(err2 => {
                     alert('Erreur lors de la création de cette collection');
@@ -1176,24 +1187,32 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       }
       const collection = new Collection(name);
       this.persistence.saveCollection(collection).then(collectionCreee => {
+        this.collectionNames.push(collection.name);
+        this.collectionNames = this.collectionNames.sort();
+        this.collectionNamesChange.emit(this.collectionNames);
         this.openCollection(name);
       });
     }
   }
 
   openCollection(name) {
-    window.location.href = setParameterByName('collection', name);
+    this.playCollection(name);
   }
 
   /**
    * Sauvegarde l'état actuel dans le localStorage
    */
   save() {
-    localStorage.setItem('discIds', JSON.stringify(this.discs
+    const discIds = this.discs
       .filter(disc => disc)
       .map(disc => disc.id)
-      .filter(id => id)
-      .toString())); // Angular fait chier : _.pluck(this.discs, 'id')
+      .filter(id => id);
+    if (discIds.length) {
+      localStorage.setItem('discIds', JSON.stringify(discIds
+        .toString())); // Angular fait chier : _.pluck(this.discs, 'id')
+    } else {
+      localStorage.removeItem('discIds');
+    }
     localStorage.setItem('shuffle', '' + this.shuffle);
     if (this.repeatMode) {
         localStorage.setItem('repeatMode', this.repeatMode);
@@ -1397,6 +1416,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     } else {
       this.currentCollectionNames.splice(index, 1);
     }
+    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
 
     this.loadDiscsFromCollections();
   }
@@ -1426,6 +1446,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   playCollection(collectionName?): Promise<Disc[]> {
     this.currentCollectionNames = collectionName ? [collectionName] : [];
+    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
     return this.loadDiscsFromCollections();
   }
 
