@@ -1,8 +1,7 @@
 ///<reference path="../../../node_modules/@types/youtube/index.d.ts"/>
-import {AfterViewInit, Component, EventEmitter, NgZone, OnInit, Output, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
-import {LocalServerPersistence} from '../../persistence/LocalServerPersistence';
 import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
 import {Disc} from '../../disc';
 import {Collection} from '../../Collection';
@@ -14,7 +13,9 @@ import {SliderComponent} from '../slider/slider.component';
 import {ytparser} from '../../yt-parser';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {AppComponent} from '../app.component';
-import {from} from 'rxjs/observable/from';
+import {HistoryUtils} from '../../HistoryUtils';
+import {Location} from '@angular/common';
+import {ISubscription, Subscription} from 'rxjs/Subscription';
 
 const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
 
@@ -34,7 +35,7 @@ const DEFAULT_COLLECTION = '_DEFAULT_';
   templateUrl: './player.component.html',
   styleUrls: ['./player.component.css']
 })
-export class PlayerComponent implements OnInit, AfterViewInit {
+export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private cueService: CueService;
 
@@ -131,7 +132,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       }
   };
 
-  constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone) { }
+  private locationSubscription: ISubscription;
+
+  constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone, private location: Location) { }
 
     ngOnInit() {
 
@@ -354,6 +357,39 @@ export class PlayerComponent implements OnInit, AfterViewInit {
           });
         };
         */
+
+      this.locationSubscription = this.location.subscribe(event => {
+        const state = history.state;
+        if (state) {
+          console.log("state", state);
+          if ('currentCollectionNames' in state) {
+            this.currentCollectionNames = state.currentCollectionNames;
+            this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+            this.loadDiscsFromCollections();
+          }
+        }
+      });
+
+      this.currentCollectionNamesChange.subscribe(currentCollectionNames => {
+        const isDefaultCollection = this.currentCollectionNames.length === 0;
+
+        // Historique navigateur
+        const state = {
+          currentCollectionNames: this.currentCollectionNames
+        };
+        // Uniquement si le statut est différent de celui actuel
+        HistoryUtils.pushStateOnlyNew(state, stateBuilder => {
+          stateBuilder = stateBuilder.pathname('/player');
+          if (isDefaultCollection) {
+            stateBuilder.title('CueTube')
+              .searchParam('collection', null);
+          } else {
+            stateBuilder.title('CueTube - ' + this.currentCollectionNames.join(' + '))
+              .searchParam('collection', this.currentCollectionNames);
+          }
+          return stateBuilder;
+        });
+      });
 
     }
 
@@ -1617,21 +1653,6 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     this.hidePlayer();
     const isDefaultCollection = this.currentCollectionNames.length === 0;
 
-    // Historique navigateur
-    const state = {
-      currentCollectionNames: this.currentCollectionNames
-    };
-    const title = document.title;
-    if (isDefaultCollection) {
-      document.title = 'CueTube';
-      history.pushState(state, document.title, '/player'); // TODO donne bien l'URL actuelle dans l'historique ?
-    } else {
-      document.title = 'CueTube - ' + this.currentCollectionNames.join(' + ');
-      const collectionParam = this.currentCollectionNames.join(',');
-      history.pushState(state, document.title, '/player' + collectionParam ? '?collection=' + encodeURIComponent(collectionParam) : 'player');
-    }
-    document.title = title;
-
     // On récupère la liste des disques de toutes les collections actives
     const getDiscsIds = this.currentCollectionNames
       .map(collectionName => this.getDiscsIds(collectionName ? collectionName : DEFAULT_COLLECTION));
@@ -1762,6 +1783,10 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       if (this.restore('connectedToGoogleDrive', false)) {
           this.connectGoogleDrive();
       }
+  }
+
+  ngOnDestroy(): void {
+    this.locationSubscription.unsubscribe();
   }
 
 }
