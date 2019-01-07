@@ -41,7 +41,7 @@ export class HistoryUtils {
    */
   static pushStateOnlyNew(data: any, initBuilder?: (stateBuilder: StateBuilder) => StateBuilder): any {
     // New state data ?
-    if (!_.isEqual(history.state, data)) {
+    if (!_.isEqual(HistoryUtils.getState(), data)) {
       let stateBuilder = this.newStateBuilder(data);
       if (initBuilder) {
         stateBuilder = initBuilder(stateBuilder);
@@ -50,6 +50,13 @@ export class HistoryUtils {
     } else {
       return history.state;
     }
+  }
+
+  /**
+   * Can be redefined to be sure to get previous/next state even when popState loses it
+   */
+  public static getState(): any {
+    return history.state;
   }
 }
 

@@ -14,7 +14,7 @@ import {ytparser} from '../../yt-parser';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {AppComponent} from '../app.component';
 import {HistoryUtils} from '../../HistoryUtils';
-import {Location} from '@angular/common';
+import {Location as AngularLocation} from '@angular/common';
 import {ISubscription, Subscription} from 'rxjs/Subscription';
 
 const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
@@ -134,7 +134,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private locationSubscription: ISubscription;
 
-  constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone, private location: Location) { }
+  constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone, private location: AngularLocation) { }
 
     ngOnInit() {
 
@@ -358,10 +358,15 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         };
         */
 
+        // FIXME Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
+      HistoryUtils.getState = () => {
+        return history.state || this.getStateFromLocation(document.location);
+      };
+
       this.locationSubscription = this.location.subscribe(event => {
-        const state = history.state;
+        const state = HistoryUtils.getState();
         if (state) {
-          console.log("state", state);
+          console.log('state', state);
           if ('currentCollectionNames' in state) {
             this.currentCollectionNames = state.currentCollectionNames;
             this.currentCollectionNamesChange.emit(this.currentCollectionNames);
@@ -1789,6 +1794,22 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.locationSubscription.unsubscribe();
   }
 
+  /**
+   * Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
+   * @param location
+   */
+  getStateFromLocation(location: Location): State {
+    const url = new URL(location.toString());
+    const state: State = {};
+    if (url.searchParams.get('collection')) {
+      state.currentCollectionNames = url.searchParams.get('collection').split(',');
+    }
+    return state;
+  }
+}
+
+interface State {
+  currentCollectionNames?: string[];
 }
 
 // TODO à déplacer dans yt-helper
