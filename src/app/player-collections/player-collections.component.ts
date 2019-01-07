@@ -9,7 +9,7 @@ import {PlayerComponent} from '../player/player.component';
 export class PlayerCollectionsComponent implements OnInit {
 
   @Input() player: PlayerComponent;
-  private items: Item[] = [];
+  public items: Item[] = [];
 
   constructor() {
   }
