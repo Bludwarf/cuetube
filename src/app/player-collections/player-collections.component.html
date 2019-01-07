@@ -1,0 +1,25 @@
+<div class="panel-group" id="menu">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#menu" href="#collapseOne"><span class="glyphicon glyphicon-folder-close"></span>Collections</a>
+                <a (click)="createCollection()" style="float: right;"><span class="glyphicon glyphicon-plus clickable-glyphicon"></span></a>
+            </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse in">
+            <ul class="list-group">
+                <li class="list-group-item clickable" (click)="playDefaultCollection()" [class.active]="player.currentCollectionNames.length === 0"><i>Collection par défaut</i></li>
+                <li class="list-group-item clickable" *ngFor="let item of items"
+                    [class.active]="item.isCurrent" (click)="item.play()"
+                    title="Sélectionner uniquement cette collection comme liste de lecture"
+                >
+                    <input style="margin-right: 8px;" type="checkbox"
+                           [checked]="item.isCurrent"
+                           (click)="item.toggle($event)"
+                           [title]="(item.isCurrent ? 'Supprimer' : 'Ajouter') + ' cette collection à la liste de lecture'"
+                    />{{item.name}}
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

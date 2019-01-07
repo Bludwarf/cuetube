@@ -303,10 +303,6 @@ body {
   bottom: 0;
 }
 
-.clickable {
-  cursor: pointer;
-}
-
 .svg-checkbox
 {
   cursor: pointer;
@@ -346,10 +342,6 @@ body {
 .youtube-color-hover:hover, .youtube-color-hover:hover path {
   color: #e62117;
   fill: #e62117;
-}
-
-#menu {
-  margin: 1em;
 }
 
 #player-disc-name {
