@@ -17,7 +17,7 @@
                            [checked]="item.isCurrent"
                            (click)="item.toggle($event)"
                            [title]="(item.isCurrent ? 'Supprimer' : 'Ajouter') + ' cette collection à la liste de lecture'"
-                    />{{item.name}}
+                    />{{item.name}}<mat-icon>delete</mat-icon>
                 </li>
             </ul>
         </div>

@@ -7,6 +7,7 @@ import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
 import {LocalServerPersistence} from '../../persistence/LocalServerPersistence';
 import {Persistence} from '../../persistence';
 import * as _ from 'underscore';
+import * as $ from 'jquery';
 import {yth} from '../../yt-helper';
 import {AppComponent} from '../app.component';
 

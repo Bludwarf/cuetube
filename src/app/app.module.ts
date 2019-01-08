@@ -1,16 +1,17 @@
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
-import { RouterModule, Routes } from '@angular/router';
-import { AppComponent } from './app.component';
-import { PlayerComponent } from './player/player.component';
-import * as $ from 'jquery';
+import {BrowserModule} from '@angular/platform-browser';
+import {NgModule} from '@angular/core';
+import {HttpClientModule} from '@angular/common/http';
+import {RouterModule, Routes} from '@angular/router';
+import {AppComponent} from './app.component';
+import {PlayerComponent} from './player/player.component';
 import {GapiClientService} from './gapi-client.service';
-import { SliderComponent } from './slider/slider.component';
+import {SliderComponent} from './slider/slider.component';
 import {FormsModule} from '@angular/forms';
-import { EditCueComponent } from './edit-cue/edit-cue.component';
-import { EditCueFileComponent } from './edit-cue-file/edit-cue-file.component';
-import { PlayerCollectionsComponent } from './player-collections/player-collections.component';
+import {EditCueComponent} from './edit-cue/edit-cue.component';
+import {EditCueFileComponent} from './edit-cue-file/edit-cue-file.component';
+import {PlayerCollectionsComponent} from './player-collections/player-collections.component';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {MatIconModule} from '@angular/material';
 
 const appRoutes: Routes = [
   { path: '',         component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
@@ -35,7 +36,9 @@ const appRoutes: Routes = [
     BrowserModule,
     // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    NoopAnimationsModule,
+    MatIconModule
   ],
   providers: [
       GapiClientService
