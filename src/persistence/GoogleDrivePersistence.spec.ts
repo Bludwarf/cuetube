@@ -8,6 +8,9 @@ import {HttpClientModule} from '@angular/common/http';
 import {AppComponent} from '../app/app.component';
 import {SliderComponent} from '../app/slider/slider.component';
 import {GapiClientService} from '../app/gapi-client.service';
+import {RouterTestingModule} from '@angular/router/testing';
+import {PlayerCollectionsComponent} from '../app/player-collections/player-collections.component';
+import {MatIconModule} from '@angular/material';
 
 describe('GoogleDrivePersistence', () => {
   let component: PlayerComponent;
@@ -19,13 +22,16 @@ describe('GoogleDrivePersistence', () => {
       declarations: [
         AppComponent,
         PlayerComponent,
-        SliderComponent
+        SliderComponent,
+        PlayerCollectionsComponent
       ],
       imports: [
         BrowserModule,
         // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
         HttpClientModule,
-        FormsModule
+        FormsModule,
+        RouterTestingModule,
+        MatIconModule
       ],
       providers: [
         GapiClientService

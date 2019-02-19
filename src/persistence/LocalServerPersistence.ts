@@ -72,7 +72,11 @@ export class LocalServerPersistence extends Persistence {
         });
     }
 
-    public getDisc(discId: string, discIndex: number): Promise<Disc> {
+  protected _deleteCollection(collectionName: string): Promise<void> {
+    throw new Error('Not Implemented'); // FIXME
+  }
+
+  public getDisc(discId: string, discIndex: number): Promise<Disc> {
         return new Promise((resolve, reject) => {
             this.$http.get('/' + discId + '.cue.json').toPromise().then(res => {
                 const disc = super.createDisc(discId, discIndex, res);

@@ -620,7 +620,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       if (!disc) {
         console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé. On lance un disque aléatoirement`);
         this.repeatMode = null;
-        this.next();
+        this.next(); // FIXME que faire si aucun disque n'est trouvé ?
+        return;
       } else {
         console.log('Chargement de la précédente lecture...', current);
 
@@ -819,7 +820,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Aucun disque jouable ?
     if (!possibleDiscs.length) {
-      throw new Error('Aucun disque activé (ou sans piste activées)');
+      console.error('Aucun disque activé (ou sans piste activées)');
+      return;
     }
 
     const discIndex = possibleDiscs.indexOf(disc);
@@ -1326,7 +1328,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // 5. The API calls this function when the player's state changes.
   //    The function indicates that when playing a video (state=1),
-  //    the player should play for six seconds and then stop.
   // liste des codes : http://stackoverflow.com/a/8204143/1655155
   /**
    * -1 (unstarted)
@@ -1460,6 +1461,18 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.currentCollectionNamesChange.emit(this.currentCollectionNames);
 
     this.loadDiscsFromCollections();
+  }
+
+  //    the player should play for six seconds and then stop.
+  removeCollection(collectionName: string) {
+
+    this.persistence.deleteCollection(collectionName).then(() => {
+      this.collectionNames = this.collectionNames.filter(collectionNameI => collectionNameI !== collectionName);
+      this.currentCollectionNames = this.currentCollectionNames.filter(collectionNameI => collectionNameI !== collectionName);
+      console.log(`Collection "${collectionName}" supprimée avec succès`);
+      this.collectionNamesChange.emit(this.collectionNames);
+      this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+    });
   }
 
   // TODO : comment déclarer des services avec Angular ?

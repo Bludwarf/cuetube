@@ -1,11 +1,9 @@
 /**
  * Created by mlavigne on 27/06/2017.
  */
-
-function loadDisc(jsonFile) {
-  const json = readJSON(jsonFile);
-  return new Disc(_.extend(new cuesheet.CueSheet(), json));
-}
+import {yth} from './yt-helper';
+import {Disc} from './disc';
+import {discs} from './TestUtils';
 
 const expectIndexesTimecode = function (track, min, sec, frame) {
   expect(track.indexes.length).toBe(1);
@@ -15,30 +13,30 @@ const expectIndexesTimecode = function (track, min, sec, frame) {
   expect(track.indexes[0].time.frame).toBe(frame);
 };
 
-describe("Utilitaires pour YouTube", function () {
+describe('Utilitaires pour YouTube', function () {
 
-  it("get timecode", function () {
-    expect(yth.getTimecode(minecraft.tracks[0])).toBe('0:00');
+  it('get timecode', function () {
+    expect(yth.getTimecode(discs.minecraft.tracks[0])).toBe('0:00');
   });
 
-  it("should export tracklist", function () {
-    let disc = minecraft;
-    let tracks = [disc.tracks[0], disc.tracks[17], disc.tracks[27]];
+  it('should export tracklist', function () {
+    const disc = discs.minecraft;
+    const tracks = [disc.tracks[0], disc.tracks[17], disc.tracks[27]];
     expect(yth.getTracklist(tracks)).toBe(`0:00 - Key (Nuance 1)
 1:06:05 - Taswell (Creative 6)
 1:51:48 - End`);
   });
 
-  it("should parse tracklist", function () {
-    let disc = new Disc();
-    let previousFile = disc.newFile();
+  it('should parse tracklist', function () {
+    const disc = new Disc();
+    const previousFile = disc.newFile();
     previousFile.newTrack();
-    let file = disc.newFile();
-    let oldTrack = file.newTrack();
-    let nextFile = disc.newFile();
+    const file = disc.newFile();
+    const oldTrack = file.newTrack();
+    const nextFile = disc.newFile();
     nextFile.newTrack();
 
-    let tracklist = `0:00 - Key (Nuance 1)
+    const tracklist = `0:00 - Key (Nuance 1)
 1:06:05 - Taswell (Creative 6)
 1:51:48 - End`;
 

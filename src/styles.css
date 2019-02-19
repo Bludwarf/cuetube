@@ -6,6 +6,7 @@
 @import './styles/bootstrap-responsive.min.css';
 @import './styles/angular-confirm.min.css';
 @import './styles/CueTube-icons.css';
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
 a {
     cursor: pointer;

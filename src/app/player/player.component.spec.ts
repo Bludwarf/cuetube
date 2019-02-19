@@ -8,6 +8,9 @@ import {AppComponent} from '../app.component';
 import {SliderComponent} from '../slider/slider.component';
 import {GapiClientService} from '../gapi-client.service';
 import * as $ from 'jquery';
+import {RouterTestingModule} from '@angular/router/testing';
+import {PlayerCollectionsComponent} from '../player-collections/player-collections.component';
+import {MatIconModule} from '@angular/material';
 
 describe('PlayerComponent', () => {
   let component: PlayerComponent;
@@ -18,13 +21,16 @@ describe('PlayerComponent', () => {
       declarations: [
         AppComponent,
         PlayerComponent,
-        SliderComponent
+        SliderComponent,
+        PlayerCollectionsComponent
       ],
       imports: [
         BrowserModule,
         // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
         HttpClientModule,
-        FormsModule
+        FormsModule,
+        RouterTestingModule,
+        MatIconModule
       ],
       providers: [
         GapiClientService
