@@ -1326,7 +1326,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // 5. The API calls this function when the player's state changes.
   //    The function indicates that when playing a video (state=1),
-  //    the player should play for six seconds and then stop.
   // liste des codes : http://stackoverflow.com/a/8204143/1655155
   /**
    * -1 (unstarted)
@@ -1460,6 +1459,18 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.currentCollectionNamesChange.emit(this.currentCollectionNames);
 
     this.loadDiscsFromCollections();
+  }
+
+  //    the player should play for six seconds and then stop.
+  removeCollection(collectionName: string) {
+
+    this.persistence.deleteCollection(collectionName).then(() => {
+      this.collectionNames = this.collectionNames.filter(collectionNameI => collectionNameI !== collectionName);
+      this.currentCollectionNames = this.currentCollectionNames.filter(collectionNameI => collectionNameI !== collectionName);
+      console.log(`Collection "${collectionName}" supprimée avec succès`);
+      this.collectionNamesChange.emit(this.collectionNames);
+      this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+    });
   }
 
   // TODO : comment déclarer des services avec Angular ?

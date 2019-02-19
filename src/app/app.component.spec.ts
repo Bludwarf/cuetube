@@ -1,29 +1,36 @@
-import { TestBed, async } from '@angular/core/testing';
-import { AppComponent } from './app.component';
+import {TestBed, async} from '@angular/core/testing';
+import {AppComponent} from './app.component';
 import {PlayerComponent} from './player/player.component';
 import {HttpClientModule} from '@angular/common/http';
 import {BrowserModule} from '@angular/platform-browser';
 import {FormsModule} from '@angular/forms';
 import {GapiClientService} from './gapi-client.service';
+import {RouterTestingModule} from '@angular/router/testing';
 import {SliderComponent} from './slider/slider.component';
+import {PlayerCollectionsComponent} from './player-collections/player-collections.component';
+import {MatIconModule} from '@angular/material';
+
 describe('AppComponent', () => {
   beforeEach(async(() => {
-      TestBed.configureTestingModule({
-          declarations: [
-              AppComponent,
-              PlayerComponent,
-              SliderComponent
-          ],
-          imports: [
-              BrowserModule,
-              // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
-              HttpClientModule,
-              FormsModule
-          ],
-          providers: [
-              GapiClientService
-          ]
-      })
+    TestBed.configureTestingModule({
+      declarations: [
+        AppComponent,
+        PlayerComponent,
+        SliderComponent,
+        PlayerCollectionsComponent
+      ],
+      imports: [
+        BrowserModule,
+        // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
+        HttpClientModule,
+        FormsModule,
+        RouterTestingModule,
+        MatIconModule
+      ],
+      providers: [
+        GapiClientService
+      ]
+    })
       .compileComponents();
   }));
   it('should create the app', async(() => {

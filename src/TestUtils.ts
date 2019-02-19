@@ -1,8 +1,15 @@
 import {Disc} from './disc';
+import {LocalAndDistantPersistence} from './persistence/LocalAndDistantPersistence';
+import {MemoryPersistence} from './persistence/MemoryPersistence';
+import Collection from './Collection';
 
 export class TestUtils {
     static createDisc(id: string, title = id): Disc4Test {
         return new Disc4Test().withId(id).withTitle(title);
+    }
+
+    static createLocalAndDistantPersistence(local = new MemoryPersistence(null), distant = new MemoryPersistence(null)) {
+      return new LocalAndDistantPersistence(local, distant);
     }
 }
 

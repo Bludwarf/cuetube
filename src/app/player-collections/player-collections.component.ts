@@ -62,4 +62,8 @@ class Item {
   toggle($event: MouseEvent) {
     this.player.toggleCollection(this.name, $event);
   }
+
+  delete() {
+    this.player.removeCollection(this.name);
+  }
 }

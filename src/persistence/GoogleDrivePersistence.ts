@@ -327,7 +327,11 @@ export class GoogleDrivePersistence extends Persistence {
             });
     }
 
-    /**
+  protected _deleteCollection(collectionName: string): Promise<void> {
+    throw new Error('Not Implemented'); // FIXME
+  }
+
+  /**
      * Création ou modification si metadata.id
      * @param {string} metadata https://developers.google.com/drive/v3/reference/files (par exemple {name: 'fichier.cue'})
      * @param {string} data
