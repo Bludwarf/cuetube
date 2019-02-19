@@ -1,4 +1,0 @@
-[submodule "client"]
-	path = client
-	url = https://github.com/Bludwarf/cuetube.git
-	branch = client
