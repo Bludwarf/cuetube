@@ -18,10 +18,10 @@ branches:
 # - sudo dpkg -i google-chrome*.deb
 
 script:
-  - ng lint
+#  - ng lint
 #  - ng test --watch false -cc # FIXME https://github.com/Bludwarf/cuetube/issues/142
   - ng test --watch=false --browsers=ChromeHeadless
-  - npm run e2e
+#  - npm run e2e
   - ng build --prod --base-href /cuetube/
 
 deploy:

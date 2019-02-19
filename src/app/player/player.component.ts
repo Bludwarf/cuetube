@@ -620,7 +620,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       if (!disc) {
         console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé. On lance un disque aléatoirement`);
         this.repeatMode = null;
-        this.next();
+        this.next(); // FIXME que faire si aucun disque n'est trouvé ?
+        return;
       } else {
         console.log('Chargement de la précédente lecture...', current);
 
@@ -819,7 +820,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Aucun disque jouable ?
     if (!possibleDiscs.length) {
-      throw new Error('Aucun disque activé (ou sans piste activées)');
+      console.error('Aucun disque activé (ou sans piste activées)');
+      return;
     }
 
     const discIndex = possibleDiscs.indexOf(disc);
