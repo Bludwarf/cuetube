@@ -35,19 +35,16 @@ describe('Player', () => {
         await element(by.id('createNewDisc')).click();
 
         // On saisi l'URL de la vidéo
-        const alert = browser.switchTo().alert();
-        alert.getText().then(text => console.log(text));
-        await alert.sendKeys('https://www.youtube.com/watch?v=Dg0IjOzopYU'); // "Minecraft FULL SOUNDTRACK"
-        await alert.accept();
+        const alertWin = browser.switchTo().alert();
+        alertWin.getText().then(text => console.log(text));
+        await alertWin.sendKeys('https://www.youtube.com/watch?v=Dg0IjOzopYU'); // "Minecraft FULL SOUNDTRACK"
+        await alertWin.accept();
 
         // Attente
         await browser.sleep(100);
 
         // Confirmer si on veut importer la playlist déjà existante depuis youtube-cues : on annule pour reconstruire le disque
         await browser.switchTo().alert().dismiss();
-
-        // Attente pour être sûr que tout s'est bien passé
-        await browser.sleep(10000);
       })
     ;
   });

@@ -23,7 +23,7 @@ script:
   - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
   # https://github.com/angular/protractor/issues/4850#issuecomment-399012429 :
   - npm run e2e-update
-  - npm run e2e -- --config=e2e/protractor-ci.conf.js --webdriver-update=false
+  - npm run e2e -- --webdriver-update=false
   - ng build --prod --base-href /cuetube/
 
 deploy:
