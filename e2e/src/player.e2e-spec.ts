@@ -20,7 +20,16 @@ describe('Player', () => {
   it('should create disc from multitrack video', () => {
     page.navigateTo()
       .catch(async () => {
+
         await browser.switchTo().alert().accept();
+
+        // show logs
+        browser.manage().logs().get('browser').then(function(browserLogs) {
+          // browserLogs is an array of objects with level and message fields
+          browserLogs.forEach(log => {
+            console.log('[BROWSER]', log.message);
+          });
+        });
 
         // On clique sur la création d'une nouvelle vidéo
         await element(by.id('createNewDisc')).click();

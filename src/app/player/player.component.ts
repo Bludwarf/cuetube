@@ -1628,7 +1628,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // TODO : remonter dans app
   getPersistence(): Persistence {
-    return AppComponent.getPersistence(this.localPersistence, this.http);
+    const persistence = AppComponent.getPersistence(this.localPersistence, this.http);
+    console.log('getPersistence() => ' + persistence.title);
+    return persistence;
   }
 
   loadDiscs(discIdsToLoad): Promise<Disc[]> {
