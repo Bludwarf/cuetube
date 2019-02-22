@@ -51,7 +51,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   private discInTracklist: Disc;
 
   /** Toutes les collections indexées par nom de collection */
-  private discIdsByCollection: {[key: string]: string[]} = {};
+  private discIdsByCollection: { [key: string]: string[] } = {};
 
   /**
    * Nom de toutes les collections disponibles
@@ -75,7 +75,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   repeatMode: string;
 
   public discs: Disc[];
-  private discsById: {[key: string]: Disc};
+  private discsById: { [key: string]: Disc };
 
   public shuffle = true;
   private history = [];
@@ -126,290 +126,291 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // FIXME : à remettre dans le constructeur
   private cuetubeConf = {
-      debug: false,
-      addDisc: {
-          autoplay: true
-      }
+    debug: false,
+    addDisc: {
+      autoplay: true
+    }
   };
 
   private locationSubscription: ISubscription;
 
-  constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone, private location: AngularLocation) { }
+  constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone, private location: AngularLocation) {
+  }
 
-    ngOnInit() {
+  ngOnInit() {
 
-        // FIXME pour debugger
-        this.enrichWindow((<any>window));
+    // FIXME pour debugger
+    this.enrichWindow((<any>window));
 
-        this.checkLocalStorage();
+    this.checkLocalStorage();
 
-        this.localPersistence = new LocalStoragePersistence(this.http);
-        this.persistence = this.getPersistence();
-        this.discsParam = getParameterByName('discs', document.location.search);
+    this.localPersistence = new LocalStoragePersistence(this.http);
+    this.persistence = this.getPersistence();
+    this.discsParam = getParameterByName('discs', document.location.search);
 
-        // Paramètres
-        this.shuffle = this.restore('shuffle', true);
-        this.repeatMode = this.restore('repeatMode', '');
-        this.slider.value = this.restore('time', 0);
+    // Paramètres
+    this.shuffle = this.restore('shuffle', true);
+    this.repeatMode = this.restore('repeatMode', '');
+    this.slider.value = this.restore('time', 0);
 
-        /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
-        const DELETED_VIDEO_TIMEOUT = 10;
-
-
-        const $window = $(window);
-
-        // Ajustement pour le CSS
-        const $fontSize50List = $('.font-size-50p'); // ajuste la taille du texte pour avoir une police qui prend 50% de l'écran
-        // Run the following when the window is resized, and also trigger it once to begin with.
-        $window.resize(() => {
-            // Get the current height of the div and save it as a variable.
-            const height = $window.height() / 2;
-            // Set the font-size and line-height of the text within the div according to the current height.
-            $fontSize50List.css({
-                'font-size': (height / 2) + 'px',
-                'line-height': height + 'px'
-            });
-        }).trigger('resize');
-
-        // const socket = io.connect();
-        // socket.emit('getVideo', this.text);
-
-        /*fetch("/minecraft.json").then((res) => {
-           return res.blob();
-        })*/
-
-        // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
-
-        this.init(); // TODO : on devrait attendre l'authent Google avant d'initialiser
-
-        this.debugData = {
-            getVideoSnippet: undefined
-        };
+    /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
+    const DELETED_VIDEO_TIMEOUT = 10;
 
 
-        /*function getVideoIdFromUrl(url) {
-            const i = url.indexOf('?');
-            if (i === -1) return undefined;
-            const query = querystring.decode(url.substr(i+1));
-            return query.v;
-        }*/
+    const $window = $(window);
 
-        this.videoStarted.subscribe(() => {
-            this.trackStarted.emit();
-        });
+    // Ajustement pour le CSS
+    const $fontSize50List = $('.font-size-50p'); // ajuste la taille du texte pour avoir une police qui prend 50% de l'écran
+    // Run the following when the window is resized, and also trigger it once to begin with.
+    $window.resize(() => {
+      // Get the current height of the div and save it as a variable.
+      const height = $window.height() / 2;
+      // Set the font-size and line-height of the text within the div according to the current height.
+      $fontSize50List.css({
+        'font-size': (height / 2) + 'px',
+        'line-height': height + 'px'
+      });
+    }).trigger('resize');
 
-        this.trackStarted.subscribe(() => {
-            console.log('on video started');
-            const player = this.player;
-            const track: Disc.Track = this.currentTrack; // loadingTrack vide si manual seeking
+    // const socket = io.connect();
+    // socket.emit('getVideo', this.text);
 
-            // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
-            const file = track.file;
-            if (!file.duration) {
-                file.duration = player.getDuration();
-            }
-            // TODO : on pourrait stocker cette information sur le serveur
+    /*fetch("/minecraft.json").then((res) => {
+       return res.blob();
+    })*/
 
-            // Incrémentation du nombre de lectures de la piste courante
-            track.played = track.played ? track.played + 1 : 1;
+    // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
-            const disc = file.disc;
-            document.title = track.title + ' - CueTube'; // Youtube affiche : disc.title + " - m3u-YouTube"
+    this.init(); // TODO : on devrait attendre l'authent Google avant d'initialiser
 
-            $(".background-overlay").css('background-image', `url(${track.file.background})`);
+    this.debugData = {
+      getVideoSnippet: undefined
+    };
 
-            // Notif
-            notify((track.title || 'Track ' + track.number), {
-                tag: 'onTrackStarted',
-                body: disc.title,
-                icon: track.file.icon
-            });
 
-            // Historique
-            this.history.push({
-                discId: disc.discId,
-                discIndex: track.disc.index,
-                fileIndex: track.file.index,
-                trackIndex: track.index,
-                date: new Date()
-            });
+    /*function getVideoIdFromUrl(url) {
+        const i = url.indexOf('?');
+        if (i === -1) return undefined;
+        const query = querystring.decode(url.substr(i+1));
+        return query.v;
+    }*/
 
-            this.loadingDiscIndex = null;
-            this.loadingFileIndex = null;
-            this.trackIsLoading = false;
+    this.videoStarted.subscribe(() => {
+      this.trackStarted.emit();
+    });
 
-            this.trackPlaying.emit();
-        });
+    this.trackStarted.subscribe(() => {
+      console.log('on video started');
+      const player = this.player;
+      const track: Disc.Track = this.currentTrack; // loadingTrack vide si manual seeking
 
-        this.trackPlaying.subscribe(() => {
-            const track = this.currentTrack;
-            const file = track.file;
+      // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
+      const file = track.file;
+      if (!file.duration) {
+        file.duration = player.getDuration();
+      }
+      // TODO : on pourrait stocker cette information sur le serveur
 
-            // Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant
-            // const slider = document.getElementById("player-controls-form").trackPosition;
-            const slider = this.slider;
-            if (slider && (!slider.max || slider.max === undefined)) {
-                console.log('Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant');
-                slider.max = file.duration;
-            }
-            this.fileSlider.max = file.duration;
+      // Incrémentation du nombre de lectures de la piste courante
+      track.played = track.played ? track.played + 1 : 1;
 
-            this.isPlaying = true;
-            this.changeVideoIHM(); // au cas ou on a déplacé le curseur
-        });
+      const disc = file.disc;
+      document.title = track.title + ' - CueTube'; // Youtube affiche : disc.title + " - m3u-YouTube"
 
-        this.videoPlaying.subscribe(() => {
-            console.log('on video playing');
+      $('.background-overlay').css('background-image', `url(${track.file.background})`);
 
-            // On vient en fait de démarrer une nouvelle piste ?
-            if (this.trackIsLoading) {
-                return this.trackStarted.emit();
-            } else {
-                return this.trackPlaying.emit();
-            }
-        });
+      // Notif
+      notify((track.title || 'Track ' + track.number), {
+        tag: 'onTrackStarted',
+        body: disc.title,
+        icon: track.file.icon
+      });
 
-        this.videoEnded.subscribe(() => {
-            console.log('on video ended"');
-            this.next();
-        });
+      // Historique
+      this.history.push({
+        discId: disc.discId,
+        discIndex: track.disc.index,
+        fileIndex: track.file.index,
+        trackIndex: track.index,
+        date: new Date()
+      });
 
-        this.videoManualSeeked.subscribe(() => {
-            // on cherche la piste courant uniquement pour une vidéo multipiste
-            if (this.currentTrack.disc.tracks.length > 1) {
-                this.checkCurrentTrack();
-            }
-        });
+      this.loadingDiscIndex = null;
+      this.loadingFileIndex = null;
+      this.trackIsLoading = false;
 
-        /** On vient de lancer une vidéo retirée de YouTube */
-        this.unstartedVideo.subscribe(() => {
-            // On démarre un chrono de 2 seconde pour détecter si la vidéo a été supprimée
-            if (!this.deletedVideoTimeout) {
-                console.log(`La vidéo n'a pas encore démarré. On attend ${DELETED_VIDEO_TIMEOUT}`
-                    + ` secondes avant de la déclarer comme supprimée de YouTube...`);
-                const thisComponent = this;
-                this.deletedVideoTimeout = window.setTimeout(function () {
-                    console.error(`La vidéo n'a toujours pas démarrée depuis ${DELETED_VIDEO_TIMEOUT} secondes. On la déclare supprimée.`);
-                    thisComponent.deletedVideo.emit();
-                }, DELETED_VIDEO_TIMEOUT * 1000);
-            }
-        });
+      this.trackPlaying.emit();
+    });
 
-        /** On vient de lancer une vidéo retirée de YouTube */
-        this.deletedVideo.subscribe(() => {
-            if (!this.currentTrack) {
-                return;
-            }
+    this.trackPlaying.subscribe(() => {
+      const track = this.currentTrack;
+      const file = track.file;
 
-            const file = this.currentTrack.file;
-            console.error(`La vidéo ${file.videoId} du disque "${file.disc.title}" n'existe plus sur YouTube.`
-                + ` On la désactive et on passe à la suivante...`);
-            file.disabledByYouTube = true;
-            this.next();
-        });
+      // Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant
+      // const slider = document.getElementById("player-controls-form").trackPosition;
+      const slider = this.slider;
+      if (slider && (!slider.max || slider.max === undefined)) {
+        console.log('Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant');
+        slider.max = file.duration;
+      }
+      this.fileSlider.max = file.duration;
 
-        /*function getCueIndexAt(video, time) {
-            const first = video.cues[0];
-            if (time < first.startSeconds) return -1;
+      this.isPlaying = true;
+      this.changeVideoIHM(); // au cas ou on a déplacé le curseur
+    });
 
-            const last = video.cues[video.cues.length - 1];
-            if (time >= last.endSeconds) return -1;
+    this.videoPlaying.subscribe(() => {
+      console.log('on video playing');
 
-            for (const i = 0; i < video.cues.length; ++i) {
-                const cue = video.cues[i];
-                if (time <= cue.endSeconds) return i;
-            }
-            return -1;
-        }*/
+      // On vient en fait de démarrer une nouvelle piste ?
+      if (this.trackIsLoading) {
+        return this.trackStarted.emit();
+      } else {
+        return this.trackPlaying.emit();
+      }
+    });
 
-        // this.$watch('currentTrack', function (newTrack, oldTrack) {
-        //   const newDisc = newTrack ? newTrack.disc : null;
-        //   const oldDisc = oldTrack ? oldTrack.disc : null;
-        //   if (newDisc !== oldDisc) {
-        //     document.body.style.backgroundImage = 'url(https://img.youtube.com/vi/' + newDisc.videoId + '/hqdefault.jpg)';
-        //   }
-        // });
+    this.videoEnded.subscribe(() => {
+      console.log('on video ended"');
+      this.next();
+    });
 
-        // INIT
+    this.videoManualSeeked.subscribe(() => {
+      // on cherche la piste courant uniquement pour une vidéo multipiste
+      if (this.currentTrack.disc.tracks.length > 1) {
+        this.checkCurrentTrack();
+      }
+    });
 
-        /*
-        this.onSignIn = function(googleUser) {
-          gapiClient.init().then(() => {
+    /** On vient de lancer une vidéo retirée de YouTube */
+    this.unstartedVideo.subscribe(() => {
+      // On démarre un chrono de 2 seconde pour détecter si la vidéo a été supprimée
+      if (!this.deletedVideoTimeout) {
+        console.log(`La vidéo n'a pas encore démarré. On attend ${DELETED_VIDEO_TIMEOUT}`
+          + ` secondes avant de la déclarer comme supprimée de YouTube...`);
+        const thisComponent = this;
+        this.deletedVideoTimeout = window.setTimeout(function () {
+          console.error(`La vidéo n'a toujours pas démarrée depuis ${DELETED_VIDEO_TIMEOUT} secondes. On la déclare supprimée.`);
+          thisComponent.deletedVideo.emit();
+        }, DELETED_VIDEO_TIMEOUT * 1000);
+      }
+    });
 
-            const logoutBtn = document.getElementById("logout-btn");
-            // logoutBtn.innerHTML = `<img src="${googleUser.getImageUrl()}" />${googleUser.getGivenName()}`;
-            logoutBtn.innerHTML = `${googleUser.getGivenName()}`;
+    /** On vient de lancer une vidéo retirée de YouTube */
+    this.deletedVideo.subscribe(() => {
+      if (!this.currentTrack) {
+        return;
+      }
 
-            if (!gapi.client.drive) {
-              alert("Google Drive non initialisé");
-              return;
-            }
-            const googleDrivePersistence = new GoogleDrivePersistence(this.http);
+      const file = this.currentTrack.file;
+      console.error(`La vidéo ${file.videoId} du disque "${file.disc.title}" n'existe plus sur YouTube.`
+        + ` On la désactive et on passe à la suivante...`);
+      file.disabledByYouTube = true;
+      this.next();
+    });
 
-            // TODO : synchro avec l'ancienne persistance pour ne rien perdre
+    /*function getCueIndexAt(video, time) {
+        const first = video.cues[0];
+        if (time < first.startSeconds) return -1;
 
-            // RAZ de variables/caches, etc...
-            // this.discIdsByCollection = {}; // déjà fait par init()
+        const last = video.cues[video.cues.length - 1];
+        if (time >= last.endSeconds) return -1;
 
-            persistence = googleDrivePersistence;
-            localStorage.setItem("persistence", "GoogleDrive");
-            this.init();
-          });
-        };
-        */
-
-        // FIXME Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
-      HistoryUtils.getState = () => {
-        return history.state || this.getStateFromLocation(document.location);
-      };
-
-      this.locationSubscription = this.location.subscribe(event => {
-        const state = HistoryUtils.getState();
-        if (state) {
-          console.log('state', state);
-          if ('currentCollectionNames' in state) {
-            this.currentCollectionNames = state.currentCollectionNames;
-            this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-            this.loadDiscsFromCollections();
-          }
+        for (const i = 0; i < video.cues.length; ++i) {
+            const cue = video.cues[i];
+            if (time <= cue.endSeconds) return i;
         }
+        return -1;
+    }*/
+
+    // this.$watch('currentTrack', function (newTrack, oldTrack) {
+    //   const newDisc = newTrack ? newTrack.disc : null;
+    //   const oldDisc = oldTrack ? oldTrack.disc : null;
+    //   if (newDisc !== oldDisc) {
+    //     document.body.style.backgroundImage = 'url(https://img.youtube.com/vi/' + newDisc.videoId + '/hqdefault.jpg)';
+    //   }
+    // });
+
+    // INIT
+
+    /*
+    this.onSignIn = function(googleUser) {
+      gapiClient.init().then(() => {
+
+        const logoutBtn = document.getElementById("logout-btn");
+        // logoutBtn.innerHTML = `<img src="${googleUser.getImageUrl()}" />${googleUser.getGivenName()}`;
+        logoutBtn.innerHTML = `${googleUser.getGivenName()}`;
+
+        if (!gapi.client.drive) {
+          alert("Google Drive non initialisé");
+          return;
+        }
+        const googleDrivePersistence = new GoogleDrivePersistence(this.http);
+
+        // TODO : synchro avec l'ancienne persistance pour ne rien perdre
+
+        // RAZ de variables/caches, etc...
+        // this.discIdsByCollection = {}; // déjà fait par init()
+
+        persistence = googleDrivePersistence;
+        localStorage.setItem("persistence", "GoogleDrive");
+        this.init();
       });
+    };
+    */
 
-      this.currentCollectionNamesChange.subscribe(currentCollectionNames => {
-        const isDefaultCollection = this.currentCollectionNames.length === 0;
+    // FIXME Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
+    HistoryUtils.getState = () => {
+      return history.state || this.getStateFromLocation(document.location);
+    };
 
-        // Historique navigateur
-        const state = {
-          currentCollectionNames: this.currentCollectionNames
-        };
-        // Uniquement si le statut est différent de celui actuel
-        HistoryUtils.pushStateOnlyNew(state, stateBuilder => {
-          stateBuilder = stateBuilder.pathname('/player');
-          if (isDefaultCollection) {
-            stateBuilder.title('CueTube')
-              .searchParam('collection', null);
-          } else {
-            stateBuilder.title('CueTube - ' + this.currentCollectionNames.join(' + '))
-              .searchParam('collection', this.currentCollectionNames);
-          }
-          return stateBuilder;
-        });
+    this.locationSubscription = this.location.subscribe(event => {
+      const state = HistoryUtils.getState();
+      if (state) {
+        console.log('state', state);
+        if ('currentCollectionNames' in state) {
+          this.currentCollectionNames = state.currentCollectionNames;
+          this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+          this.loadDiscsFromCollections();
+        }
+      }
+    });
+
+    this.currentCollectionNamesChange.subscribe(currentCollectionNames => {
+      const isDefaultCollection = this.currentCollectionNames.length === 0;
+
+      // Historique navigateur
+      const state = {
+        currentCollectionNames: this.currentCollectionNames
+      };
+      // Uniquement si le statut est différent de celui actuel
+      HistoryUtils.pushStateOnlyNew(state, stateBuilder => {
+        stateBuilder = stateBuilder.pathname('/player');
+        if (isDefaultCollection) {
+          stateBuilder.title('CueTube')
+            .searchParam('collection', null);
+        } else {
+          stateBuilder.title('CueTube - ' + this.currentCollectionNames.join(' + '))
+            .searchParam('collection', this.currentCollectionNames);
+        }
+        return stateBuilder;
       });
+    });
 
-    }
+  }
 
   enrichWindow(window) {
     const component = this;
     window.$scope = component;
 
     // Avant fermeture de la page
-    window.onbeforeunload = function(e) {
+    window.onbeforeunload = function (e) {
       console.log('Sauvegarde avant fermeture...');
       component.save();
     };
 
     // Raccourcis clavier. Ne pas utiliser onkeypress (#159).
-    window.onkeydown = function(event) {
+    window.onkeydown = function (event) {
       const code = event.code;
       switch (code) {
         case 'Space':
@@ -436,14 +437,16 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       event.preventDefault();
     };
 
-    window.toggleDiscList = function(discListElement) {
+    window.toggleDiscList = function (discListElement) {
       $(discListElement).toggle();
     };
 
     // Fermeture de la tracklist ouverte si click ailleurs
-    window.document.addEventListener('click', function(e) {
+    window.document.addEventListener('click', function (e) {
       const lastToggled = component.lastToggledTracklist;
-      if (lastToggled != null) $(lastToggled).hide();
+      if (lastToggled != null) {
+        $(lastToggled).hide();
+      }
     });
 
   }
@@ -460,14 +463,14 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         this.connectedToGoogleDrive = true;
       }
     })*/.then(isInit => this.persistence.getCollectionNames())
-    .then(collectionNames => collectionNames.filter(collectionName => collectionNames && collectionName.toLowerCase() !== DEFAULT_COLLECTION.toLowerCase()))
-    .then(collectionNames => {
-      collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
-      this.collectionNames = collectionNames;
-      this.collectionNamesChange.emit(collectionNames);
-      console.log('this.$apply(); init');
-      return collectionNames;
-    }).catch(e => {
+      .then(collectionNames => collectionNames.filter(collectionName => collectionNames && collectionName.toLowerCase() !== DEFAULT_COLLECTION.toLowerCase()))
+      .then(collectionNames => {
+        collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
+        this.collectionNames = collectionNames;
+        this.collectionNamesChange.emit(collectionNames);
+        console.log('this.$apply(); init');
+        return collectionNames;
+      }).catch(e => {
       console.error(e);
       alert('Erreur lors du chargement de la liste des collections :' + e);
       throw e;
@@ -486,7 +489,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         const collectionNames = [];
         const unknownCollectionNames = [];
         requestedCollectionNames.forEach(collectionName => {
-          if ((<string[]> knownCollectionNames).indexOf(collectionName) !== -1) {
+          if ((<string[]>knownCollectionNames).indexOf(collectionName) !== -1) {
             collectionNames.push(collectionName);
           } else {
             unknownCollectionNames.push(collectionName);
@@ -505,7 +508,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           promises.push(Promise.resolve(collectionParamI)
             .then(collectionName => this.discIdsByCollection[collectionName])
             .then(discIds => {
-              if (discIds) { return discIds; }
+              if (discIds) {
+                return discIds;
+              }
 
               return this.persistence.getCollectionDiscIds(collectionParamI)
                 .catch(err => {
@@ -554,19 +559,19 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lastToggledTracklist = null;
   }
 
-    /**
-     * Fonction qui corrige le localStorage qui pourrait contenir d'anciennes valeurs
-     * avant la correction des bugs suivants :
-     *   - #156 : on récup l'ancien format de discIds au cas où
-     */
-    checkLocalStorage() {
-        // #156 : on récup l'ancien format de discIds au cas où
-        let discIds = localStorage.getItem("discIds");
-        if (discIds && discIds.match(/^[^\[]/)) {
-            discIds = JSON.stringify(discIds.split(','));
-            localStorage.setItem("discIds", discIds);
-        }
+  /**
+   * Fonction qui corrige le localStorage qui pourrait contenir d'anciennes valeurs
+   * avant la correction des bugs suivants :
+   *   - #156 : on récup l'ancien format de discIds au cas où
+   */
+  checkLocalStorage() {
+    // #156 : on récup l'ancien format de discIds au cas où
+    let discIds = localStorage.getItem('discIds');
+    if (discIds && discIds.match(/^[^\[]/)) {
+      discIds = JSON.stringify(discIds.split(','));
+      localStorage.setItem('discIds', discIds);
     }
+  }
 
   /**
    * Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
@@ -593,19 +598,19 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     e.stopPropagation(); // pour ne pas appeler document.onclick
   }
 
-    // TODO : remonter dans app
+  // TODO : remonter dans app
   get $foreground() {
     return $('#foreground-overlay');
   }
 
-    // TODO : remonter dans app
+  // TODO : remonter dans app
   get $foregroundIcon() {
     return $('#foreground-overlay-icon');
   }
 
   onYouTubeIframeAPIReady() {
 
-    console.log("YouTube initialisé");
+    console.log('YouTube initialisé');
 
     // On cache le masque
     this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
@@ -618,7 +623,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       const disc: Disc = _.find(this.discs, (discI) => discI && discI.id === current.discId);
 
       if (!disc) {
-        console.error(`Disque anciennement joué d'id ${current.discId} non retrouvé. On lance un disque aléatoirement`);
+        console.warn(`Disque anciennement joué d'id ${current.discId} non retrouvé. On lance un disque aléatoirement`);
         this.repeatMode = null;
         this.next(); // FIXME que faire si aucun disque n'est trouvé ?
         return;
@@ -627,7 +632,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
         const file = disc.files[current.fileIndex];
         const track = file.tracks[current.trackIndex];
-        this.currentTrack = track;
 
         // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
         this.loadTrack(track, current.time);
@@ -661,7 +665,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       //    after the API code downloads.
       // Appelé automatiquement par l'IFRAME YouTube
       const component = this;
-      (<any>window).onYouTubeIframeAPIReady = function() {
+      (<any>window).onYouTubeIframeAPIReady = function () {
         component.onYouTubeIframeAPIReady();
       };
 
@@ -705,9 +709,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     const multiTrack = file.tracks.length > 1;
 
     if (time < track.startSeconds || time > track.endSeconds) {
-        console.error(`Impossible de charger la piste #${track.index} du disque ${disc.title} à t=${time} car début=${track.startSeconds} et fin =${track.endSeconds}.`, track);
-        track = file.getTrackAt(time);
-        console.log(`On charge la piste #${track.index} à la place`);
+      console.error(`Impossible de charger la piste #${track.index} du disque ${disc.title} à t=${time} car début=${track.startSeconds} et fin =${track.endSeconds}.`, track);
+      track = file.getTrackAt(time);
+      console.log(`On charge la piste #${track.index} à la place`);
     }
 
     // On active automatiquement cette piste et ce disque
@@ -725,8 +729,10 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showOnlyPlaylist(disc.index);
 
     const start = getYouTubeStartSeconds(track, time); // YouTube n'accèpte que des entiers
-    const end = multiTrack ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
-    if (start || end) { console.log(`Piste ${track.number} du disque ${disc.id} (de ${start}s à ${end}s) : ${track.title}`); }
+    const end = multiTrack && track.endSeconds ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
+    if (start || end) {
+      console.log(`Piste ${track.number} du disque ${disc.id} (de ${start}s à ${end}s) : ${track.title}`);
+    }
 
     this.previousTrack = this.currentTrack;
     this.currentTrack = track;
@@ -751,9 +757,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           onStateChange: component.onPlayerStateChange.bind(component) // https://stackoverflow.com/a/38245500/1655155
         }
       });
-
-      // Premier chargement on en profite
-      this.onFirstPlayerLoad();
     } else {
 
       const player = this.player;
@@ -791,8 +794,12 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   seekTo(time) {
-    if (isNaN(time)) { return false; }
-    if (this.checkCurrentTimeTimeout) { clearTimeout(this.checkCurrentTimeTimeout); }
+    if (isNaN(time)) {
+      return false;
+    }
+    if (this.checkCurrentTimeTimeout) {
+      clearTimeout(this.checkCurrentTimeTimeout);
+    }
     // console.log("TODO : seekTo("+time+")");
     this.player.seekTo(time, true);
     this.slider.value = time;
@@ -800,7 +807,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Prochaine piste
+   * Prochaine piste (si disponible, sinon aucune action mais aucune erreur)
    */
   next() {
     const discs = this.discs;
@@ -812,7 +819,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.repeatMode || !disc) {
       for (let i = 0; i < discs.length; ++i) {
         const nextDisc = discs[i];
-        if (nextDisc && nextDisc.enabled && nextDisc.playable) { possibleDiscs.push(nextDisc); }
+        if (nextDisc && nextDisc.enabled && nextDisc.playable) {
+          possibleDiscs.push(nextDisc);
+        }
       }
     } else {
       possibleDiscs.push(disc);
@@ -820,7 +829,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Aucun disque jouable ?
     if (!possibleDiscs.length) {
-      console.error('Aucun disque activé (ou sans piste activées)');
+      console.warn('Aucun disque activé (ou sans piste activées)');
       return;
     }
 
@@ -857,7 +866,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   previous() {
 
     const previousEntry = this.history.length && this.history[this.history.length - 2];
-    if (!previousEntry) { return; }
+    if (!previousEntry) {
+      return;
+    }
 
     const disc = this.discs[previousEntry.discIndex];
     const file = disc.files[previousEntry.fileIndex];
@@ -883,7 +894,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Ajout d'une nouvelle vidéo */
   addVideo() {
     const videoId = prompt('videoId de la nouvelle vidéo ?');
-    if (!videoId) { return; }
+    if (!videoId) {
+      return;
+    }
 
     // Structure YouTube
     // FIXME : remplacer les prompt en cascade par un form
@@ -898,7 +911,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     // Annulé ?
-    if (!video.snippet.title || !video.snippet.channelTitle || !video.contentDetails.duration) { return; }
+    if (!video.snippet.title || !video.snippet.channelTitle || !video.contentDetails.duration) {
+      return;
+    }
 
     this.persistence.saveDisc(videoId, video).then(() => {
       // POST OK
@@ -912,7 +927,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   getVideoId() {
     // return getVideoIdFromUrl(file.name);
     // return getParameterByName("v", file.name);
-    if (!this.currentTrack) { return undefined; }
+    if (!this.currentTrack) {
+      return undefined;
+    }
     return this.currentTrack.file.videoId;
   }
 
@@ -958,7 +975,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   playPause(skipForeground = false) {
     const player = this.player;
-    if (!player) { return; }
+    if (!player) {
+      return;
+    }
     const state = player.getPlayerState();
     if (state === YT.PlayerState.PLAYING) {
       this.pause(skipForeground);
@@ -968,12 +987,12 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // TODO : remonter dans app
-    showPlayer() {
-        this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
-        this.$foreground.hide();
-    }
+  showPlayer() {
+    this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
+    this.$foreground.hide();
+  }
 
-    // TODO : remonter dans app
+  // TODO : remonter dans app
   hidePlayer(pauseButton = false) {
     if (pauseButton) {
       this.$foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
@@ -985,7 +1004,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   play() {
     const player = this.player;
-    if (!player) { return; }
+    if (!player) {
+      return;
+    }
     this.showPlayer();
     player.playVideo();
     this.isPlaying = true;
@@ -993,7 +1014,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   pause(skipForeground) {
     const player = this.player;
-    if (!player) { return; }
+    if (!player) {
+      return;
+    }
     player.pauseVideo();
     if (!skipForeground) {
       this.hidePlayer(true);
@@ -1015,13 +1038,13 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     // }
 
     // Angular 4 ?
-    if (fn && (typeof(fn) === 'function')) {
+    if (fn && (typeof (fn) === 'function')) {
       fn();
     }
   }
 
   /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
-    // TODO : convertir en promise
+  // TODO : convertir en promise
   getPlaylistItems(playlistId, cb) {
     this.persistence.getPlaylistItems(playlistId, GOOGLE_KEY).then(data => {
       cb(null, data);
@@ -1087,7 +1110,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   createNewDiscFromPlaylist(playlistIdOrUrl, url, cb) {
     const playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
-    if (!playlistId) { return cb('Aucun id de playlist'); }
+    if (!playlistId) {
+      return cb('Aucun id de playlist');
+    }
 
     this.getPlaylistItems(playlistId, (err, playlistItems) => {
       if (err) {
@@ -1102,14 +1127,18 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // TODO : cb => Promise
-  createNewDiscFromVideo (videoIdOrUrl, url, cb) {
+  createNewDiscFromVideo(videoIdOrUrl, url, cb) {
     const videoId = getIdOrUrl(videoIdOrUrl, 'Id ou URL de la vidéo YouTube (multipiste)', 'v');
-    if (!videoId) { return; }
+    if (!videoId) {
+      return;
+    }
     cb = cb || function (err, disc) {
     };
 
     this.getVideoSnippet(videoId, (err, snippet) => {
-      if (err) { return cb(err); }
+      if (err) {
+        return cb(err);
+      }
 
       const videoUrl = this.getVideoUrlFromId(videoId);
       try {
@@ -1137,10 +1166,14 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     // TODO : pouvoir passer le disc en JSON -> problème de circular ref
     this.persistence.saveDisc(disc.id, disc).then(createdDisc => {
       this.createDisc(disc);
-      if (cb) { cb(null, disc); }
+      if (cb) {
+        cb(null, disc);
+      }
     }, resKO => {
       alert('Erreur postDisc : ' + resKO.data);
-      if (cb) { cb(resKO.data); }
+      if (cb) {
+        cb(resKO.data);
+      }
     });
   }
 
@@ -1149,7 +1182,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param {string} url? URL de la vidéo/playlist, si vide alors on demande à l'utilisateur
    * @param cb? callback
    */
-  createNewDiscFromVideoOrPlaylist(url?: string, cb?: {(collection: Collection)}) {
+  createNewDiscFromVideoOrPlaylist(url?: string, cb?: { (collection: Collection) }) {
 
     url = url || prompt('URL de la vidéo/playlist YouTube');
     cb = cb || (err => {
@@ -1159,7 +1192,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         alert(err);
       }
     });
-    if (!url) { return; }
+    if (!url) {
+      return;
+    }
     const playlistId = getParameterByName('list', url);
     const videoId = getParameterByName('v', url);
     const ctrl = this;
@@ -1251,49 +1286,53 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       .map(disc => disc.id)
       .filter(id => id);
     if (discIds.length) {
-      localStorage.setItem('discIds', JSON.stringify(discIds
-        .toString())); // Angular fait chier : _.pluck(this.discs, 'id')
+      localStorage.setItem('discIds', JSON.stringify(discIds));
     } else {
       localStorage.removeItem('discIds');
     }
     localStorage.setItem('shuffle', '' + this.shuffle);
     if (this.repeatMode) {
-        localStorage.setItem('repeatMode', this.repeatMode);
+      localStorage.setItem('repeatMode', this.repeatMode);
     } else {
-        localStorage.removeItem('repeatMode');
+      localStorage.removeItem('repeatMode');
     }
-    localStorage.setItem('current', JSON.stringify({
+
+    let current = {};
+    if (this.currentTrack) {
+      current = Object.assign(current, {
         discId: this.currentTrack.disc.id,
         fileIndex: this.currentTrack.file.index,
         trackIndex: this.currentTrack.index,
         time: this.slider.value
-    }));
+      });
+    }
+    localStorage.setItem('current', JSON.stringify(current));
 
     // Sauvegarde pour chaque disque
     this.discs.forEach((disc) => {
-        const storage: any = {};
+      const storage: any = {};
 
-        if (!disc.enabledByUser) {
-            storage.enabledByUser = false;
-        }
+      if (!disc.enabledByUser) {
+        storage.enabledByUser = false;
+      }
 
-        const disabledFiles = disc.disabledByYouTubeFiles;
-        if (disabledFiles && disabledFiles.length) {
-            storage.disabledByYouTubeFileIndices = disabledFiles.map((file) => file.index);
-        }
+      const disabledFiles = disc.disabledByYouTubeFiles;
+      if (disabledFiles && disabledFiles.length) {
+        storage.disabledByYouTubeFileIndices = disabledFiles.map((file) => file.index);
+      }
 
-        const disabledTrackIndices = disc.disabledTracks;
-        if (disabledTrackIndices && disabledTrackIndices.length) {
-            storage.disabledTrackIndices = disabledTrackIndices.map((track) => track.number - 1);
-        }
+      const disabledTrackIndices = disc.disabledTracks;
+      if (disabledTrackIndices && disabledTrackIndices.length) {
+        storage.disabledTrackIndices = disabledTrackIndices.map((track) => track.number - 1);
+      }
 
-        _.extend(storage, {
-            nextTracks: disc.nextTracks
-        });
+      _.extend(storage, {
+        nextTracks: disc.nextTracks
+      });
 
-        if (!_.isEmpty(storage)) {
-            localStorage.setItem('disc.' + disc.id, JSON.stringify(storage)); // Chargé dans loadDisc
-        }
+      if (!_.isEmpty(storage)) {
+        localStorage.setItem('disc.' + disc.id, JSON.stringify(storage)); // Chargé dans loadDisc
+      }
     });
 
     localStorage.setItem('connectedToGoogleDrive', JSON.stringify(this.connectedToGoogleDrive));
@@ -1303,21 +1342,19 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   restore(key, defaultValue) {
     const string = localStorage.getItem(key);
-    if (!string) { return defaultValue; }
-    if (string === 'true') { return true; }
-    if (string === 'false') { return false; }
-    if (string.match(/^\w/)) { return string; }
+    if (!string) {
+      return defaultValue;
+    }
+    if (string === 'true') {
+      return true;
+    }
+    if (string === 'false') {
+      return false;
+    }
+    if (string.match(/^\w/)) {
+      return string;
+    }
     return JSON.parse(string);
-  }
-
-  /**
-   * Appelé par loadTrack lors de la 1ère création du player
-   */
-  onFirstPlayerLoad() {
-    /*const lists = $("#playlist .video-list");
-    lists.each(function()  {
-        toggleVideoList(this);
-    });*/
   }
 
   onPlayerReady(event) {
@@ -1341,7 +1378,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     // const player = event.target;
     const state = event.data;
 
-    if (this.lastPlayerStates.length >= 10) { this.lastPlayerStates.shift(); }
+    if (this.lastPlayerStates.length >= 10) {
+      this.lastPlayerStates.shift();
+    }
     const lastState = this.lastPlayerStates.length ? this.lastPlayerStates[this.lastPlayerStates.length - 1] : undefined;
     this.lastPlayerStates.push(state);
 
@@ -1358,9 +1397,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
     // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
     if (state === YT.PlayerState.ENDED && (!this.trackIsLoading ||
-        this.previousTrack.disc.index !== this.currentTrack.disc.index &&
-        this.previousTrack.file.index !== this.currentTrack.file.index &&
-        this.previousTrack.index !== this.currentTrack.index)) {
+      this.previousTrack.disc.index !== this.currentTrack.disc.index &&
+      this.previousTrack.file.index !== this.currentTrack.file.index &&
+      this.previousTrack.index !== this.currentTrack.index)) {
       // est-ce que la vidéo était en lecture actuellement ?
       if (lastState === YT.PlayerState.PLAYING) {
         this.videoEnded.emit();
@@ -1420,7 +1459,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         })
         .then(discIdsI => {
           const index = discIdsI.indexOf(disc.id);
-          if (index === -1) { return discIdsI; }
+          if (index === -1) {
+            return discIdsI;
+          }
 
           discIdsI.splice(index, 1);
           return this.persistence.saveCollectionDiscIds(collectionName, discIdsI);
@@ -1437,7 +1478,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     Promise.all(promises).then(results => {
       if (removeConfirmed) {
         const index = this.discs.indexOf(disc);
-        if (index === -1) { return; }
+        if (index === -1) {
+          return;
+        }
 
         // Suppression dans les disques actuellement affichés
         this.discs.splice(index, 1);
@@ -1477,7 +1520,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // TODO : comment déclarer des services avec Angular ?
   getCueService() {
-    if (!this.cueService) { this.cueService = new CueService(this.http); }
+    if (!this.cueService) {
+      this.cueService = new CueService(this.http);
+    }
     return this.cueService;
   }
 
@@ -1505,54 +1550,54 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
-    connectGoogleDrive() {
+  connectGoogleDrive() {
 
-        const loginBtn = document.getElementById('login-btn');
-        loginBtn.innerText = 'Connexion...';
-        // this.hidePlayer();
+    const loginBtn = document.getElementById('login-btn');
+    loginBtn.innerText = 'Connexion...';
+    // this.hidePlayer();
 
-        const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
-        const googleDrivePersistence = new GoogleDrivePersistence(this.http);
-        this.googleDrivePersistence = googleDrivePersistence; // debug
-        googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
+    const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
+    const googleDrivePersistence = new GoogleDrivePersistence(this.http);
+    this.googleDrivePersistence = googleDrivePersistence; // debug
+    googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
 
-            if (isInit) {
-                notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
-                loginBtn.innerText = 'Connecté·e';
-                this.connectedToGoogleDrive = true;
-                localStorage.setItem('connectedToGoogleDrive', 'true');
+      if (isInit) {
+        notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
+        loginBtn.innerText = 'Connecté·e';
+        this.connectedToGoogleDrive = true;
+        localStorage.setItem('connectedToGoogleDrive', 'true');
 
-                // synchro avec l'ancienne persistance pour ne rien perdre
-                oldPersistence.sync(googleDrivePersistence).then(syncResult => {
-                    const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
-                    console.log(message);
-                    console.log(syncResult);
-                    notify(message);
+        // synchro avec l'ancienne persistance pour ne rien perdre
+        oldPersistence.sync(googleDrivePersistence).then(syncResult => {
+          const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
+          console.log(message);
+          console.log(syncResult);
+          notify(message);
 
-                    // On ne change pas de persistence pour accélérer les perfs
-                    // puisse qu'on synchronise à chaque démarrage
-                    // TODO : attention on crée avec this.persistence et pas localStorage
-                    this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
-                    localStorage.setItem('persistence', `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`);
+          // On ne change pas de persistence pour accélérer les perfs
+          // puisse qu'on synchronise à chaque démarrage
+          // TODO : attention on crée avec this.persistence et pas localStorage
+          this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
+          localStorage.setItem('persistence', `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`);
 
-                    this.init();
-                }).catch(err => {
-                    loginBtn.innerText = 'Connecté·e';
-                    // this.showPlayer();
-                    alert("Erreur de synchro entre la persistance actuelle et Google Drive");
-                    console.error(err);
-                });
-            } else {
-                loginBtn.innerText = 'Google Drive';
-                // this.showPlayer();
-            }
+          this.init();
         }).catch(err => {
-            loginBtn.innerText = 'Google Drive';
-            // this.showPlayer();
-            alert('Erreur de connexion à Google Drive');
-            console.error(err);
+          loginBtn.innerText = 'Connecté·e';
+          // this.showPlayer();
+          alert('Erreur de synchro entre la persistance actuelle et Google Drive');
+          console.error(err);
         });
-    }
+      } else {
+        loginBtn.innerText = 'Google Drive';
+        // this.showPlayer();
+      }
+    }).catch(err => {
+      loginBtn.innerText = 'Google Drive';
+      // this.showPlayer();
+      alert('Erreur de connexion à Google Drive');
+      console.error(err);
+    });
+  }
 
   disconnectGoogleDrive() {
     // TODO
@@ -1565,9 +1610,11 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     loginBtn.innerText = 'Google Drive';
   }
 
-    // TODO : remonter dans app
+  // TODO : remonter dans app
   getPersistence(): Persistence {
-    return AppComponent.getPersistence(this.localPersistence, this.http);
+    const persistence = AppComponent.getPersistence(this.localPersistence, this.http);
+    console.log('getPersistence() => ' + persistence.title);
+    return persistence;
   }
 
   loadDiscs(discIdsToLoad): Promise<Disc[]> {
@@ -1586,7 +1633,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       discLoaders[discIndex] = new Promise<Disc>((resolve, reject) => resolve(component.discsById[discId]))
 
         .then(cacheDisc => { // Disc en cache ?
-          if (cacheDisc) { return cacheDisc; }
+          if (cacheDisc) {
+            return cacheDisc;
+          }
 
           let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
           return this.persistence.getDisc(discId, discIndex)
@@ -1606,10 +1655,10 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
                   disc.enabledByUser = saved.enabledByUser;
                 }
                 if (saved.disabledByYouTubeFileIndices) {
-                    const files = disc.files;
-                    saved.disabledByYouTubeFileIndices.forEach((fileIndex) => {
-                        files[fileIndex].disabledByYouTube = true;
-                    });
+                  const files = disc.files;
+                  saved.disabledByYouTubeFileIndices.forEach((fileIndex) => {
+                    files[fileIndex].disabledByYouTube = true;
+                  });
                 }
                 if (saved.disabledTrackIndices) {
                   const tracks = disc.tracks;
@@ -1726,12 +1775,15 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   checkCurrentTime() {
 
-    if (this.checkCurrentTimeTimeout) { clearTimeout(this.checkCurrentTimeTimeout); }
+    if (this.checkCurrentTimeTimeout) {
+      clearTimeout(this.checkCurrentTimeTimeout);
+    }
     // FIXME par moment this.player devient un élément IFRAME au lieu d'un objet
     const time = this.player && this.player.getCurrentTime ? this.player.getCurrentTime() : undefined;
     // console.log(`time=${time}`);
 
     const component = this;
+
     function scheduleNextCheckCurrentTime() {
       // on actualise qu'au prochain changement de seconde
       component.nextCheckCurrentTime = (1 - (component.player.getCurrentTime() % 1)) * 1000;
@@ -1770,7 +1822,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleTracklist(tracklist, disc) {
     const lastToggledTracklist = this.lastToggledTracklist;
-    if (lastToggledTracklist !== null && lastToggledTracklist !== tracklist) { $(lastToggledTracklist).hide(); }
+    if (lastToggledTracklist !== null && lastToggledTracklist !== tracklist) {
+      $(lastToggledTracklist).hide();
+    }
 
     $(tracklist).toggle();
 
@@ -1783,24 +1837,24 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lastToggledTracklist = tracklist;
   }
 
-    /**
-     * L'heure actuelle
-     * @param offset décalage en secondes
-     * @return {string} exemple "12:48"
-     */
-    getTime(offset = 0) {
-        const d = new Date();
-        if (offset) {
-            d.setTime(d.getTime() + offset * 1000);
-        }
-        return d.toTimeString().substring(0, 5);
+  /**
+   * L'heure actuelle
+   * @param offset décalage en secondes
+   * @return {string} exemple "12:48"
+   */
+  getTime(offset = 0) {
+    const d = new Date();
+    if (offset) {
+      d.setTime(d.getTime() + offset * 1000);
     }
+    return d.toTimeString().substring(0, 5);
+  }
 
   ngAfterViewInit(): void {
-      console.log('ngAfterViewInit');
-      if (this.restore('connectedToGoogleDrive', false)) {
-          this.connectGoogleDrive();
-      }
+    console.log('ngAfterViewInit');
+    if (this.restore('connectedToGoogleDrive', false)) {
+      this.connectGoogleDrive();
+    }
   }
 
   ngOnDestroy(): void {
@@ -1840,7 +1894,11 @@ function getYouTubeStartSeconds(track, time = track.startSeconds) {
 }
 
 function defaults(value, defaultValue) {
-  if (typeof(value) === 'undefined') { return defaultValue; } else { return value; }
+  if (typeof (value) === 'undefined') {
+    return defaultValue;
+  } else {
+    return value;
+  }
 }
 
 /**

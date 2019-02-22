@@ -63,6 +63,13 @@ module.exports = function(config) {
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     browsers: ['Chrome'],
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        // https://github.com/angular/protractor/issues/4850#issuecomment-398296383
+        flags: ['--headless', '--disable-gpu', '--no-sandbox', '--disable-extensions', '--disable-dev-shm-usage']
+      }
+    },
 
 
     // Continuous Integration mode
