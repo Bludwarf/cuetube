@@ -1302,14 +1302,13 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       localStorage.removeItem('repeatMode');
     }
 
-    const current = {
-      time: this.slider.value
-    };
+    const current = {};
     if (this.currentTrack) {
       Object.assign(this.currentTrack, {
         discId: this.currentTrack.disc.id,
         fileIndex: this.currentTrack.file.index,
-        trackIndex: this.currentTrack.index
+        trackIndex: this.currentTrack.index,
+        time: this.slider.value
       });
     }
     localStorage.setItem('current', JSON.stringify(current));
