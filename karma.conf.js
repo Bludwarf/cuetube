@@ -66,7 +66,8 @@ module.exports = function(config) {
     customLaunchers: {
       ChromeHeadlessCI: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox']
+        // https://github.com/angular/protractor/issues/4850#issuecomment-398296383
+        flags: ['--headless', '--disable-gpu', '--no-sandbox', '--disable-extensions', '--disable-dev-shm-usage']
       }
     },
 
