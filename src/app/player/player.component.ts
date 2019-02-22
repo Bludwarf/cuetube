@@ -632,7 +632,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
         const file = disc.files[current.fileIndex];
         const track = file.tracks[current.trackIndex];
-        this.currentTrack = track;
 
         // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
         this.loadTrack(track, current.time);
@@ -730,7 +729,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showOnlyPlaylist(disc.index);
 
     const start = getYouTubeStartSeconds(track, time); // YouTube n'accèpte que des entiers
-    const end = multiTrack ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
+    const end = multiTrack && track.endSeconds ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
     if (start || end) {
       console.log(`Piste ${track.number} du disque ${disc.id} (de ${start}s à ${end}s) : ${track.title}`);
     }
@@ -758,9 +757,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           onStateChange: component.onPlayerStateChange.bind(component) // https://stackoverflow.com/a/38245500/1655155
         }
       });
-
-      // Premier chargement on en profite
-      this.onFirstPlayerLoad();
     } else {
 
       const player = this.player;
@@ -1290,8 +1286,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       .map(disc => disc.id)
       .filter(id => id);
     if (discIds.length) {
-      localStorage.setItem('discIds', JSON.stringify(discIds
-        .toString())); // Angular fait chier : _.pluck(this.discs, 'id')
+      localStorage.setItem('discIds', JSON.stringify(discIds));
     } else {
       localStorage.removeItem('discIds');
     }
@@ -1302,9 +1297,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       localStorage.removeItem('repeatMode');
     }
 
-    const current = {};
+    let current = {};
     if (this.currentTrack) {
-      Object.assign(this.currentTrack, {
+      current = Object.assign(current, {
         discId: this.currentTrack.disc.id,
         fileIndex: this.currentTrack.file.index,
         trackIndex: this.currentTrack.index,
@@ -1360,16 +1355,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       return string;
     }
     return JSON.parse(string);
-  }
-
-  /**
-   * Appelé par loadTrack lors de la 1ère création du player
-   */
-  onFirstPlayerLoad() {
-    /*const lists = $("#playlist .video-list");
-    lists.each(function()  {
-        toggleVideoList(this);
-    });*/
   }
 
   onPlayerReady(event) {

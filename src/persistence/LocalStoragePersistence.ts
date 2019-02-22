@@ -78,7 +78,7 @@ export class LocalStoragePersistence extends Persistence {
       return knownIds;
     }
 
-    const rx = /^disc\.(.+)/;
+    const rx = /^disc\.(.+).cuesheet/;
     const ids: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -104,7 +104,7 @@ export class LocalStoragePersistence extends Persistence {
   }
 
   public async setDiscIds(discsIds: string[]): Promise<string[]> {
-    this.setItem('discsIds', discsIds);
+    this.setItem('discIds', discsIds);
     return discsIds;
   }
 
