@@ -86,7 +86,7 @@
         <div id="player-controls">
             <form id="player-controls-form">
                 <div class="track-controls">
-                    <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-backward active" (click)="previous()" title="Piste précédente. Raccourci clavier : haut"></span>
+                    <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-backward active" (click)="previous()" [class.active]="history.length >= 2" title="Piste précédente. Raccourci clavier : haut"></span>
                     <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-play active" (click)="play()" *ngIf="isPlaying != undefined && !isPlaying" title="(Re)Démarre la lecture"></span>
                     <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-pause active" (click)="pause(true)" *ngIf="isPlaying == undefined || isPlaying" title="Met en pause la lecture. Raccourci clavier : Espace"></span>
                     <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-forward active" (click)="next()" title="Piste suivante. Raccourci clavier : bas"></span>

@@ -78,7 +78,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   private discsById: { [key: string]: Disc };
 
   public shuffle = true;
-  private history = [];
+  public history = [];
   public previousTrack: Disc.Track = null;
   public currentTrack: Disc.Track = null;
   public trackIsLoading = false;
@@ -865,12 +865,17 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   previous() {
 
-    const previousEntry = this.history.length && this.history[this.history.length - 2];
+    const previousEntry = this.history.length >= 2 && this.history[this.history.length - 2];
     if (!previousEntry) {
       return;
     }
 
     const disc = this.discs[previousEntry.discIndex];
+    if (!disc) {
+      console.error(`Cannot find previous track's disc ! discIndex = ${previousEntry.discIndex}, previousEntry =`, previousEntry);
+      this.history.pop();
+      return;
+    }
     const file = disc.files[previousEntry.fileIndex];
     const track = file.tracks[previousEntry.trackIndex];
 
