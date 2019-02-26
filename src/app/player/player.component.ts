@@ -1511,16 +1511,17 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadDiscsFromCollections();
   }
 
-  //    the player should play for six seconds and then stop.
-  removeCollection(collectionName: string) {
+  async removeCollection(collectionName: string): Promise<boolean> {
 
-    this.persistence.deleteCollection(collectionName).then(() => {
-      this.collectionNames = this.collectionNames.filter(collectionNameI => collectionNameI !== collectionName);
-      this.currentCollectionNames = this.currentCollectionNames.filter(collectionNameI => collectionNameI !== collectionName);
-      console.log(`Collection "${collectionName}" supprimée avec succès`);
-      this.collectionNamesChange.emit(this.collectionNames);
-      this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-    });
+    await this.persistence.deleteCollection(collectionName);
+
+    this.collectionNames = this.collectionNames.filter(collectionNameI => collectionNameI !== collectionName);
+    this.currentCollectionNames = this.currentCollectionNames.filter(collectionNameI => collectionNameI !== collectionName);
+    console.log(`Collection "${collectionName}" supprimée avec succès`);
+    this.collectionNamesChange.emit(this.collectionNames);
+    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+
+    return true;
   }
 
   // TODO : comment déclarer des services avec Angular ?

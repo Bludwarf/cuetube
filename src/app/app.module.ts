@@ -9,14 +9,17 @@ import {SliderComponent} from './slider/slider.component';
 import {FormsModule} from '@angular/forms';
 import {EditCueComponent} from './edit-cue/edit-cue.component';
 import {EditCueFileComponent} from './edit-cue-file/edit-cue-file.component';
-import {PlayerCollectionsComponent} from './player-collections/player-collections.component';
-import {MatButtonModule, MatIconModule} from '@angular/material';
+import {
+  PlayerCollectionDeleteDialogComponent,
+  PlayerCollectionsComponent
+} from './player-collections/player-collections.component';
+import {MatButtonModule, MatDialogModule, MatIconModule, MatSnackBarModule} from '@angular/material';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 const appRoutes: Routes = [
-  { path: '',         component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
-  { path: 'player',   component: PlayerComponent },
-  { path: 'edit-cue', component: EditCueComponent }
+  {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
+  {path: 'player', component: PlayerComponent},
+  {path: 'edit-cue', component: EditCueComponent}
 ];
 
 @NgModule({
@@ -26,12 +29,13 @@ const appRoutes: Routes = [
     SliderComponent,
     EditCueComponent,
     EditCueFileComponent,
-    PlayerCollectionsComponent
+    PlayerCollectionsComponent,
+    PlayerCollectionDeleteDialogComponent
   ],
   imports: [
     RouterModule.forRoot(
       appRoutes,
-      { enableTracing: true } // <-- debugging purposes only
+      {enableTracing: true} // <-- debugging purposes only
     ),
     BrowserModule,
     // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
@@ -39,11 +43,17 @@ const appRoutes: Routes = [
     FormsModule,
     BrowserAnimationsModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatDialogModule,
+    MatSnackBarModule
   ],
   providers: [
-      GapiClientService
+    GapiClientService
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    PlayerCollectionDeleteDialogComponent
+  ]
 })
-export class AppModule { }
+export class AppModule {
+}

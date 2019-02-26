@@ -26,3 +26,10 @@ a {
 .clickable-glyphicon {
   cursor: pointer;
 }
+
+/** Icône alignée verticalement sur le texte et collée à droite */
+.right-icon {
+  position: absolute;
+  right: 4px;
+  vertical-align: middle;
+}

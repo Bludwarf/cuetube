@@ -1,5 +1,6 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Inject, Input, OnInit} from '@angular/core';
 import {PlayerComponent} from '../player/player.component';
+import {MatDialog, MatDialogRef, MatSnackBar} from '@angular/material';
 
 @Component({
   selector: 'app-player-collections',
@@ -11,7 +12,7 @@ export class PlayerCollectionsComponent implements OnInit {
   @Input() player: PlayerComponent;
   public items: Item[] = [];
 
-  constructor() {
+  constructor(public dialog: MatDialog, public snackBar: MatSnackBar) {
   }
 
   ngOnInit() {
@@ -47,6 +48,7 @@ export class PlayerCollectionsComponent implements OnInit {
 
 class Item {
   public isCurrent = false;
+
   constructor(public component: PlayerCollectionsComponent, public name: string) {
 
   }
@@ -64,6 +66,31 @@ class Item {
   }
 
   delete() {
-    this.player.removeCollection(this.name);
+    const dialogRef = this.component.dialog.open(PlayerCollectionDeleteDialogComponent, {
+      // height: '400px',
+      // width: '600px',
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.player.removeCollection(this.name).then(res => {
+          if (res) {
+            this.component.snackBar.open(`Collection "${this.name}" supprimée`, undefined, {
+              duration: 2000,
+              verticalPosition: 'top'
+            });
+          }
+        });
+      }
+    });
+  }
+}
+
+@Component({
+  templateUrl: './delete-dialog.component.html'
+})
+export class PlayerCollectionDeleteDialogComponent {
+
+  constructor(
+    public dialogRef: MatDialogRef<PlayerCollectionDeleteDialogComponent>) {
   }
 }

@@ -1,0 +1,7 @@
+<h2 mat-dialog-title>Suppression de collection</h2>
+<mat-dialog-content>Holà, fais gaffe t'es bien sûr·e de vouloir supprimer cette collection ?</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Non pourquoi ?</button>
+  <!-- The mat-dialog-close directive optionally accepts a value as a result for the dialog. -->
+  <button mat-button color="warn" [mat-dialog-close]="true">Ouais t'inquiète...</button>
+</mat-dialog-actions>
