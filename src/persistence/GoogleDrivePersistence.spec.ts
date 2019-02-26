@@ -1,6 +1,6 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { GoogleDrivePersistence } from './GoogleDrivePersistence';
-import { PlayerComponent } from '../app/player/player.component';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {GoogleDrivePersistence} from './GoogleDrivePersistence';
+import {PlayerComponent} from '../app/player/player.component';
 import 'jquery';
 import {BrowserModule} from '@angular/platform-browser';
 import {FormsModule} from '@angular/forms';
@@ -10,12 +10,13 @@ import {SliderComponent} from '../app/slider/slider.component';
 import {GapiClientService} from '../app/gapi-client.service';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PlayerCollectionsComponent} from '../app/player-collections/player-collections.component';
-import {MatIconModule} from '@angular/material';
+import {MatButtonModule, MatDialogModule, MatIconModule, MatSnackBarModule} from '@angular/material';
+import {imports} from '../app/app.module';
 
 describe('GoogleDrivePersistence', () => {
   let component: PlayerComponent;
   let fixture: ComponentFixture<PlayerComponent>;
-  let persistence : GoogleDrivePersistence;
+  let persistence: GoogleDrivePersistence;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -26,12 +27,8 @@ describe('GoogleDrivePersistence', () => {
         PlayerCollectionsComponent
       ],
       imports: [
-        BrowserModule,
-        // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
-        HttpClientModule,
-        FormsModule,
         RouterTestingModule,
-        MatIconModule
+        ...imports
       ],
       providers: [
         GapiClientService

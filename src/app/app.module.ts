@@ -22,6 +22,18 @@ const appRoutes: Routes = [
   {path: 'edit-cue', component: EditCueComponent}
 ];
 
+export const imports = [
+  BrowserModule,
+  // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
+  HttpClientModule,
+  FormsModule,
+  BrowserAnimationsModule,
+  MatButtonModule,
+  MatIconModule,
+  MatDialogModule,
+  MatSnackBarModule
+];
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -37,15 +49,7 @@ const appRoutes: Routes = [
       appRoutes,
       {enableTracing: true} // <-- debugging purposes only
     ),
-    BrowserModule,
-    // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
-    HttpClientModule,
-    FormsModule,
-    BrowserAnimationsModule,
-    MatButtonModule,
-    MatIconModule,
-    MatDialogModule,
-    MatSnackBarModule
+    ...imports
   ],
   providers: [
     GapiClientService

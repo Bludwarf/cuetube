@@ -11,6 +11,9 @@ import * as $ from 'jquery';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PlayerCollectionsComponent} from '../player-collections/player-collections.component';
 import {MatIconModule} from '@angular/material';
+import {imports} from '../app.module';
+import {EditCueComponent} from '../edit-cue/edit-cue.component';
+import {EditCueFileComponent} from '../edit-cue-file/edit-cue-file.component';
 
 describe('PlayerComponent', () => {
   let component: PlayerComponent;
@@ -25,12 +28,8 @@ describe('PlayerComponent', () => {
         PlayerCollectionsComponent
       ],
       imports: [
-        BrowserModule,
-        // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
-        HttpClientModule,
-        FormsModule,
         RouterTestingModule,
-        MatIconModule
+        ...imports
       ],
       providers: [
         GapiClientService
