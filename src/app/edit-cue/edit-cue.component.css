@@ -36,11 +36,22 @@ fieldset.track {
     text-indent: 2em;
 }
 
+input[type=text],
+input[type=number] {
+  color: white;
+  background: #272b30;
+}
+
 input.title {
     width: 25em !important;
 }
 input.performer {
     width: 15em !important;
+}
+
+label
+{
+  text-transform: uppercase;
 }
 
 input.min,
@@ -70,12 +81,4 @@ button.save {
 textarea {
     width:100%;
     resize: vertical;
-}
-
-.track {
-    margin-bottom: 0.5em;
-}
-
-.track button {
-    /*margin-bottom: 10px;*/
 }

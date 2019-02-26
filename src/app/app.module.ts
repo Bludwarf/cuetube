@@ -10,8 +10,8 @@ import {FormsModule} from '@angular/forms';
 import {EditCueComponent} from './edit-cue/edit-cue.component';
 import {EditCueFileComponent} from './edit-cue-file/edit-cue-file.component';
 import {PlayerCollectionsComponent} from './player-collections/player-collections.component';
-import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {MatIconModule} from '@angular/material';
+import {MatButtonModule, MatIconModule} from '@angular/material';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 const appRoutes: Routes = [
   { path: '',         component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
@@ -37,7 +37,8 @@ const appRoutes: Routes = [
     // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
     HttpClientModule,
     FormsModule,
-    NoopAnimationsModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
     MatIconModule
   ],
   providers: [

@@ -29,18 +29,24 @@ div.file:hover img {
 }
 
 .file legend {
-    /*margin-bottom: 10px;*/
+    margin-bottom: 0;
 }
 
 fieldset.track {
-    text-indent: 2em;
+    /*text-indent: 2em;*/
+}
+
+input[type=text],
+input[type=number] {
+  color: white;
+  background: #272b30;
 }
 
 input.title {
-    width: 25em !important;
+    width: 24em;
 }
 input.performer {
-    width: 15em !important;
+    width: 15em;
 }
 
 input.min,
@@ -50,10 +56,10 @@ input.sec {
     text-align: right;
 }
 input.min {
-    width: 7.5ex !important;
+    width: 7.5ex;
 }
 input.sec {
-    width: 6.5ex !important;
+    width: 6.5ex;
 }
 
 button.save {
@@ -78,4 +84,8 @@ textarea {
 
 .track button {
     /*margin-bottom: 10px;*/
+}
+
+.mat-icon {
+  vertical-align:middle;
 }
