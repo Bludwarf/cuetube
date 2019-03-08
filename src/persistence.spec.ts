@@ -1,10 +1,10 @@
-import * as Queue from 'promise-queue';
 import {MemoryPersistence} from './persistence/MemoryPersistence';
 import Collection from './Collection';
 import {Disc} from './disc';
 import {TestUtils} from './TestUtils';
 import {SyncResult, SyncState} from './persistence';
 import * as _ from 'underscore';
+import {LocalAndDistantPersistence} from './persistence/LocalAndDistantPersistence';
 //const Queue = require('promise-queue');
 
 describe('persistence', () => {
@@ -360,6 +360,43 @@ describe('persistence', () => {
             })
             .then(res => done());
     });
+
+  function testSync(direction) {
+    return async() => {
+      const discV1 = new Disc();
+      const discId = 'discId';
+      discV1.id = discId;
+      const premierTitre = 'Premier titre';
+      discV1.title = premierTitre;
+
+      const local = new MemoryPersistence(null);
+      const distant = new MemoryPersistence(null);
+      const persistence = new LocalAndDistantPersistence<MemoryPersistence, MemoryPersistence>(local, distant);
+
+      // Sauvegarde de la V1 du disque
+      const savedDisc = await persistence.saveDisc(discId, discV1);
+      expect(savedDisc.title).toEqual(premierTitre);
+
+      // Modif uniquement locale
+      const discV2 = new Disc();
+      discV2.id = discId;
+      const deuxiemeTitre = 'Deuxième titre';
+      discV2.title = deuxiemeTitre;
+      const localSavedDisc = await local.saveDisc(discId, discV2);
+      expect(localSavedDisc.title).toEqual(deuxiemeTitre);
+      const distantDisc = await distant.getDisc(discId, 0);
+      expect(distantDisc.title).toEqual(premierTitre);
+
+      // On imagine qu'on redémarre CueTube => synchro
+      direction ? await distant.sync(local) : await local.sync(distant);
+      const syncedDisc = await persistence.getDisc(discId, 0);
+      expect(syncedDisc.title).toEqual(deuxiemeTitre, 'La modif la plus récente est retenue');
+    };
+  }
+
+  it('should keep newer version of a disc when sync two persistences', testSync(true));
+
+  it('should keep newer version of a disc when sync two persistences (reverse sync)', testSync(false));
 
 });
 

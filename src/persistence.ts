@@ -383,12 +383,28 @@ export abstract class Persistence {
 
           /** Disques en commun */
           Promise.all(thisDiscIds.filter(id => srcDiscIds.includes(id))
-            .map(id => {
+            .map(async id => {
               const thisChecksum = thisSyncState.discs.elementsById[id].checksum;
               const srcChecksum = srcSyncState.discs.elementsById[id].checksum;
               if (thisChecksum !== srcChecksum) {
-                return Promise.all([this.getDisc(id, discIndex), src.getDisc(id, discIndex)])
-                  .then(discs => syncCommonDisc(discs[0], discs[1], syncResult));
+
+                // On prend le plus récent des deux
+                const thisLastmod = thisSyncState.discs.elementsById[id].lastmod;
+                const srcLastmod = srcSyncState.discs.elementsById[id].lastmod;
+
+                if (thisLastmod < srcLastmod) {
+                  const disc = await src.getDisc(id, discIndex);
+                  console.log(`Disque ${disc.id} (${disc.title}) de la source plus récent`);
+                  pushOnlyOnce(syncResult.discs.common.pulled, disc);
+                } else if (thisLastmod > srcLastmod) {
+                  const disc = await this.getDisc(id, discIndex);
+                  console.log(`Disque ${disc.id} (${disc.title}) plus récent que la source`);
+                  pushOnlyOnce(syncResult.discs.common.pushed, disc);
+                } else {
+                  const [thisDisc, srcDisc] = await Promise.all([this.getDisc(id, discIndex), src.getDisc(id, discIndex)]);
+                  syncCommonDisc(thisDisc, srcDisc, syncResult);
+                }
+
               } else {
                 return Promise.resolve(null);
               }
@@ -401,28 +417,26 @@ export abstract class Persistence {
         return Promise.all([
 
           // Sauvegardes dans this
-          Promise.all([
-            // Collections créés dans this
-            syncResult.collections.pulled.map(collection => this.saveCollection(collection)),
-            // Collections modifiées dans this
-            syncResult.collections.common.pulled.map(collection => this.saveCollection(collection)),
-            // Disques créés dans this
-            syncResult.discs.pulled.map(disc => this.saveDisc(disc.id, disc)),
-            // Disques modifiés dans this
-            syncResult.discs.common.pulled.map(disc => this.saveDisc(disc.id, disc))
-          ]),
+
+          // Collections créés dans this
+          Promise.all(syncResult.collections.pulled.map(collection => this.saveCollection(collection))),
+          // Collections modifiées dans this
+          Promise.all(syncResult.collections.common.pulled.map(collection => this.saveCollection(collection))),
+          // Disques créés dans this
+          Promise.all(syncResult.discs.pulled.map(disc => this.saveDisc(disc.id, disc))),
+          // Disques modifiés dans this
+          Promise.all(syncResult.discs.common.pulled.map(disc => this.saveDisc(disc.id, disc))),
 
           // Sauvegardes dans src
-          Promise.all([
-            // Collections créés dans src
-            syncResult.collections.pushed.map(collection => src.saveCollection(collection)),
-            // Collections modifiées dans src
-            syncResult.collections.common.pushed.map(collection => src.saveCollection(collection)),
-            // Disques créés dans src
-            syncResult.discs.pushed.map(disc => src.saveDisc(disc.id, disc)),
-            // Disques modifiés dans src
-            syncResult.discs.common.pushed.map(disc => src.saveDisc(disc.id, disc))
-          ]),
+
+          // Collections créés dans src
+          Promise.all(syncResult.collections.pushed.map(collection => src.saveCollection(collection))),
+          // Collections modifiées dans src
+          Promise.all(syncResult.collections.common.pushed.map(collection => src.saveCollection(collection))),
+          // Disques créés dans src
+          Promise.all(syncResult.discs.pushed.map(disc => src.saveDisc(disc.id, disc))),
+          // Disques modifiés dans src
+          Promise.all(syncResult.discs.common.pushed.map(disc => src.saveDisc(disc.id, disc)))
 
         ]);
 
