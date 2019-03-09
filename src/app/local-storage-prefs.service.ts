@@ -7,7 +7,6 @@ import Track = Disc.Track;
 import {LocalStoragePersistence} from '../persistence/LocalStoragePersistence';
 
 const KEY_CURRENT = 'current';
-const KEY_DISC_IDS = 'discIds';
 const KEY_TIME = 'time';
 
 @Injectable()
@@ -68,23 +67,6 @@ export class LocalStoragePrefsService {
 
   saveDisc(discId: string, discPrefs: SavedDiscPrefs) {
     this.set(LocalStoragePrefsService.getDiscKey(discId), discPrefs); // Chargé dans loadDisc
-  }
-
-  hasDiscIds(): boolean {
-    return this.has(KEY_DISC_IDS);
-  }
-
-  /** @return undefined si aucun disque trouvés */
-  getDiscIds(): string[] {
-    let discIds = localStorage.getItem(KEY_DISC_IDS);
-
-    // #156 : on récup l'ancien format de discIds au cas où
-    if (discIds && discIds.match(/^[^\[]/)) {
-      discIds = JSON.stringify(discIds.split(','));
-      localStorage.setItem('discIds', discIds);
-    }
-
-    return discIds ? JSON.parse(discIds) : undefined;
   }
 
   restoreDisc(disc: Disc) {
@@ -156,26 +138,16 @@ export class LocalStoragePrefsService {
 
   /** État actuel du lecteur hors préférences */
   savePlayerState(player: PlayerComponent): void {
-    const discIds = player.discs
-      .filter(disc => disc)
-      .map(disc => disc.id)
-      .filter(id => id);
-    if (discIds.length) {
-      localStorage.setItem('discIds', JSON.stringify(discIds));
-    } else {
-      localStorage.removeItem('discIds');
-    }
-
-    let current: CurrentPlayerState = {};
     if (player.currentTrack) {
-      current = Object.assign(current, {
+      const current: CurrentPlayerState = {
+        collectionNames: player.getCurrentCollectionNames(),
         discId: player.currentTrack.disc.id,
         fileIndex: player.currentTrack.file.index,
-        trackIndex: player.currentTrack.index
-      });
-      current[KEY_TIME] = player.slider.value;
+        trackIndex: player.currentTrack.index,
+        time: player.slider.value
+      };
+      this.set('current', current);
     }
-    localStorage.setItem('current', JSON.stringify(current));
     localStorage.setItem('connectedToGoogleDrive', JSON.stringify(player.connectedToGoogleDrive));
   }
 
@@ -184,7 +156,7 @@ export class LocalStoragePrefsService {
   }
 
   getCurrentTime() {
-    return this.get(KEY_TIME, 0);
+    return this.getCurrentPlayerState().time;
   }
 
   isConnectedToGoogleDrive(): boolean {

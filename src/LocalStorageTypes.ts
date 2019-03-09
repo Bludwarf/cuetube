@@ -16,6 +16,9 @@ export interface SavedDiscPrefs {
 }
 
 export interface CurrentPlayerState {
+  /** Noms des collections actuellement sélectionnées */
+  collectionNames?: string[];
+
   /** ID du disque actuellement lu */
   discId?: string;
 

@@ -370,7 +370,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         if ('currentCollectionNames' in state) {
           this.currentCollectionNames = state.currentCollectionNames;
           this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-          this.loadDiscsFromCollections();
+          this.loadDiscsFromCurrentCollections();
         }
       }
     });
@@ -455,112 +455,132 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   }
 
-  init() {
+  async init(): Promise<any> {
 
     const collectionParam = this.getCollectionParam();
 
     // Collections
-    this.persistence.init({gapiClient: this.gapiClient})/*.then(isInit => {
-      if (isInit && persistence instanceof GoogleDrivePersistence) {
-        const loginBtn = document.getElementById("login-btn");
-        loginBtn.innerText = "Connecté·e";
-        this.connectedToGoogleDrive = true;
-      }
-    })*/.then(isInit => this.persistence.getCollectionNames())
-      .then(collectionNames => collectionNames
-        .filter(collectionName => collectionNames && collectionName.toLowerCase() !== DEFAULT_COLLECTION.toLowerCase()))
-      .then(collectionNames => {
-        collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
-        this.collectionNames = collectionNames;
-        this.collectionNamesChange.emit(collectionNames);
-        console.log('this.$apply(); init');
-        return collectionNames;
-      }).catch(e => {
-      console.error(e);
-      alert('Erreur lors du chargement de la liste des collections :' + e);
-      throw e;
-    }).then(knownCollectionNames => {
+    const isInit = await this.persistence.init({gapiClient: this.gapiClient});
+    const collectionNames = await this.loadCollectionNames();
 
-      /** @deprecated TODO à remplacer par discsById */
-      this.discs = []; // au cas où personne ne l'initialise
-
-      // Liste des disque en paramètre ?
-      if (this.discsParam) {
-        this.discIds = this.discsParam.split(',');
-        this.loadDiscs(this.discIds);
-      } else if (collectionParam) {
-        const requestedCollectionNames = collectionParam.split(',');
-        const collectionNames = [];
-        const unknownCollectionNames = [];
-        requestedCollectionNames.forEach(collectionName => {
-          if ((<string[]>knownCollectionNames).indexOf(collectionName) !== -1) {
-            collectionNames.push(collectionName);
-          } else {
-            unknownCollectionNames.push(collectionName);
-          }
-        });
-        if (unknownCollectionNames.length) {
-          alert('Les collections suivantes n\'ont pas été trouvées : ' + unknownCollectionNames.join(', '));
-        }
-        this.currentCollectionNames = collectionNames;
-        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-
-        const promises = [];
-        this.discIdsByCollection = {};
-        collectionNames.forEach(collectionParamI => {
-
-          promises.push(Promise.resolve(collectionParamI)
-            .then(collectionName => this.discIdsByCollection[collectionName])
-            .then(discIds => {
-              if (discIds) {
-                return discIds;
-              }
-
-              return this.persistence.getCollectionDiscIds(collectionParamI)
-                .catch(err => {
-                  // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
-                  this.persistence.newCollection(collectionParamI).then(collection => {
-                    this.collectionNames = this.collectionNames || [];
-                    this.collectionNames.push(collectionParamI);
-                    this.collectionNamesChange.emit(this.collectionNames);
-                    console.log('this.$apply(); init2');
-                  }).catch(err2 => {
-                    alert('Erreur lors de la création de cette collection');
-                    history.back();
-                  });
-                });
-            }));
-        });
-
-        Promise.all(promises.map(p => p.catch(e => e)))
-          .then(results => {
-            // Liste des disques pour chaque collection
-            collectionNames.forEach((collectionParamI, i) => {
-              this.discIdsByCollection[collectionParamI] = results[i];
-            });
-            this.loadDiscsFromCollections();
-          })
-          .catch(e => console.log(e));
-      } else if (this.prefs.hasDiscIds()) {
-        console.log('On charge les disques enregistrés dans le localStorage');
-        this.discIds = this.prefs.getDiscIds();
-        this.loadDiscs(this.discIds);
-      } else {
-        this.playCollection();
-        // discIds = [
-        //   "Dg0IjOzopYU",
-        //   "RRtlWfi6jiM",
-        //   "TGXwvLupP5A",
-        //   "WGmHaMRAXuI",
-        //   "_VlTKjkDdbs",
-        //   //"8OS4A2a-Fxg", // sushi
-        //   //"zvHQELG1QHE" // démons et manants
-        // ];
-      }
-    }); // persistence.getCollectionNames.then
+    /** @deprecated TODO à remplacer par discsById */
+    this.discs = []; // au cas où personne ne l'initialise
 
     // Tracklist togglée
     this.lastToggledTracklist = null;
+
+    // Liste des disque en paramètre ?
+    if (this.discsParam) {
+      this.discIds = this.discsParam.split(',');
+      return this.loadDiscs(this.discIds);
+    }
+
+    if (collectionParam) {
+      const requestedCollectionNames = collectionParam.split(',');
+      return this.loadDiscsFromCollections(requestedCollectionNames);
+    }
+
+    // Récup de l'état de la lecture précédente
+    const current = this.prefs.getCurrentPlayerState();
+    if (current) {
+      if (current.collectionNames) {
+        console.log('On reprendre la lecture des collections ' + current.collectionNames.join(', '));
+        return this.loadDiscsFromCollections(current.collectionNames);
+      }
+    }
+
+    this.playCollection();
+    // discIds = [
+    //   "Dg0IjOzopYU",
+    //   "RRtlWfi6jiM",
+    //   "TGXwvLupP5A",
+    //   "WGmHaMRAXuI",
+    //   "_VlTKjkDdbs",
+    //   //"8OS4A2a-Fxg", // sushi
+    //   //"zvHQELG1QHE" // démons et manants
+    // ];
+  }
+
+  async loadCollectionNames(): Promise<string[]> {
+    let collectionNames = await this.persistence.getCollectionNames();
+    collectionNames = collectionNames
+      .filter(collectionName => collectionNames && collectionName.toLowerCase() !== DEFAULT_COLLECTION.toLowerCase());
+
+    try {
+      collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
+      this.collectionNames = collectionNames;
+      this.collectionNamesChange.emit(collectionNames);
+      console.log('Noms des collections chargés', collectionNames);
+      return collectionNames;
+    } catch (e) {
+      console.error(e);
+      alert('Erreur lors du chargement de la liste des collections :' + e);
+      throw e;
+    }
+  }
+
+  async loadDiscsFromCollections(requestedCollectionNames: string[]): Promise<Disc[]> {
+
+    const knownCollectionNames = this.collectionNames;
+
+    const collectionNames = [];
+    const unknownCollectionNames = [];
+    requestedCollectionNames.forEach(collectionName => {
+      if (knownCollectionNames.includes(collectionName) && !collectionNames.includes(collectionName)) {
+        collectionNames.push(collectionName);
+      } else {
+        unknownCollectionNames.push(collectionName);
+      }
+    });
+    if (unknownCollectionNames.length) {
+      alert('Les collections suivantes n\'ont pas été trouvées : ' + unknownCollectionNames.join(', '));
+    }
+    this.currentCollectionNames = collectionNames;
+    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+
+    const promises = [];
+    this.discIdsByCollection = {};
+    collectionNames.forEach(collectionName => {
+
+      promises.push((async () => {
+        const discIds = this.discIdsByCollection[collectionName];
+        if (discIds) {
+          return discIds;
+        }
+
+        try {
+          return this.persistence.getCollectionDiscIds(collectionName);
+        } catch (e) {
+          // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
+          try {
+            const collection = await this.persistence.newCollection(collectionName);
+            this.collectionNames = this.collectionNames || [];
+            this.collectionNames.push(collectionName);
+            this.collectionNamesChange.emit(this.collectionNames);
+            console.log('Collection "' + collectionName + '" créée');
+            return collection;
+          } catch (e) {
+            alert('Erreur lors de la création de cette collection');
+            history.back();
+          }
+        }
+      })());
+
+    });
+
+    return Promise.all(promises.map(p => p.catch(e => e)))
+      .then(collections => {
+        // Liste des disques pour chaque collection
+        collectionNames.forEach((collectionName, i) => {
+          this.discIdsByCollection[collectionName] = collections[i];
+        });
+        return this.loadDiscsFromCurrentCollections();
+      })
+      .catch(e => {
+        console.error('Erreur après le chargement des collections ' + requestedCollectionNames.join(', '), e);
+        return [];
+      });
+
   }
 
   /**
@@ -1062,30 +1082,28 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.discs.push(disc);
     }
 
-    // En mode collection on ajoute également le disque à la collection
-    if (this.currentCollectionNames && this.currentCollectionNames.length) {
-      const collectionNames = this.currentCollectionNames;
-      collectionNames.forEach(collectionName => {
+    // On ajoute également le disque à la collection courante
+    const collectionNames = this.getCurrentCollectionNames();
+    collectionNames.forEach(collectionName => {
 
-        // uniquement si non existant
-        const discIds = this.discIdsByCollection[collectionName];
-        if (discIds.indexOf(disc.id) === -1) {
+      // uniquement si non existant
+      const discIds = this.discIdsByCollection[collectionName];
+      if (discIds.indexOf(disc.id) === -1) {
 
-          if (collectionNames.length > 1 && !confirm(`On ajoute cette vidéo à la collection ${collectionName} ?`)) {
-            return;
-          }
-
-          console.log('Ajout du disque dans la collection ' + collectionName);
-          discIds.push(disc.id);
-          this.persistence.saveCollectionDiscIds(collectionName, discIds).then(discIdsI => {
-            console.log('Disque ajouté avec succès dans la collection ' + collectionName);
-          }, resKO => {
-            alert('Erreur lors de l\'ajout du disque dans la collection ' + collectionName);
-          });
+        if (collectionNames.length > 1 && !confirm(`On ajoute cette vidéo à la collection ${collectionName} ?`)) {
+          return;
         }
 
-      });
-    }
+        console.log('Ajout du disque dans la collection ' + collectionName);
+        discIds.push(disc.id);
+        this.persistence.saveCollectionDiscIds(collectionName, discIds).then(discIdsI => {
+          console.log('Disque ajouté avec succès dans la collection ' + collectionName);
+        }, resKO => {
+          alert('Erreur lors de l\'ajout du disque dans la collection ' + collectionName);
+        });
+      }
+
+    });
 
     // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
     if (existingDiscIndex === -1 && this.cuetubeConf.debug) {
@@ -1419,7 +1437,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.currentCollectionNamesChange.emit(this.currentCollectionNames);
 
-    this.loadDiscsFromCollections();
+    this.loadDiscsFromCurrentCollections();
   }
 
   async removeCollection(collectionName: string): Promise<boolean> {
@@ -1443,27 +1461,29 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.cueService;
   }
 
-  getDiscsIds(collectionName) {
-    return new Promise((resolve, reject) => {
-      // Recherche d'abord dans la mémoire
-      resolve(this.discIdsByCollection[collectionName]);
-    }).then(discIds => {
-      if (discIds) {
-        return discIds;
-      } else {
-        return this.persistence.getCollectionDiscIds(collectionName)
-          .then(discIdsI => this.discIdsByCollection[collectionName] = discIdsI)
-          .catch(err => {
-            alert('Impossible d\'ouvrir la collection : ' + collectionName + ' : ' + err);
-          });
-      }
-    });
+  async getDiscsIds(collectionName): Promise<string[]> {
+
+    // Recherche d'abord dans la mémoire
+    let discIds = await this.discIdsByCollection[collectionName];
+    if (discIds) {
+      return discIds;
+    }
+
+    // Recherche dans la persistance
+    try {
+      discIds = await this.persistence.getCollectionDiscIds(collectionName);
+      return this.discIdsByCollection[collectionName] = discIds; // mémoire
+    } catch (err) {
+      alert('Impossible d\'ouvrir la collection : ' + collectionName + ' : ' + err);
+      return [];
+    }
   }
 
   playCollection(collectionName?): Promise<Disc[]> {
+    console.log('Lecture de la collection ' + (collectionName ? collectionName : 'par défaut'));
     this.currentCollectionNames = collectionName ? [collectionName] : [];
     this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-    return this.loadDiscsFromCollections();
+    return this.loadDiscsFromCurrentCollections();
   }
 
   // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
@@ -1626,13 +1646,17 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       .indexOf(disc.id);
   }
 
-  loadDiscsFromCollections(): Promise<Disc[]> {
+  getCurrentCollectionNames(): string[] {
+    return this.currentCollectionNames.length ? this.currentCollectionNames : [DEFAULT_COLLECTION];
+  }
+
+  loadDiscsFromCurrentCollections(): Promise<Disc[]> {
     this.hidePlayer();
-    const isDefaultCollection = this.currentCollectionNames.length === 0;
+    const currentCollectionNames = this.getCurrentCollectionNames();
 
     // On récupère la liste des disques de toutes les collections actives
-    const getDiscsIds = this.currentCollectionNames
-      .map(collectionName => this.getDiscsIds(collectionName ? collectionName : DEFAULT_COLLECTION));
+    const getDiscsIds = currentCollectionNames
+      .map(collectionName => this.getDiscsIds(collectionName));
     return Promise.all(getDiscsIds.map(p => p.catch(e => e)))
       .then(discIdsByIndex => discIdsByIndex.reduce((all: Array<string>, array: Array<string>) => {
         // On concatère les disques sans doublons
