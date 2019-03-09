@@ -384,7 +384,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       };
       // Uniquement si le statut est différent de celui actuel
       HistoryUtils.pushStateOnlyNew(state, stateBuilder => {
-        stateBuilder = stateBuilder.pathname('/player');
         if (isDefaultCollection) {
           stateBuilder.title('CueTube')
             .searchParam('collection', null);

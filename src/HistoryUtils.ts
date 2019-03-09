@@ -58,6 +58,18 @@ export class HistoryUtils {
   public static getState(): any {
     return history.state;
   }
+
+  /**
+   * @return attribute value of html/head/base/@href, '/' par défaut
+   */
+  static getBaseHref(): string {
+    const bases = document.head.getElementsByTagName('base');
+    if (!bases || !bases.length) {
+      return '/';
+    }
+    const base = bases[0];
+    return base.getAttribute('href') || '/';
+  }
 }
 
 class StateBuilder {
@@ -94,8 +106,11 @@ class StateBuilder {
     return this;
   }
 
+  /**
+   * @param pathname relative or absolute, in this case base.href is added (example : "/page" will be interpreted as "/base/page")
+   */
   pathname(pathname: string): StateBuilder {
-    this.state.url.pathname = pathname;
+    this.state.url.pathname = pathname.replace(/^\//, HistoryUtils.getBaseHref());
     return this;
   }
 
