@@ -277,8 +277,8 @@ export class Disc {
     this._nextTracks = value;
   }
 
-  // disc doit bien être playable avant de lancer nextTrack
-  nextTrack(shuffled: boolean, currentTrack: Disc.Track) {
+  /** disc doit bien être playable avant de lancer nextTrack */
+  nextTrack(shuffled: boolean, currentTrack?: Disc.Track) {
 
     // On prend la prochaine piste active
     let track = null;
@@ -293,7 +293,7 @@ export class Disc {
         track = this.tracks[nextTracks.shift() - 1];
       }
     } else {
-      if (currentTrack.disc === this) {
+      if (currentTrack && currentTrack.disc === this) {
         track = currentTrack.next;
       } else {
         track = this.tracks[0];

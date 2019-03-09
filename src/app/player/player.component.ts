@@ -631,7 +631,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log('Chargement de la précédente lecture...', current);
 
         const file = disc.files[current.fileIndex];
-        const track = file.tracks[current.trackIndex];
+        const track = file ? file.tracks[current.trackIndex] : disc.nextTrack(this.shuffle, undefined);
 
         // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
         this.loadTrack(track, current.time);
