@@ -371,8 +371,10 @@ export class Disc {
     // Maj + click => activer/désactiver tous entre les deux
     if (e.shiftKey) {
       const last = this.player.lastCheckedDisc;
-      const startIndex = Math.min(last.index, this.index);
-      const endIndex = Math.max(last.index, this.index);
+      const lastIndex = this.player.indexOf(last);
+      const thisIndex = this.player.indexOf(this);
+      const startIndex = Math.min(lastIndex, thisIndex);
+      const endIndex = Math.max(lastIndex, thisIndex);
       const updatedDiscs = this.player.discs.slice(startIndex, endIndex + 1);
       updatedDiscs.forEach(function (discI) {
         if (!discI || discI === this) {
