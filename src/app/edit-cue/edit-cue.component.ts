@@ -45,7 +45,7 @@ export class EditCueComponent implements OnInit {
             return;
         }
         this.persistence.init({gapiClient: this.gapiClient})
-          .then(isInit => this.persistence.getDisc(params.id, 0)).then(disc => {
+          .then(isInit => this.persistence.getDisc(params.id)).then(disc => {
             this.disc = disc;
             this.showPlayer();
             this.zone.run(() => {});
