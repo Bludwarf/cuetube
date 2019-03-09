@@ -1669,7 +1669,12 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
                 if (saved.disabledTrackIndices) {
                   const tracks = disc.tracks;
                   saved.disabledTrackIndices.forEach((trackIndex) => {
-                    tracks[trackIndex].enabledByUser = false;
+                    const track = tracks[trackIndex];
+                    if (track) {
+                      track.enabledByUser = false;
+                    } else {
+                      console.error(`La piste #${trackIndex + 1} a été désactivée mais elle n'existe plus dans le disque "${disc.title}"`);
+                    }
                   });
                 }
                 _.extend(disc, {
