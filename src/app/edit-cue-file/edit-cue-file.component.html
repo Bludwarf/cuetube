@@ -26,7 +26,7 @@
                  [(ngModel)]="track.title"/>
           <input type="text" [name]="'trackPerformer'+index" class="form-control performer" placeholder="performer"
                  [(ngModel)]="track.performer"/>
-          <button mat-icon-button color="warn"  (click)="track.remove()" title="Supprimer cette piste">
+          <button mat-icon-button color="warn"  (click)="removeTrack(track)" title="Supprimer cette piste">
             <mat-icon aria-label="Delete">delete</mat-icon>
           </button>
           <!-- TODO : pouvoir insérer une piste après n'importe quelle piste (et pas seulement la dernière -->

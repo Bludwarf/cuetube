@@ -15,6 +15,7 @@ import {
 } from './player-collections/player-collections.component';
 import {MatButtonModule, MatDialogModule, MatIconModule, MatSnackBarModule} from '@angular/material';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {LocalStoragePrefsService} from './local-storage-prefs.service';
 
 const appRoutes: Routes = [
   {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
@@ -54,7 +55,8 @@ export const imports = [
     ...imports
   ],
   providers: [
-    GapiClientService
+    GapiClientService,
+    LocalStoragePrefsService
   ],
   bootstrap: [AppComponent],
   entryComponents: [

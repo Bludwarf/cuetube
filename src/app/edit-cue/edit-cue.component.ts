@@ -3,13 +3,12 @@ import {Disc} from '../../disc';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
 import {HttpClient} from '@angular/common/http';
 import {GapiClientService} from '../gapi-client.service';
-import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
-import {LocalServerPersistence} from '../../persistence/LocalServerPersistence';
 import {Persistence} from '../../persistence';
 import * as _ from 'underscore';
 import * as $ from 'jquery';
-import {yth} from '../../yt-helper';
 import {AppComponent} from '../app.component';
+import {LocalStoragePrefsService} from '../local-storage-prefs.service';
+import Track = Disc.Track;
 
 @Component({
     selector: 'app-edit-cue',
@@ -19,16 +18,16 @@ import {AppComponent} from '../app.component';
 export class EditCueComponent implements OnInit {
 
     private localPersistence: LocalStoragePersistence;
-    public googleDrivePersistence: GoogleDrivePersistence; // debug
     private persistence: Persistence;
     disc: Disc;
     /** true si le disque n'existe pas encore */
     public creationMode = false;
 
-    /** les tracklistes sous forme textuel pour import ou export vers YouTube par file */
-    tracklists: string[];
+    /** Pistes à supprimer après la sauvegarde du disque */
+    removedTracks: Track[] = [];
 
-    constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone) {
+    constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone,
+                public prefs: LocalStoragePrefsService) {
     }
 
     ngOnInit() {
@@ -42,10 +41,11 @@ export class EditCueComponent implements OnInit {
             id: getParameterByName('id', undefined)
         };
         if (!params.id) {
-            alert("Veuillez indiquer l'id du disque à modifier");
+            alert('Veuillez indiquer l\'id du disque à modifier');
             return;
         }
-        this.persistence.init({gapiClient: this.gapiClient}).then(isInit => this.persistence.getDisc(params.id, 0)).then(disc => {
+        this.persistence.init({gapiClient: this.gapiClient})
+          .then(isInit => this.persistence.getDisc(params.id, 0)).then(disc => {
             this.disc = disc;
             this.showPlayer();
             this.zone.run(() => {});
@@ -53,18 +53,15 @@ export class EditCueComponent implements OnInit {
 
             // On est peut-être en train de créer ce disque ?
             const cue = new cuesheet.CueSheet();
-            _.extend(cue, this.localPersistence.getItem("discToCreate"));
+            _.extend(cue, this.localPersistence.getItem('discToCreate'));
             const discToCreate = new Disc(cue);
             if (discToCreate && discToCreate.id === params.id) {
                 creationMode = true;
-                console.log("Le disque n'existe pas encore mais il va être créé");
+                console.log('Le disque n\'existe pas encore mais il va être créé');
                 this.disc = discToCreate;
                 this.showPlayer();
                 this.zone.run(() => {});
-            }
-
-            // En fait non
-            else {
+            } else {
                 console.error(err);
                 alert(`Disque ${params.id} introuvable !\n\nErreur technique : ${err.data || err}`);
             }
@@ -79,14 +76,23 @@ export class EditCueComponent implements OnInit {
     save() {
         this.persistence.saveDisc(this.disc.id, this.disc).then(disc => {
             alert('Disque sauvegardé !');
+
+            // Suppression des pistes dans les préférences
+            console.group('Suppression des pistes dans les préférences');
+            this.removedTracks.forEach(removedTrack => this.prefs.removeTrack(removedTrack));
+            console.groupEnd();
+
+            // TODO notif à l'appli principale via SharedWebWorkers pour éviter qu'elle n'écrase les modifs en quittant
+
+            // TODO remplacer ce code par une notif via SharedWebWorkers
             if (this.creationMode) {
                 this.creationMode = false;
                 localStorage.removeItem('discToCreate');
-                prompt("Le disque est maintenant créé vous pouvez l'ajouter dans CueTube avec cette URL :", this.disc.url);
+                prompt('Le disque est maintenant créé vous pouvez l\'ajouter dans CueTube avec cette URL :', this.disc.url);
             }
         }).catch(err => {
             console.error(err);
-            alert("Disque non sauvegardé à cause de l'erreur : "+(err && err.message || err));
+            alert('Disque non sauvegardé à cause de l\'erreur : ' + (err && err.message || err));
         });
     }
 

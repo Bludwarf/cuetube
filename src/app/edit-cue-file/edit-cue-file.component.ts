@@ -1,6 +1,9 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {Disc} from '../../disc';
 import {yth} from '../../yt-helper';
+import Track = Disc.Track;
+import {LocalStoragePrefsService} from '../local-storage-prefs.service';
+import {EditCueComponent} from '../edit-cue/edit-cue.component';
 
 @Component({
     selector: 'app-edit-cue-file',
@@ -10,8 +13,9 @@ import {yth} from '../../yt-helper';
 export class EditCueFileComponent implements OnInit {
 
     @Input() file: Disc.File;
+    @Input() parent: EditCueComponent;
 
-    constructor() {
+    constructor(public prefs: LocalStoragePrefsService) {
     }
 
     ngOnInit() {
@@ -32,6 +36,11 @@ export class EditCueFileComponent implements OnInit {
         const button = $event.currentTarget;
         const $textarea = $('textarea', button.parent);
         this.setTracklist($textarea.val(), file);
+    }
+
+    removeTrack(track: Track) {
+      track.remove();
+      this.parent.removedTracks.push(track);
     }
 
 }

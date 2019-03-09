@@ -40,7 +40,7 @@
       <a [href]="disc.src" target="_blank">Voir sur YouTube</a>
     </div>
 
-    <app-edit-cue-file *ngFor="let file of disc.files" [file]="file"></app-edit-cue-file>
+    <app-edit-cue-file *ngFor="let file of disc.files" [file]="file" [parent]="this"></app-edit-cue-file>
 
     <div style="margin-bottom: 1em;">
       <button class="save btn btn-primary" type="submit" (click)="save()">Sauvegarder</button>
