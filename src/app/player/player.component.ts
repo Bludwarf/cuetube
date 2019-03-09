@@ -1559,9 +1559,14 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       discLoaders[discIndex] = this.loadDisc(discId, discIndex);
     }
 
-    return Promise.all(discLoaders.map(p => p.catch(e => e)))
+    return Promise.all(discLoaders.map(p => p.catch(e => {
+      console.error('Erreur lors du chargement du disque', e);
+      return undefined;
+    })))
       .then(loadedDiscs => {
         console.log('Disques chargés :', loadedDiscs);
+        loadedDiscs = loadedDiscs.filter(disc => disc);
+        this.discs = loadedDiscs;
         if (!this.isInitYT) {
           this.initYT(); // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
         } else {
@@ -1602,7 +1607,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             return disc;
           })
           .catch(resKO => {
-            console.error('Error GET cuesheet ' + discId + ' via this.http :', resKO || resKO.data);
+            console.error(`Error lors de la récupération du disque ${discId}:`, resKO || resKO.data);
             if (continueConfirm) {
               continueConfirm = prompt('Veuillez ajouter la cuesheet ' + discId, discId) !== null;
             }
