@@ -155,10 +155,6 @@ export class LocalStoragePrefsService {
     return this.has(KEY_CURRENT) ? this.get(KEY_CURRENT) : undefined;
   }
 
-  getCurrentTime() {
-    return this.getCurrentPlayerState().time;
-  }
-
   isConnectedToGoogleDrive(): boolean {
     return this.get('connectedToGoogleDrive', false);
   }

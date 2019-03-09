@@ -15,7 +15,7 @@ import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersi
 import {AppComponent} from '../app.component';
 import {HistoryUtils} from '../../HistoryUtils';
 import {Location as AngularLocation} from '@angular/common';
-import {ISubscription} from 'rxjs/Subscription';
+import {SubscriptionLike as ISubscription} from 'rxjs';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 
 const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
@@ -115,7 +115,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   private lastCheckedTime: number;
   private nextCheckCurrentTime: number;
   /** prochain appel */
-  private checkCurrentTimeTimeout: number;
+  private checkCurrentTimeTimeout;
   private deletedVideoTimeout;
 
   /** @see YT_STATES */
@@ -150,7 +150,10 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Paramètres
     this.prefs.restorePlayerPrefs(this);
-    this.slider.value = this.prefs.getCurrentTime();
+    const current = this.prefs.getCurrentPlayerState();
+    if (current) {
+      this.slider.value = current.time;
+    }
 
     /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
     const DELETED_VIDEO_TIMEOUT = 10;

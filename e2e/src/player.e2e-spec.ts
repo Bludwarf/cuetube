@@ -6,6 +6,7 @@ describe('Player', () => {
 
   beforeEach(() => {
     page = new AppPage();
+    browser.executeScript('window.localStorage.clear();');
   });
 
   it('should display welcome message', () => {
@@ -55,5 +56,6 @@ describe('Player', () => {
     expect(logs).not.toContain(jasmine.objectContaining({
       level: logging.Level.SEVERE,
     } as logging.Entry));
+    browser.executeScript('window.localStorage.clear();');
   });
 });
