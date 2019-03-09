@@ -78,9 +78,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Disques chargés par index */
   public discs: Disc[];
 
-  /** Cache pour la persistence */
-  private discsById: { [key: string]: Disc };
-
   public shuffle = true;
   public history = [];
   public previousTrack: Disc.Track = null;
@@ -485,7 +482,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       throw e;
     }).then(knownCollectionNames => {
 
-      this.discsById = {};
       /** @deprecated TODO à remplacer par discsById */
       this.discs = []; // au cas où personne ne l'initialise
 
@@ -1586,40 +1582,32 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     console.log(`Chargement du disque ${discId} à l'index ${discIndex}`);
 
     // Recherche d'abord dans la mémoire
-    return new Promise<Disc>((resolve, reject) => resolve(this.discsById[discId]))
-
-      .then(cacheDisc => { // Disc en cache ?
-        if (cacheDisc) {
-          return cacheDisc;
+    let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
+    return new Promise<Disc>((resolve, reject) => {
+      return resolve(this.persistence.getDisc(discId, discIndex));
+    })
+      .catch(resKO => {
+        console.error(`Error lors de la récupération du disque ${discId}:`, resKO || resKO.data);
+        if (continueConfirm) {
+          continueConfirm = prompt('Veuillez ajouter la cuesheet ' + discId, discId) !== null;
         }
+        return <Disc>null;
+      })
+      .then(disc => {
+        enrichDisc(disc, this);
 
-        let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
-        return this.persistence.getDisc(discId, discIndex)
-          .then(disc => {
-            enrichDisc(disc, this);
+        // Reprise des paramètres sauvegardés
+        this.prefs.restoreDisc(disc);
 
-            // Reprise des paramètres sauvegardés
-            this.prefs.restoreDisc(disc);
-
-            // Cache
-            this.discsById[discId] = disc;
-            this.discs[discIndex] = disc;
-            return disc;
-          })
-          .catch(resKO => {
-            console.error(`Error lors de la récupération du disque ${discId}:`, resKO || resKO.data);
-            if (continueConfirm) {
-              continueConfirm = prompt('Veuillez ajouter la cuesheet ' + discId, discId) !== null;
-            }
-            return <Disc>null;
-          });
+        // Cache
+        this.discs[discIndex] = disc;
+        return disc;
       });
   }
 
   reloadDisc(discId: string): Promise<Disc> {
     const disc = this.getDisc(discId);
     if (disc) {
-      delete this.discsById[discId];
       return this.loadDisc(disc.id, disc.index);
     } else {
       throw new Error(`Impossible de recharger le disque ${discId} car il n'existe pas/plus`);
@@ -1627,7 +1615,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getDisc(discId: string): Disc {
-    return this.discsById[discId];
+    return this.discs.find(disc => disc.id === discId);
   }
 
   loadDiscsFromCollections(): Promise<Disc[]> {
