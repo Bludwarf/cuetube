@@ -76,10 +76,10 @@ export class LocalServerPersistence extends Persistence {
     throw new Error('Not Implemented'); // FIXME
   }
 
-  public getDisc(discId: string, discIndex: number): Promise<Disc> {
+  public getDisc(discId: string): Promise<Disc> {
         return new Promise((resolve, reject) => {
             this.$http.get('/' + discId + '.cue.json').toPromise().then(res => {
-                const disc = super.createDisc(discId, discIndex, res);
+                const disc = super.createDisc(discId, res);
                 resolve(disc);
             }, reject);
         });

@@ -193,11 +193,10 @@ export abstract class Persistence {
     return this.saveCollection(collection);
   }
 
-  public abstract getDisc(discId: string, discIndex: number): Promise<Disc>;
+  public abstract getDisc(discId: string): Promise<Disc>;
 
-  public getDiscs(discIds: string[], startingDiscIndex: number): Promise<Disc[]> {
-    const discIndex = startingDiscIndex;
-    return Promise.all(discIds.map(discId => this.getDisc(discId, startingDiscIndex++)));
+  public getDiscs(discIds: string[]): Promise<Disc[]> {
+    return Promise.all(discIds.map(discId => this.getDisc(discId)));
   }
 
   // FIXME : disc devrait être un Disc
@@ -252,14 +251,12 @@ export abstract class Persistence {
    * @param jsonCuesheet {*} un objet JSON contenant la cuesheet à créér
    * @return {Disc}
    */
-  protected createDisc(discId: string, discIndex: number, jsonCuesheet: any): Disc {
+  protected createDisc(discId: string, jsonCuesheet: any): Disc {
     const cue = new cuesheet.CueSheet();
     _.extend(cue, jsonCuesheet);
 
     const disc = new Disc(cue);
     disc.id = discId;
-    disc.index = discIndex;
-
     return disc;
   }
 
@@ -360,13 +357,12 @@ export abstract class Persistence {
         const [thisDiscIds, srcDiscIds] = results;
 
         console.log('Début de la synchro des disques...');
-        const discIndex = -1; // TODO intérêt ?
         return Promise.all([
 
           /** Disques absents dans this */
           Promise.all(srcDiscIds.filter(id => !thisDiscIds.includes(id))
             .map(id => {
-              return src.getDisc(id, discIndex).then(srcDisc => {
+              return src.getDisc(id).then(srcDisc => {
                 syncResult.discs.pulled.push(srcDisc);
                 return srcDisc;
               });
@@ -375,7 +371,7 @@ export abstract class Persistence {
           /** Disques absents dans la source */
           Promise.all(thisDiscIds.filter(id => !srcDiscIds.includes(id))
             .map(id => {
-              return this.getDisc(id, discIndex).then(thisDisc => {
+              return this.getDisc(id).then(thisDisc => {
                 syncResult.discs.pushed.push(thisDisc);
                 return thisDisc;
               });
@@ -393,15 +389,15 @@ export abstract class Persistence {
                 const srcLastmod = srcSyncState.discs.elementsById[id].lastmod;
 
                 if (thisLastmod < srcLastmod) {
-                  const disc = await src.getDisc(id, discIndex);
+                  const disc = await src.getDisc(id);
                   console.log(`Disque ${disc.id} (${disc.title}) de la source plus récent`);
                   pushOnlyOnce(syncResult.discs.common.pulled, disc);
                 } else if (thisLastmod > srcLastmod) {
-                  const disc = await this.getDisc(id, discIndex);
+                  const disc = await this.getDisc(id);
                   console.log(`Disque ${disc.id} (${disc.title}) plus récent que la source`);
                   pushOnlyOnce(syncResult.discs.common.pushed, disc);
                 } else {
-                  const [thisDisc, srcDisc] = await Promise.all([this.getDisc(id, discIndex), src.getDisc(id, discIndex)]);
+                  const [thisDisc, srcDisc] = await Promise.all([this.getDisc(id), src.getDisc(id)]);
                   syncCommonDisc(thisDisc, srcDisc, syncResult);
                 }
 
@@ -467,8 +463,7 @@ export abstract class Persistence {
   }
 
   public getAllDiscs(): Promise<Disc[]> {
-    const discIndex = 0; // TODO interêt ?
-    return this.getDiscIds().then(discIds => this.getDiscs(discIds, discIndex));
+    return this.getDiscIds().then(discIds => this.getDiscs(discIds));
   }
 }
 

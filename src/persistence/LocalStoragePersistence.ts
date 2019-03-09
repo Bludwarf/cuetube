@@ -142,13 +142,13 @@ export class LocalStoragePersistence extends Persistence {
     localStorage.removeItem(this.getCollectionItemName(collectionName));
   }
 
-  public async getDisc(discId: string, discIndex: number): Promise<Disc> {
+  public async getDisc(discId: string): Promise<Disc> {
     const json = localStorage.getItem(`disc.${discId}.cuesheet`);
     if (!json) {
       throw new Error(`Le disque ${discId} n'a pas été trouvé dans le LocalStorage`);
     }
     const data = JSON.parse(json);
-    return super.createDisc(discId, discIndex, data);
+    return super.createDisc(discId, data);
   }
 
   public async postDisc(discId: string, disc): Promise<Disc> {

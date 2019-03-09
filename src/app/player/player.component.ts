@@ -228,7 +228,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       // Historique
       this.history.push({
         discId: disc.discId,
-        discIndex: track.disc.index,
+        discIndex: this.indexOf(track.disc),
         fileIndex: track.file.index,
         trackIndex: track.index,
         date: new Date()
@@ -678,7 +678,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     trackIndex = defaults(trackIndex, this.currentTrack && this.currentTrack.index);
     fileIndex = defaults(fileIndex, this.currentTrack && this.currentTrack.file.index);
-    discIndex = defaults(discIndex, this.currentTrack && this.currentTrack.disc.index);
+    discIndex = defaults(discIndex, this.currentTrack && this.indexOf(this.currentTrack.disc));
 
     const disc = this.discs[discIndex];
     const file = disc.files[fileIndex];
@@ -717,7 +717,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       nextTracks.splice(i, 1); // on supprime que celui-ci
     }
 
-    this.showOnlyPlaylist(disc.index);
+    this.showOnlyPlaylist(this.indexOf(disc));
 
     const start = getYouTubeStartSeconds(track, time); // YouTube n'accèpte que des entiers
     const end = multiTrack && track.endSeconds ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
@@ -1049,22 +1049,17 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  createDisc(disc) {
+  createDisc(disc: Disc) {
     console.log('Disque créé');
 
-    const existingIds = this.discs.map(discI => discI.id);
-
-    const existingDiscIndex = existingIds.indexOf(disc.id);
+    const existingDiscIndex = this.indexOf(disc);
     if (existingDiscIndex !== -1) {
       if (!confirm('Ce disque est déjà dans le lecteur. Voulez-vous le remplacer ?')) {
         console.log('Création du disque annulée');
         return;
       }
-      const existingDisc = this.discs[existingDiscIndex];
-      disc.index = existingDisc.index;
       this.discs[existingDiscIndex] = disc;
     } else {
-      disc.index = this.discs.length;
       this.discs.push(disc);
     }
 
@@ -1207,10 +1202,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     // Vidéo déjà connue sur CueTube/cues ?
     if (playlistId || videoId) {
       const id = playlistId || videoId;
-      const index = this.discs.length;
-
-      console.log(`On recherche si ${id} n'est pas déjà connu localement...`);
-      this.persistence.getDisc(id, index).then(disc => {
+      console.log(`Récupération du disque ${id}...`);
+      this.persistence.getDisc(id).then(disc => {
         const msg = 'La vidéo/playlist existe déjà localement. L\'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.';
         if (confirm(msg)) {
           disc.src = url;
@@ -1321,7 +1314,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
     // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
     if (state === YT.PlayerState.ENDED && (!this.trackIsLoading ||
-      this.previousTrack.disc.index !== this.currentTrack.disc.index &&
+      this.previousTrack.disc.id !== this.currentTrack.disc.id &&
       this.previousTrack.file.index !== this.currentTrack.file.index &&
       this.previousTrack.index !== this.currentTrack.index)) {
       // est-ce que la vidéo était en lecture actuellement ?
@@ -1542,18 +1535,13 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     return persistence;
   }
 
-  loadDiscs(discIdsToLoad): Promise<Disc[]> {
+  loadDiscs(discIdsToLoad: string[]): Promise<Disc[]> {
 
     console.log('Chargement des disques :', discIdsToLoad);
     this.hidePlayer();
 
     this.discs = [];
-    const discLoaders: Promise<Disc>[] = [];
-
-    for (let discIndex = 0; discIndex < discIdsToLoad.length; ++discIndex) {
-      const discId = discIdsToLoad[discIndex];
-      discLoaders[discIndex] = this.loadDisc(discId, discIndex);
-    }
+    const discLoaders = discIdsToLoad.map(discId => this.loadDisc(discId));
 
     return Promise.all(discLoaders.map(p => p.catch(e => {
       console.error('Erreur lors du chargement du disque', e);
@@ -1571,20 +1559,20 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         return loadedDiscs;
       })
       .catch(e => {
-        console.log(e);
-        return <Disc[]>null;
+        console.error('Erreur après le chargement des disques', e);
+        return [];
       });
 
   }
 
-  loadDisc(discId: string, discIndex: number): Promise<Disc> {
+  loadDisc(discId: string): Promise<Disc> {
 
-    console.log(`Chargement du disque ${discId} à l'index ${discIndex}`);
+    console.log(`Chargement du disque ${discId}`);
 
     // Recherche d'abord dans la mémoire
     let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
     return new Promise<Disc>((resolve, reject) => {
-      return resolve(this.persistence.getDisc(discId, discIndex));
+      return resolve(this.persistence.getDisc(discId));
     })
       .catch(resKO => {
         console.error(`Error lors de la récupération du disque ${discId}:`, resKO || resKO.data);
@@ -1599,16 +1587,31 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         // Reprise des paramètres sauvegardés
         this.prefs.restoreDisc(disc);
 
-        // Cache
-        this.discs[discIndex] = disc;
+        // Ajout dans le player
+        this.addDisc(disc);
         return disc;
       });
+  }
+
+  /**
+   *
+   * @param disc
+   * @return {number} l'index dans player.discs où le disque a été inséré (ajout ou remplacement)
+   */
+  addDisc(disc: Disc): number {
+    const discIndex = this.indexOf(disc);
+    if (discIndex !== -1) {
+      this.discs[discIndex] = disc;
+    } else {
+      this.discs.push(disc);
+      return this.discs.length - 1;
+    }
   }
 
   reloadDisc(discId: string): Promise<Disc> {
     const disc = this.getDisc(discId);
     if (disc) {
-      return this.loadDisc(disc.id, disc.index);
+      return this.loadDisc(disc.id);
     } else {
       throw new Error(`Impossible de recharger le disque ${discId} car il n'existe pas/plus`);
     }
@@ -1616,6 +1619,12 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getDisc(discId: string): Disc {
     return this.discs.find(disc => disc.id === discId);
+  }
+
+  indexOf(disc: Disc): number {
+    return this.discs
+      .map(disc => disc.id)
+      .indexOf(disc.id);
   }
 
   loadDiscsFromCollections(): Promise<Disc[]> {

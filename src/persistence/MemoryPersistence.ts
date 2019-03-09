@@ -52,7 +52,7 @@ export class MemoryPersistence extends Persistence {
     return Promise.resolve(disc);
   }
 
-  getDisc(discId: string, discIndex: number): Promise<Disc> {
+  getDisc(discId: string): Promise<Disc> {
     return Promise.resolve(this.discs[discId]);
   }
 

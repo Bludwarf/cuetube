@@ -31,8 +31,8 @@ export class LocalAndDistantPersistence<L extends Persistence, D extends Persist
     return this.local.getDiscIds();
   }
 
-  getDisc(discId: string, discIndex: number): Promise<Disc> {
-    return this.local.getDisc(discId, discIndex);
+  getDisc(discId: string): Promise<Disc> {
+    return this.local.getDisc(discId);
   }
 
   public saveCollection(collection: Collection): Promise<Collection> {

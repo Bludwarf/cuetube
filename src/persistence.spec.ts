@@ -138,8 +138,8 @@ describe('persistence', () => {
 
         }).then(res => Promise.all([
             // Récup des disques
-            local.getDiscs([localDisc.id, distantDisc.id, localEqualDisc.id, localDiffDisc.id], 0),
-            distant.getDiscs([localDisc.id, distantDisc.id, localEqualDisc.id, localDiffDisc.id], 0)
+            local.getDiscs([localDisc.id, distantDisc.id, localEqualDisc.id, localDiffDisc.id]),
+            distant.getDiscs([localDisc.id, distantDisc.id, localEqualDisc.id, localDiffDisc.id])
         ])).then(res => {
 
             const [localDiscs, distantDiscs] = res;
@@ -384,12 +384,12 @@ describe('persistence', () => {
       discV2.title = deuxiemeTitre;
       const localSavedDisc = await local.saveDisc(discId, discV2);
       expect(localSavedDisc.title).toEqual(deuxiemeTitre);
-      const distantDisc = await distant.getDisc(discId, 0);
+      const distantDisc = await distant.getDisc(discId);
       expect(distantDisc.title).toEqual(premierTitre);
 
       // On imagine qu'on redémarre CueTube => synchro
       direction ? await distant.sync(local) : await local.sync(distant);
-      const syncedDisc = await persistence.getDisc(discId, 0);
+      const syncedDisc = await persistence.getDisc(discId);
       expect(syncedDisc.title).toEqual(deuxiemeTitre, 'La modif la plus récente est retenue');
     };
   }

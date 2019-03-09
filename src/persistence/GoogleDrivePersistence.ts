@@ -385,11 +385,11 @@ export class GoogleDrivePersistence extends Persistence {
         } // CREATE
     }
 
-    getDisc(discId: string, discIndex: number): Promise<Disc> {
+    getDisc(discId: string): Promise<Disc> {
 
         return this.getCueFile(discId) // Fichier Google Drive connu ?
             .then(file => this.getFileContent(file.id))
-            .then(content => super.createDisc(discId, discIndex, CueParser.parse(content)));
+            .then(content => super.createDisc(discId, CueParser.parse(content)));
     }
 
     private getCueFile(discId: string): Promise<drive.File> {

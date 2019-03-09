@@ -9,7 +9,7 @@ import {PlayerComponent} from './app/player/player.component';
 export class Disc {
   cuesheet: cuesheet.CueSheet;
   _files: Disc.File[] = [];
-  index: number = undefined;
+
   /** pour choisir les vidéos à lire */
   public enabledByUser = true;
   /** Disc-ID dans le format cuesheet */
@@ -395,6 +395,13 @@ export class Disc {
     this.player.toggleTracklist(discThumb.nextElementSibling, discI);
     e.stopPropagation(); // pour ne pas appeler document.onclick
   }
+
+  // /**
+  //  * Index of this disc in player.discs
+  //  */
+  // get index(): number {
+  //   return this.player.indexOf(this);
+  // }
 
 }
 
