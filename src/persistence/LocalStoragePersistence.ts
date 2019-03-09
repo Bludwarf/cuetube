@@ -175,4 +175,9 @@ export class LocalStoragePersistence extends Persistence {
       return syncState;
     });
   }
+
+  static getDiscId(key: string): string {
+    const m = key.match(/^disc\.([^.]+)\.cuesheet$/);
+    return m ? m[1] : undefined;
+  }
 }

@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
+import {EventEmitter, Injectable, Output} from '@angular/core';
 import * as _ from 'underscore';
 import {Disc} from '../disc';
 import {PlayerComponent} from './player/player.component';
 import {CurrentPlayerState, SavedDiscPrefs} from '../LocalStorageTypes';
 import Track = Disc.Track;
+import {LocalStoragePersistence} from '../persistence/LocalStoragePersistence';
 
 const KEY_CURRENT = 'current';
 const KEY_DISC_IDS = 'discIds';
@@ -12,7 +13,28 @@ const KEY_TIME = 'time';
 @Injectable()
 export class LocalStoragePrefsService {
 
-  constructor() { }
+  /** À la sauvegarde d'un disque */
+  @Output() discSaved: EventEmitter<string> = new EventEmitter();
+
+  /** À la modif des préférences d'un disque */
+  @Output() discPrefsSaved: EventEmitter<string> = new EventEmitter();
+
+  constructor() {
+    window.addEventListener('storage', (event) => {
+
+      // Sauvegarde du contenu d'un disque
+      const discId = LocalStoragePersistence.getDiscId(event.key);
+      if (discId) {
+        this.discSaved.emit(discId);
+      }
+
+      // Sauvegarde des préférences du disque
+      const prefsDiscId = LocalStoragePrefsService.getDiscId(event.key);
+      if (prefsDiscId) {
+        this.discPrefsSaved.emit(prefsDiscId);
+      }
+    });
+  }
 
   /** Sauvegarde pour chaque disque la sélection des pistes et les pistes suivantes (aléatoires) */
   saveDiscs(discs: Disc[]): void {
@@ -45,7 +67,7 @@ export class LocalStoragePrefsService {
   }
 
   saveDisc(discId: string, discPrefs: SavedDiscPrefs) {
-    this.set(this.getDiscKey(discId), discPrefs); // Chargé dans loadDisc
+    this.set(LocalStoragePrefsService.getDiscKey(discId), discPrefs); // Chargé dans loadDisc
   }
 
   hasDiscIds(): boolean {
@@ -54,7 +76,7 @@ export class LocalStoragePrefsService {
 
   /** @return undefined si aucun disque trouvés */
   getDiscIds(): string[] {
-    let discIds = this.get(KEY_DISC_IDS);
+    let discIds = localStorage.getItem(KEY_DISC_IDS);
 
     // #156 : on récup l'ancien format de discIds au cas où
     if (discIds && discIds.match(/^[^\[]/)) {
@@ -101,15 +123,20 @@ export class LocalStoragePrefsService {
   }
 
   hasDisc(discId: string): boolean {
-    return this.has(this.getDiscKey(discId));
+    return this.has(LocalStoragePrefsService.getDiscKey(discId));
   }
 
   getDisc(discId: string): SavedDiscPrefs {
-    return this.get(this.getDiscKey(discId));
+    return this.get(LocalStoragePrefsService.getDiscKey(discId));
   }
 
-  getDiscKey(discId: string): string {
+  static getDiscKey(discId: string): string {
     return 'disc.' + discId;
+  }
+
+  static getDiscId(key: string): string {
+    const m = key.match(/^disc\.([^.]+)$/);
+    return m ? m[0] : undefined;
   }
 
   /** Préférences pour l'utilisateur */
@@ -211,9 +238,11 @@ export class LocalStoragePrefsService {
     // TODO
 
     // Suppression de la piste dans SavedDiscPrefs
-    disc.disabledTrackIndices = disc.disabledTrackIndices
-      .filter(index => index + 1 !== track.number)
-      .map(index => index + 1 > track.number ? index - 1 : index);
+    if (disc.disabledTrackIndices) {
+      disc.disabledTrackIndices = disc.disabledTrackIndices
+        .filter(index => index + 1 !== track.number)
+        .map(index => index + 1 > track.number ? index - 1 : index);
+    }
 
     this.saveDisc(track.disc.id, disc);
 

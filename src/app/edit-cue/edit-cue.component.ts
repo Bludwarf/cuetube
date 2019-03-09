@@ -66,6 +66,10 @@ export class EditCueComponent implements OnInit {
                 alert(`Disque ${params.id} introuvable !\n\nErreur technique : ${err.data || err}`);
             }
         });
+
+        // Détection de changement du disque
+        this.prefs.discSaved.subscribe(disc => window.document.location.reload());
+        this.prefs.discPrefsSaved.subscribe(disc => window.document.location.reload());
     }
 
     // TODO : remonter dans app
