@@ -1,17 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { EditCueComponent } from './edit-cue.component';
+import {EditCueComponent} from './edit-cue.component';
 import {AppComponent} from '../app.component';
-import {PlayerComponent} from '../player/player.component';
-import {SliderComponent} from '../slider/slider.component';
 import {BrowserModule} from '@angular/platform-browser';
 import {HttpClientModule} from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
-import {GapiClientService} from '../gapi-client.service';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PlayerCollectionsComponent} from '../player-collections/player-collections.component';
 import {EditCueFileComponent} from '../edit-cue-file/edit-cue-file.component';
 import {MatIconModule} from '@angular/material';
+import {providers} from '../app.module';
 
 describe('EditCueComponent', () => {
   let component: EditCueComponent;
@@ -33,9 +31,7 @@ describe('EditCueComponent', () => {
         RouterTestingModule,
         MatIconModule
       ],
-      providers: [
-        GapiClientService
-      ]
+      providers
     })
     .compileComponents();
   }));

@@ -34,6 +34,10 @@ export const imports = [
   MatDialogModule,
   MatSnackBarModule
 ];
+export const providers = [
+  GapiClientService,
+  LocalStoragePrefsService
+];
 
 @NgModule({
   declarations: [
@@ -54,10 +58,7 @@ export const imports = [
     ),
     ...imports
   ],
-  providers: [
-    GapiClientService,
-    LocalStoragePrefsService
-  ],
+  providers,
   bootstrap: [AppComponent],
   entryComponents: [
     PlayerCollectionDeleteDialogComponent
