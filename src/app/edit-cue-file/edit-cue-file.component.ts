@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Disc} from '../../disc';
 import {yth} from '../../yt-helper';
 import Track = Disc.Track;
@@ -14,6 +14,7 @@ export class EditCueFileComponent implements OnInit {
 
     @Input() file: Disc.File;
     @Input() parent: EditCueComponent;
+    @Output() fileRemove = new EventEmitter<Disc.File>();
 
     constructor(public prefs: LocalStoragePrefsService) {
     }
@@ -41,6 +42,10 @@ export class EditCueFileComponent implements OnInit {
     removeTrack(track: Track) {
       track.remove();
       this.parent.removedTracks.push(track);
+    }
+
+    removeFile(file: Disc.File) {
+        this.fileRemove.emit(file);
     }
 
 }

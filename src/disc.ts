@@ -63,7 +63,25 @@ export class Disc {
   }
 
   set files(files: Disc.File[]) {
-    throw new Error('Cannot modify files. Use newFile() ou files[i].remove()');
+    throw new Error('Cannot modify files. Use newFile() or removeFile()');
+  }
+
+  newFile() {
+    this.cuesheet.newFile();
+    const cuesheetFile = this.cuesheet.getCurrentFile();
+    const file = new Disc.File(this, this.files.length, cuesheetFile);
+    file.name = this.src;
+    this.files.push(file);
+    return file;
+  }
+
+  removeFile(file: Disc.File) {
+    const fileIndex = this.files.indexOf(file);
+    if (fileIndex === -1) {
+      return;
+    }
+    this.files.splice(fileIndex, 1);
+    this.cuesheet.files.splice(fileIndex, 1);
   }
 
   get title(): string {
@@ -166,14 +184,6 @@ export class Disc {
     return tracks;
   }
 
-  newFile() {
-    this.cuesheet.newFile();
-    const cuesheetFile = this.cuesheet.getCurrentFile();
-    const file = new Disc.File(this, this.files.length, cuesheetFile);
-    this.files.push(file);
-    return file;
-  }
-
   // TODO : Pour éviter le problème : TypeError: Converting circular structure to JSON
   //noinspection JSUnusedGlobalSymbols
   toJSON(): string {
@@ -246,7 +256,7 @@ export class Disc {
    */
   get nextTracks(): number[] {
 
-    function generate(discI, shuffled) {
+    function generate(discI: Disc, shuffled) {
       let nextTracks = discI._nextTracks;
       if (!nextTracks || !nextTracks.length) {
         nextTracks = [];
@@ -404,6 +414,19 @@ export class Disc {
   // get index(): number {
   //   return this.player.indexOf(this);
   // }
+
+  reIndexTracks() {
+    const tracks = _.flatten(this.files.map(file => file.tracks));
+    
+    for (let index = 0; index < this.tracks.length; ++index) {
+      const track = this.tracks[index];
+      const number = index + 1;
+      if (number !== track.number) {
+        console.warn(`On doit corriger le numéro de la piste ${number} du fichier ${track.file.name} qui était à ${track.number}`);
+        track.number = number;
+      }
+    }
+  }
 
 }
 
@@ -617,6 +640,7 @@ export module Disc {
     get indexes(): cuesheet.Index[] {
       if (!this.cuesheetTrack.indexes) {
         const index = new cuesheet.Index(); // FIXME : prendre le temps de début de la piste précédente
+        index.time = new cuesheet.Time(0, 0);
         index.number = 1;
         this.cuesheetTrack.indexes = [index];
       }

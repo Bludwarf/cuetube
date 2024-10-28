@@ -1161,9 +1161,11 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           const disc = e.disc;
           this.localPersistence.setItem('discToCreate', disc);
           alert('La description de la vidéo ne contient aucune tracklist, on va commencer la création du disque...');
-          const win = openInNewTab(`edit-cue?id=${disc.id}`);
+          openInNewTab(`edit-cue?id=${disc.id}`);
         } else {
-          alert('Erreur lors de la création du disque : ' + e.message);
+          if (confirm(`Erreur lors de la création du disque : ${e.message}. On crée quand même la playlist ?`)) {
+            openInNewTab(`edit-cue?id=${videoId}`);
+          }
         }
       }
     });

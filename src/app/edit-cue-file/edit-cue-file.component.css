@@ -30,6 +30,14 @@ div.file:hover img {
 
 .file legend {
     margin-bottom: 0;
+    display: flex;
+    align-items: baseline;
+}
+
+.file legend span {
+    text-wrap: nowrap;
+    font-size: 14px; /* idem input */
+    color: grey;
 }
 
 fieldset.track {

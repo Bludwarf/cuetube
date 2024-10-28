@@ -120,3 +120,10 @@ En changeant de branche :
     git rebase master // bring gh-pages up to date with master
     git push origin gh-pages // commit the changes
     git checkout master // return to the master branch
+
+## Lancement de l'appli sur CodeSpace
+
+```bash
+export NODE_OPTIONS=--openssl-legacy-provider
+npm start
+```

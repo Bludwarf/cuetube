@@ -4,11 +4,15 @@
   </a>
   <fieldset>
     <legend>
+      <span>https://www.youtube.com/watch?v=</span>
       <input title="id de la vidéo dans YouTube (paramètre v dans l'URL)" class="form-control discId" type="text"
              name="fileName" [(ngModel)]="file.videoId"/>
+      <button mat-icon-button color="warn" (click)="removeFile(file)" title="Supprimer ce fichier">
+        <mat-icon aria-label="Delete">delete</mat-icon>
+      </button>
     </legend>
 
-    <ul class="nav nav-tabs" *ngIf="file.disc.files.length == 1">
+    <ul class="nav nav-tabs" *ngIf="file.disc.files.length == 1 || file.tracks.length > 1">
       <li class="active"><a data-toggle="tab" href="#tracks">Pistes</a></li>
       <li><a data-toggle="tab" href="#tracklist">Tracklist</a></li>
     </ul>
@@ -29,11 +33,12 @@
           <button mat-icon-button color="warn"  (click)="removeTrack(track)" title="Supprimer cette piste">
             <mat-icon aria-label="Delete">delete</mat-icon>
           </button>
-          <!-- TODO : pouvoir insérer une piste après n'importe quelle piste (et pas seulement la dernière -->
-          <button mat-icon-button color="primary" (click)="file.newTrack()" title="Ajouter une piste">
-            <mat-icon aria-label="Add">library_add</mat-icon>
-          </button>
         </fieldset>
+
+        <!-- TODO : pouvoir insérer une piste après n'importe quelle piste (et pas seulement la dernière -->
+        <button mat-icon-button color="primary" (click)="file.newTrack()" title="Ajouter une piste">
+          <mat-icon aria-label="Add">library_add</mat-icon>
+        </button>
       </div>
 
       <div id="tracklist" class="tab-pane" *ngIf="file.disc.files.length == 1">
