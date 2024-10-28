@@ -1,13 +1,13 @@
-import {Component, NgZone, OnInit} from '@angular/core';
-import {Disc} from '../../disc';
-import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
-import {HttpClient} from '@angular/common/http';
-import {GapiClientService} from '../gapi-client.service';
-import {Persistence} from '../../persistence';
+import { Component, NgZone, OnInit } from '@angular/core';
+import { Disc } from '../../disc';
+import { LocalStoragePersistence } from '../../persistence/LocalStoragePersistence';
+import { HttpClient } from '@angular/common/http';
+import { GapiClientService } from '../gapi-client.service';
+import { Persistence } from '../../persistence';
 import * as _ from 'underscore';
 import * as $ from 'jquery';
-import {AppComponent} from '../app.component';
-import {LocalStoragePrefsService} from '../local-storage-prefs.service';
+import { AppComponent } from '../app.component';
+import { LocalStoragePrefsService } from '../local-storage-prefs.service';
 import Track = Disc.Track;
 
 @Component({
@@ -27,7 +27,7 @@ export class EditCueComponent implements OnInit {
     removedTracks: Track[] = [];
 
     constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone,
-                public prefs: LocalStoragePrefsService) {
+        public prefs: LocalStoragePrefsService) {
     }
 
     ngOnInit() {
@@ -44,32 +44,49 @@ export class EditCueComponent implements OnInit {
             alert('Veuillez indiquer l\'id du disque à modifier');
             return;
         }
-        this.persistence.init({gapiClient: this.gapiClient})
-          .then(isInit => this.persistence.getDisc(params.id)).then(disc => {
-            this.disc = disc;
-            this.showPlayer();
-            this.zone.run(() => {});
-        }).catch(err => {
+        this.persistence.init({ gapiClient: this.gapiClient })
+            .then(isInit => this.persistence.getDisc(params.id))
+            .catch(err => {
 
-            // On est peut-être en train de créer ce disque ?
-            const cue = new cuesheet.CueSheet();
-            _.extend(cue, this.localPersistence.getItem('discToCreate'));
-            const discToCreate = new Disc(cue);
-            if (discToCreate && discToCreate.id === params.id) {
-                creationMode = true;
-                console.log('Le disque n\'existe pas encore mais il va être créé');
-                this.disc = discToCreate;
+                // On est peut-être en train de créer ce disque ?
+                const cue = new cuesheet.CueSheet();
+                const existingCueItem = this.localPersistence.getItem('discToCreate');
+                creationMode = !existingCueItem;
+
+                if (creationMode) {
+                    const discToCreate = new Disc(cue);
+    
+                    if (!discToCreate.id) {
+                        discToCreate.id = params.id;
+                    }
+                    if (!discToCreate.src) {
+                        discToCreate.src = `https://www.youtube.com/watch?v=${params.id}`;
+                    }
+                    if (!discToCreate.files || !discToCreate.files.length) {
+                        this.newFile(discToCreate);
+                    }
+
+                    return discToCreate;
+
+                } else {
+                    _.extend(cue, existingCueItem);
+                    return new Disc(cue);
+                }
+            })
+            .then(disc => {
+                this.disc = disc;
                 this.showPlayer();
-                this.zone.run(() => {});
-            } else {
-                console.error(err);
-                alert(`Disque ${params.id} introuvable !\n\nErreur technique : ${err.data || err}`);
-            }
-        });
+                this.zone.run(() => { });
+            });
 
         // Détection de changement du disque
         this.prefs.discSaved.subscribe(disc => window.document.location.reload());
         this.prefs.discPrefsSaved.subscribe(disc => window.document.location.reload());
+    }
+
+    newFile(disc = this.disc) {
+        const file = disc.newFile();
+        file.newTrack();
     }
 
     // TODO : remonter dans app
@@ -78,13 +95,16 @@ export class EditCueComponent implements OnInit {
     }
 
     save() {
+        this.disc.reIndexTracks();
         this.persistence.saveDisc(this.disc.id, this.disc).then(disc => {
             alert('Disque sauvegardé !');
 
             // Suppression des pistes dans les préférences
-            console.group('Suppression des pistes dans les préférences');
-            this.removedTracks.forEach(removedTrack => this.prefs.removeTrack(removedTrack));
-            console.groupEnd();
+            if (this.prefs.hasDisc(this.disc.id)) {
+                console.group('Suppression des pistes dans les préférences');
+                this.removedTracks.forEach(removedTrack => this.prefs.removeTrack(removedTrack));
+                console.groupEnd();
+            }
 
             // TODO notif à l'appli principale via SharedWebWorkers pour éviter qu'elle n'écrase les modifs en quittant
 
@@ -124,6 +144,10 @@ export class EditCueComponent implements OnInit {
     // TODO : remonter dans app
     get $foregroundIcon() {
         return $('#foreground-overlay-icon');
+    }
+
+    removeFile(file: Disc.File) {
+        this.disc.removeFile(file);
     }
 
 }

@@ -40,7 +40,11 @@
       <a [href]="disc.src" target="_blank">Voir sur YouTube</a>
     </div>
 
-    <app-edit-cue-file *ngFor="let file of disc.files" [file]="file" [parent]="this"></app-edit-cue-file>
+    <app-edit-cue-file *ngFor="let file of disc.files" [file]="file" [parent]="this" (fileRemove)="removeFile($event)"></app-edit-cue-file>
+
+    <button mat-icon-button color="primary" (click)="newFile()" title="Ajouter un fichier">
+      <mat-icon aria-label="Add">library_add</mat-icon>
+    </button>
 
     <div style="margin-bottom: 1em;">
       <button class="save btn btn-primary" type="submit" (click)="save()">Sauvegarder</button>
