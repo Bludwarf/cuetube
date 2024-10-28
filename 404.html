@@ -1,15 +1,33 @@
 <!doctype html>
-<html>
+<html lang="fr">
 <head>
-    <!-- This stores the URL the user was attempting to go to in sessionStorage,
-    and then redirects all 404 responses to the app’s index.html page -->
-    <!-- See http://www.backalleycoder.com/2016/05/13/sghpa-the-single-page-app-hack-for-github-pages/ -->
-    <script>
-        sessionStorage.redirect = location.href;
-    </script>
-    <!-- Recopier l'URL utilisée dans le paramètre bh du build Angular du fichier .travis.yml -->
-    <meta http-equiv="refresh" content="0;URL='https://bludwarf.github.io/cuetube/'">
-</head>
+  <meta charset="utf-8" />
+  <title>CueTube</title>
+  <base href="/cuetube/">
+  <!-- à reporter dans Controller.js -->
+  <meta name="google-signin-client_id" content="1000775747908-0o7m255fho5q5aa24li8h7012km3513f.apps.googleusercontent.com">
+  <meta name="google-signin-scope" content="https://www.googleapis.com/auth/drive">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="assets/img/favicon_16-vfl8NGn4k-m3u.png" />
+
+  <script src="https://apis.google.com/js/platform.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="styles.eb89a3ea3ecde8f0e093.css"></head>
+<script>
+    // See http://www.backalleycoder.com/2016/05/13/sghpa-the-single-page-app-hack-for-github-pages/
+    (function(){
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+            console.log("Calling history.replaceState(null, null, '"+redirect+"')");
+            history.replaceState(null, null, redirect);
+        }
+    })();
+</script>
 <body>
-</body>
+  <app-root></app-root>
+<script type="text/javascript" src="runtime.a5dd35324ddfd942bef1.js"></script><script type="text/javascript" src="polyfills.0fc83083e0da50a1c94d.js"></script><script type="text/javascript" src="scripts.61486a49ff475cec4230.js"></script><script type="text/javascript" src="main.1065bdc9f0fbb5325bfb.js"></script></body>
 </html>
