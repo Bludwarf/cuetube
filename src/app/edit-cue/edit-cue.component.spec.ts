@@ -8,7 +8,7 @@ import {FormsModule} from '@angular/forms';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PlayerCollectionsComponent} from '../player-collections/player-collections.component';
 import {EditCueFileComponent} from '../edit-cue-file/edit-cue-file.component';
-import {MatIconModule} from '@angular/material';
+import { MatIconModule } from '@angular/material/icon';
 import {providers} from '../app.module';
 
 describe('EditCueComponent', () => {
