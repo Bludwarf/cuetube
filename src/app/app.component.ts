@@ -3,7 +3,7 @@ import {LocalAndDistantPersistence} from '../persistence/LocalAndDistantPersiste
 import {LocalStoragePersistence} from '../persistence/LocalStoragePersistence';
 import {Persistence} from '../persistence';
 import {LocalServerPersistence} from '../persistence/LocalServerPersistence';
-import {GoogleDrivePersistence} from '../persistence/GoogleDrivePersistence';
+// import {GoogleDrivePersistence} from '../persistence/GoogleDrivePersistence';
 import {HttpClient} from '@angular/common/http';
 
 @Component({
@@ -21,12 +21,12 @@ export class AppComponent {
      * @return {Persistence}
      */
     static getPersistence(localPersistence: LocalStoragePersistence, http: HttpClient, persistenceName = localStorage.getItem('persistence')): Persistence {
-        if (persistenceName === GoogleDrivePersistence.TITLE) {
-            if (!GoogleDrivePersistence) {
-                window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
-            }
-            return new GoogleDrivePersistence(http);
-        }
+        // if (persistenceName === GoogleDrivePersistence.TITLE) {
+        //     if (!GoogleDrivePersistence) {
+        //         window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
+        //     }
+        //     return new GoogleDrivePersistence(http);
+        // }
         if (persistenceName === LocalStoragePersistence.TITLE) {
             return localPersistence;
         }
