@@ -108,9 +108,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     value: 0,
     max: 100
   };
-  @ViewChild(SliderComponent)
+  @ViewChild(SliderComponent, {static: true})
   slider: SliderComponent;
-  private sliderPosition = 0;
 
   private lastCheckedTime: number;
   private nextCheckCurrentTime: number;

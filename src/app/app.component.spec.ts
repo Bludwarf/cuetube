@@ -8,7 +8,7 @@ import {GapiClientService} from './gapi-client.service';
 import {RouterTestingModule} from '@angular/router/testing';
 import {SliderComponent} from './slider/slider.component';
 import {PlayerCollectionsComponent} from './player-collections/player-collections.component';
-import {MatIconModule} from '@angular/material';
+import { MatIconModule } from '@angular/material/icon';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {

@@ -1,6 +1,7 @@
 import {Component, Inject, Input, OnInit} from '@angular/core';
 import {PlayerComponent} from '../player/player.component';
-import {MatDialog, MatDialogRef, MatSnackBar} from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-player-collections',

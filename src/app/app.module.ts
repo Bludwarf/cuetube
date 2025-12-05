@@ -13,7 +13,10 @@ import {
   PlayerCollectionDeleteDialogComponent,
   PlayerCollectionsComponent
 } from './player-collections/player-collections.component';
-import {MatButtonModule, MatDialogModule, MatIconModule, MatSnackBarModule} from '@angular/material';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {LocalStoragePrefsService} from './local-storage-prefs.service';
 
