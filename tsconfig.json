@@ -3,7 +3,7 @@
   "compilerOptions": {
     "importHelpers": true,
     "target": "es5",
-    "module": "es6",
+    "module": "esnext",
     "lib": [
       "es2017",
       "dom"

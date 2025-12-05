@@ -1,12 +1,11 @@
 import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {CuePrinter} from '../CuePrinter';
-import drive = gapi.client.drive;
-import {PlayerComponent} from '../app/player/player.component';
 import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
 import {StringUtils} from '../StringUtils';
 import * as Queue from 'promise-queue';
+import drive = gapi.client.drive;
 
 export class GoogleDrivePersistence extends Persistence {
 
