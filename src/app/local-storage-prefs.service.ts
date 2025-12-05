@@ -1,4 +1,4 @@
-import {EventEmitter, Injectable, Output} from '@angular/core';
+import { EventEmitter, Injectable, Output, Directive } from '@angular/core';
 import * as _ from 'underscore';
 import {Disc} from '../disc';
 import {PlayerComponent} from './player/player.component';
@@ -9,6 +9,7 @@ import {LocalStoragePersistence} from '../persistence/LocalStoragePersistence';
 const KEY_CURRENT = 'current';
 const KEY_TIME = 'time';
 
+@Directive()
 @Injectable()
 export class LocalStoragePrefsService {
 
