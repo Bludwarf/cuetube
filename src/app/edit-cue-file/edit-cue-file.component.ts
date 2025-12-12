@@ -4,6 +4,7 @@ import {yth} from '../../yt-helper';
 import Track = Disc.Track;
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import {EditCueComponent} from '../edit-cue/edit-cue.component';
+import * as $ from 'jquery';
 
 @Component({
     selector: 'app-edit-cue-file',
