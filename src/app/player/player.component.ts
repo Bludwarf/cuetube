@@ -11,12 +11,12 @@ import * as _ from 'underscore';
 import {GapiClientService} from '../gapi-client.service';
 import {SliderComponent} from '../slider/slider.component';
 import {ytparser} from '../../yt-parser';
-import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {AppComponent} from '../app.component';
 import {HistoryUtils} from '../../HistoryUtils';
 import {Location as AngularLocation} from '@angular/common';
 import {SubscriptionLike as ISubscription} from 'rxjs';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
+import * as $ from 'jquery';
 
 const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
 
