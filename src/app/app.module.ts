@@ -43,29 +43,23 @@ export const providers = [
 ];
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    PlayerComponent,
-    SliderComponent,
-    EditCueComponent,
-    EditCueFileComponent,
-    PlayerCollectionsComponent,
-    PlayerCollectionDeleteDialogComponent
-  ],
-  imports: [
-    RouterModule.forRoot(
-      appRoutes,
-      {
+    declarations: [
+        AppComponent,
+        PlayerComponent,
+        SliderComponent,
+        EditCueComponent,
+        EditCueFileComponent,
+        PlayerCollectionsComponent,
+        PlayerCollectionDeleteDialogComponent
+    ],
+    imports: [
+        RouterModule.forRoot(appRoutes, {
         // enableTracing: true // <-- debugging purposes only
-      }
-    ),
-    ...imports
-  ],
-  providers,
-  bootstrap: [AppComponent],
-  entryComponents: [
-    PlayerCollectionDeleteDialogComponent
-  ]
+        }),
+        ...imports
+    ],
+    providers,
+    bootstrap: [AppComponent]
 })
 export class AppModule {
 }

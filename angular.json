@@ -151,7 +151,6 @@
       }
     }
   },
-  "defaultProject": "cuetube",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",
@@ -160,5 +159,8 @@
     "@schematics/angular:directive": {
       "prefix": "app"
     }
+  },
+  "cli": {
+    "analytics": "5ff3f0e6-4bb5-49fb-a07a-7d7b7b12569d"
   }
 }
