@@ -27,7 +27,7 @@ export class GapiClientService {
   constructor() { }
 
     // TODO : pourquoi on doit rappeler load + init même si on est connecté ?
-    init(params) {
+    init(params): Promise<void> {
 
         if (!params) {
             params = GOOGLE_AUTH_PARAMS;
@@ -90,7 +90,7 @@ export class GapiClientService {
     //     });
     // }
 
-    load() {
+    load(): Promise<void> {
         return new Promise((resolve, reject) => {
             gapi.load('client', function start() {
                 resolve();
