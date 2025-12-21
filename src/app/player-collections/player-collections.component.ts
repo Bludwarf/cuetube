@@ -4,9 +4,10 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
-  selector: 'app-player-collections',
-  templateUrl: './player-collections.component.html',
-  styleUrls: ['./player-collections.component.css']
+    selector: 'app-player-collections',
+    templateUrl: './player-collections.component.html',
+    styleUrls: ['./player-collections.component.css'],
+    standalone: false
 })
 export class PlayerCollectionsComponent implements OnInit {
 
@@ -87,7 +88,8 @@ class Item {
 }
 
 @Component({
-  templateUrl: './delete-dialog.component.html'
+    templateUrl: './delete-dialog.component.html',
+    standalone: false
 })
 export class PlayerCollectionDeleteDialogComponent {
 
