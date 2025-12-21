@@ -1,7 +1,7 @@
 import {TestBed, async} from '@angular/core/testing';
 import {AppComponent} from './app.component';
 import {PlayerComponent} from './player/player.component';
-import {HttpClientModule} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {BrowserModule} from '@angular/platform-browser';
 import {FormsModule} from '@angular/forms';
 import {GapiClientService} from './gapi-client.service';
@@ -13,24 +13,21 @@ import { MatIconModule } from '@angular/material/icon';
 describe('AppComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [
+    declarations: [
         AppComponent,
         PlayerComponent,
         SliderComponent,
         PlayerCollectionsComponent
-      ],
-      imports: [
-        BrowserModule,
-        // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
-        HttpClientModule,
+    ],
+    imports: [BrowserModule,
         FormsModule,
         RouterTestingModule,
-        MatIconModule
-      ],
-      providers: [
-        GapiClientService
-      ]
-    })
+        MatIconModule],
+    providers: [
+        GapiClientService,
+        provideHttpClient(withInterceptorsFromDi())
+    ]
+})
       .compileComponents();
   }));
   it('should create the app', async(() => {

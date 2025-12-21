@@ -3,7 +3,7 @@
 // require yt-parser
 import {ytparser} from './yt-parser';
 import * as _ from 'underscore';
-import * as $ from 'jquery';
+import $ from 'jquery';
 
 export class yth {
 

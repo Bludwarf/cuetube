@@ -4,7 +4,7 @@ import {LocalStoragePersistence} from '../persistence/LocalStoragePersistence';
 import {Persistence} from '../persistence';
 import {LocalServerPersistence} from '../persistence/LocalServerPersistence';
 // import {GoogleDrivePersistence} from '../persistence/GoogleDrivePersistence';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',

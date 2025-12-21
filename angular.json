@@ -9,20 +9,20 @@
       "projectType": "application",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
             "aot": true,
-            "outputPath": "dist",
+            "outputPath": {
+              "base": "dist"
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
             "tsConfig": "src/tsconfig.app.json",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "src/polyfills.ts"
+            ],
             "assets": [
               "src/assets",
-              "src/favicon.ico",
-              "src/player.html",
-              "src/edit-cue.html",
-              "src/404.html"
+              "src/favicon.ico"
             ],
             "styles": [
               "node_modules/material-icons/iconfont/material-icons.css",
@@ -36,7 +36,8 @@
               "src/scripts/utils.js",
               "node_modules/moment/min/moment.min.js",
               "src/scripts/CueParser.js"
-            ]
+            ],
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production": {
@@ -49,18 +50,20 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
                 }
               ]
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
             }
           }
         },
@@ -68,12 +71,7 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "port": 4200,
-            "buildTarget": "cuetube:build"
-          },
-          "configurations": {
-            "production": {
-              "buildTarget": "cuetube:build:production"
-            }
+            "buildTarget": "cuetube:build:development"
           }
         },
         "extract-i18n": {
@@ -104,10 +102,7 @@
             ],
             "assets": [
               "src/assets",
-              "src/favicon.ico",
-              "src/player.html",
-              "src/edit-cue.html",
-              "src/404.html"
+              "src/favicon.ico"
             ]
           }
         },

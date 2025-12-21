@@ -1,6 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
-import {HttpClientModule} from '@angular/common/http';
 import {RouterModule, Routes} from '@angular/router';
 import {AppComponent} from './app.component';
 import {PlayerComponent} from './player/player.component';
@@ -19,6 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {LocalStoragePrefsService} from './local-storage-prefs.service';
+import {provideHttpClient} from '@angular/common/http';
 
 const appRoutes: Routes = [
   {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
@@ -28,8 +28,6 @@ const appRoutes: Routes = [
 
 export const imports = [
   BrowserModule,
-  // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
-  HttpClientModule,
   FormsModule,
   BrowserAnimationsModule,
   MatButtonModule,
@@ -39,7 +37,8 @@ export const imports = [
 ];
 export const providers = [
   GapiClientService,
-  LocalStoragePrefsService
+  LocalStoragePrefsService,
+  provideHttpClient(),
 ];
 
 @NgModule({
