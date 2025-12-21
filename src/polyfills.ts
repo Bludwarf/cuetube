@@ -25,7 +25,7 @@
 /***************************************************************************************************
  * Zone JS is required by default for Angular itself.
  */
-import 'zone.js/dist/zone';  // Included with Angular CLI.
+import 'zone.js';  // Included with Angular CLI.
 
 // Depuis Angular 6 problème avec promise-queue : process is not defined
 (window as any).process = {
