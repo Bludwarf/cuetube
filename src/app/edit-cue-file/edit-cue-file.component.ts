@@ -9,7 +9,8 @@ import $ from 'jquery';
 @Component({
     selector: 'app-edit-cue-file',
     templateUrl: './edit-cue-file.component.html',
-    styleUrls: ['./edit-cue-file.component.css']
+    styleUrls: ['./edit-cue-file.component.css'],
+    standalone: false
 })
 export class EditCueFileComponent implements OnInit {
 
