@@ -1,3 +1,5 @@
-<div *ngIf="!player.trackIsLoading"><!-- TODO si on met if dans le player alors slider est inconnue et fait planter player -->
+@if (!player.trackIsLoading) {
+  <div><!-- TODO si on met if dans le player alors slider est inconnue et fait planter player -->
     <input title="Position dans la piste actuelle. Vous pouvez l'utilisez pour vous déplacer dans la piste. Vous pouvez également vous déplacer directement dans la vidéo YouTube." name="trackPosition" [value]="value" type="range" [min]="min" [max]="max" (change)="player.seekTo($event.target.value)" [readonly]="!player.trackIsLoading" />
-</div>
+  </div>
+}

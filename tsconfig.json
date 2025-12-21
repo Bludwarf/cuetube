@@ -13,7 +13,7 @@
     "declaration": false,
     "sourceMap": true,
     "outDir": "./dist/out-tsc",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "typeRoots": [
       "./node_modules/@types"
     ],
