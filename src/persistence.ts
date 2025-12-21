@@ -2,7 +2,7 @@
 import * as _ from 'underscore';
 import {Disc} from './disc';
 import {CuePrinter} from './CuePrinter';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {Collection} from './Collection';
 import {md5} from './md5';
 

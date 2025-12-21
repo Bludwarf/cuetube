@@ -8,6 +8,7 @@
       "es2017",
       "dom"
     ],
+    "esModuleInterop": true,
     "allowJs": true,
     "declaration": false,
     "sourceMap": true,

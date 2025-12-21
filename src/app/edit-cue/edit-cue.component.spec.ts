@@ -3,7 +3,7 @@ import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {EditCueComponent} from './edit-cue.component';
 import {AppComponent} from '../app.component';
 import {BrowserModule} from '@angular/platform-browser';
-import {HttpClientModule} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PlayerCollectionsComponent} from '../player-collections/player-collections.component';
@@ -17,22 +17,18 @@ describe('EditCueComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [
+    declarations: [
         AppComponent,
         EditCueComponent,
         EditCueFileComponent,
         PlayerCollectionsComponent
-      ],
-      imports: [
-        BrowserModule,
-        // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
-        HttpClientModule,
+    ],
+    imports: [BrowserModule,
         FormsModule,
         RouterTestingModule,
-        MatIconModule
-      ],
-      providers
-    })
+        MatIconModule],
+    providers: [provideHttpClient(withInterceptorsFromDi())]
+})
     .compileComponents();
   }));
 
