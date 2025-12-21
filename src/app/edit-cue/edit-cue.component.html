@@ -1,54 +1,48 @@
-<div id="ctrl" *ngIf="disc">
-
-  <form class="form-horizontal">
-
-    <h1>Modification de {{disc.id}}.cue</h1>
-
-    <div class="form-group">
+@if (disc) {
+  <div id="ctrl">
+    <form class="form-horizontal">
+      <h1>Modification de {{disc.id}}.cue</h1>
       <div class="form-group">
-        <label class="col-sm-2 control-label" for="title">title</label>
-        <div class="col-sm-10">
-          <input id="title" type="text" name="title" class="title form-control" [(ngModel)]="disc.title"
-                 placeholder="Titre du disque"/>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-sm-2 control-label" for="performer">performer</label>
-        <div class="col-sm-10">
-          <input id="performer" type="text" name="performer" class="form-control" [(ngModel)]="disc.performer"
-                 placeholder="Interprète du disque"/>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-sm-2 control-label" for="date">date</label>
-        <div class="col-sm-10">
-          <input id="date" type="text" name="date" class="date form-control" [(ngModel)]="disc.date"
-                 placeholder="Année du parution du disque"/>
-        </div>
-      </div>
-    </div>
-
-    <button class="save btn btn-primary" type="submit" (click)="save()" style="margin-bottom: 1em;">Sauvegarder</button>
-
-  </form>
-  <form>
-
-    <div class="form-group" style="margin-bottom: 1em;">
-      <label class="control-label" for="source">source :</label>
-      <input id="source" type="text" name="source" class="date form-control" [(ngModel)]="disc.src"
-             placeholder="Année du parution du disque" style="width: 50em;"/>
-      <a [href]="disc.src" target="_blank">Voir sur YouTube</a>
-    </div>
-
-    <app-edit-cue-file *ngFor="let file of disc.files" [file]="file" [parent]="this" (fileRemove)="removeFile($event)"></app-edit-cue-file>
-
-    <button mat-icon-button color="primary" (click)="newFile()" title="Ajouter un fichier">
-      <mat-icon aria-label="Add">library_add</mat-icon>
-    </button>
-
-    <div style="margin-bottom: 1em;">
-      <button class="save btn btn-primary" type="submit" (click)="save()">Sauvegarder</button>
-    </div>
-
-  </form>
-</div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label" for="title">title</label>
+          <div class="col-sm-10">
+            <input id="title" type="text" name="title" class="title form-control" [(ngModel)]="disc.title"
+              placeholder="Titre du disque"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="performer">performer</label>
+            <div class="col-sm-10">
+              <input id="performer" type="text" name="performer" class="form-control" [(ngModel)]="disc.performer"
+                placeholder="Interprète du disque"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="date">date</label>
+              <div class="col-sm-10">
+                <input id="date" type="text" name="date" class="date form-control" [(ngModel)]="disc.date"
+                  placeholder="Année du parution du disque"/>
+                </div>
+              </div>
+            </div>
+            <button class="save btn btn-primary" type="submit" (click)="save()" style="margin-bottom: 1em;">Sauvegarder</button>
+          </form>
+          <form>
+            <div class="form-group" style="margin-bottom: 1em;">
+              <label class="control-label" for="source">source :</label>
+              <input id="source" type="text" name="source" class="date form-control" [(ngModel)]="disc.src"
+                placeholder="Année du parution du disque" style="width: 50em;"/>
+                <a [href]="disc.src" target="_blank">Voir sur YouTube</a>
+              </div>
+              @for (file of disc.files; track file) {
+                <app-edit-cue-file [file]="file" [parent]="this" (fileRemove)="removeFile($event)"></app-edit-cue-file>
+              }
+              <button mat-icon-button color="primary" (click)="newFile()" title="Ajouter un fichier">
+                <mat-icon aria-label="Add">library_add</mat-icon>
+              </button>
+              <div style="margin-bottom: 1em;">
+                <button class="save btn btn-primary" type="submit" (click)="save()">Sauvegarder</button>
+              </div>
+            </form>
+          </div>
+        }
