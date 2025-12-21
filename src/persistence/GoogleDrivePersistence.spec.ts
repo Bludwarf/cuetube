@@ -1,4 +1,4 @@
-// import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+// import {waitForAsync, ComponentFixture, TestBed} from '@angular/core/testing';
 // import {GoogleDrivePersistence} from './GoogleDrivePersistence';
 // import {PlayerComponent} from '../app/player/player.component';
 // import 'jquery';
@@ -13,7 +13,7 @@
 //   let fixture: ComponentFixture<PlayerComponent>;
 //   let persistence: GoogleDrivePersistence;
 //
-//   beforeEach(async(() => {
+//   beforeEach(waitForAsync(() => {
 //     TestBed.configureTestingModule({
 //       declarations: [
 //         AppComponent,

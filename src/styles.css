@@ -1,12 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
-@import '~bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap/dist/css/bootstrap.min.css';
 @import './styles/angular.css';
 /* @import './styles/bootstrap-theme.css'; */
 @import './styles/bootstrap-slate.min.css';
 @import './styles/bootstrap-responsive.min.css';
 @import './styles/angular-confirm.min.css';
 @import './styles/CueTube-icons.css';
-@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
 
 a {
     cursor: pointer;

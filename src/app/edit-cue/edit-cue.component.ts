@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { GapiClientService } from '../gapi-client.service';
 import { Persistence } from '../../persistence';
 import * as _ from 'underscore';
-import * as $ from 'jquery';
+import $ from 'jquery';
 import { AppComponent } from '../app.component';
 import { LocalStoragePrefsService } from '../local-storage-prefs.service';
 import Track = Disc.Track;
@@ -55,7 +55,7 @@ export class EditCueComponent implements OnInit {
 
                 if (creationMode) {
                     const discToCreate = new Disc(cue);
-    
+
                     if (!discToCreate.id) {
                         discToCreate.id = params.id;
                     }

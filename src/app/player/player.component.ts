@@ -1,6 +1,6 @@
 ///<reference path="../../../node_modules/@types/youtube/index.d.ts"/>
 import {AfterViewInit, Component, EventEmitter, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
 // import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
 import {Disc} from '../../disc';
@@ -16,7 +16,7 @@ import {HistoryUtils} from '../../HistoryUtils';
 import {Location as AngularLocation} from '@angular/common';
 import {SubscriptionLike as ISubscription} from 'rxjs';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
-import * as $ from 'jquery';
+import $ from 'jquery';
 
 const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
 

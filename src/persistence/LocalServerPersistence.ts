@@ -1,6 +1,6 @@
 import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {Collection} from '../Collection';
 
 export class LocalServerPersistence extends Persistence {

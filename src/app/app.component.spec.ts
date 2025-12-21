@@ -1,7 +1,7 @@
-import {TestBed, async} from '@angular/core/testing';
+import {TestBed, waitForAsync} from '@angular/core/testing';
 import {AppComponent} from './app.component';
 import {PlayerComponent} from './player/player.component';
-import {HttpClientModule} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {BrowserModule} from '@angular/platform-browser';
 import {FormsModule} from '@angular/forms';
 import {GapiClientService} from './gapi-client.service';
@@ -11,39 +11,36 @@ import {PlayerCollectionsComponent} from './player-collections/player-collection
 import { MatIconModule } from '@angular/material/icon';
 
 describe('AppComponent', () => {
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [
+    declarations: [
         AppComponent,
         PlayerComponent,
         SliderComponent,
         PlayerCollectionsComponent
-      ],
-      imports: [
-        BrowserModule,
-        // import HttpClientModule after BrowserModule. : https://angular.io/guide/http
-        HttpClientModule,
+    ],
+    imports: [BrowserModule,
         FormsModule,
         RouterTestingModule,
-        MatIconModule
-      ],
-      providers: [
-        GapiClientService
-      ]
-    })
+        MatIconModule],
+    providers: [
+        GapiClientService,
+        provideHttpClient(withInterceptorsFromDi())
+    ]
+})
       .compileComponents();
   }));
-  it('should create the app', async(() => {
+  it('should create the app', waitForAsync(() => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();
   }));
-  it(`should have as title 'app'`, async(() => {
+  it(`should have as title 'app'`, waitForAsync(() => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app.title).toEqual('app');
   }));
-  // it('should render title in a h1 tag', async(() => {
+  // it('should render title in a h1 tag', waitForAsync(() => {
   //   const fixture = TestBed.createComponent(AppComponent);
   //   fixture.detectChanges();
   //   const compiled = fixture.debugElement.nativeElement;

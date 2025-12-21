@@ -1,5 +1,5 @@
 import CueSheet = cuesheet.CueSheet;
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import * as CueParser from './scripts/CueParser';
 
 export class CueService {

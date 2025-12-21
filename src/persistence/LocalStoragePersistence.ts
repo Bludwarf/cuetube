@@ -1,6 +1,6 @@
 import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {PlayerComponent} from '../app/player/player.component';
 import {Collection} from '../Collection';
 import {EditCueComponent} from '../app/edit-cue/edit-cue.component';
