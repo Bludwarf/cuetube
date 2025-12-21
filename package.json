@@ -78,9 +78,6 @@
     "e2e": "ng e2e",
     "e2e-update": "webdriver-manager update --versions.chrome 2.37 --standalone false --gecko false",
     "test:server": "node node_modules/nodemon/bin/nodemon.js --exec jasmine",
-    "test:client": "node node_modules/karma/bin/karma start karma.conf.js",
-    "build:prod": "ng build --prod --base-href /cuetube/",
-    "deploy": "npm run gh-pages",
-    "gh-pages": "gh-pages -d dist -b gh-pages"
+    "test:client": "node node_modules/karma/bin/karma start karma.conf.js"
   }
 }

@@ -18,7 +18,7 @@ jobs:
         build_configuration: production # The build environment for the app. please look configurations in your angular.json
         base_href: /cuetube/   # make sure this corresponds to https://<your_username>.github.io/<base_href>/
         deploy_branch: gh-pages # The branch the action should deploy to.
-        angular_dist_build_folder: dist # Pour Angular 7 au lieu de "dist/browser" pour les versions plus récentes d'Angular
+        angular_dist_build_folder: dist/browser
       env:
         # Pour éviter l'erreur en attendant de faire une montée de version Angular : error:0308010C:digital envelope routines::unsupported
         # Sources : https://stackoverflow.com/a/69699772/1655155 + https://stackoverflow.com/a/57969570/1655155 + https://github.com/orgs/community/discussions/77329#discussioncomment-8452436
