@@ -1,74 +1,93 @@
 <div class="background-overlay"></div>
 
 <div id="remain-container">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-2 col-md-2">
-                <app-player-collections [player]="this"></app-player-collections>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-2 col-md-2">
+        <app-player-collections [player]="this"></app-player-collections>
+      </div>
+
+      <div class="col-sm-10 col-md-10">
+
+        <div id="remain-div">
+
+          <div id="header">
+            <h1>{{currentCollectionNames.length ? currentCollectionNames.join(' + ') : '&nbsp;'}}</h1>
+            <div class="buttons">
+              <!--<button (click)="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
+              <button (click)="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
+              <button id="createNewDisc" class="btn btn-default" (click)="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist</button>
+              <!--<div class="g-signin2" data-theme="dark" style="display: inline-block; vertical-align: middle" data-onsuccess="onSignIn">></div>-->
+              <!--<button id="signin2-button" class="btn btn-default">Connexion</button>-->
+              @if (!connectedToGoogleDrive) {
+                <button id="login-btn"  class="btn btn-default" (click)="connectGoogleDrive()">Google Drive</button>
+              }
+              @if (connectedToGoogleDrive) {
+                <button id="logout-btn" class="btn btn-default" (click)="disconnectGoogleDrive()">Déconnexion</button>
+              }
             </div>
+          </div>
 
-            <div class="col-sm-10 col-md-10">
+          <div class="discs">
 
-                <div id="remain-div">
-
-                    <div id="header">
-                        <h1>{{currentCollectionNames.length ? currentCollectionNames.join(' + ') : '&nbsp;'}}</h1>
-                        <div class="buttons">
-                            <!--<button (click)="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
-                            <button (click)="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
-                            <button id="createNewDisc" class="btn btn-default" (click)="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist</button>
-                            <!--<div class="g-signin2" data-theme="dark" style="display: inline-block; vertical-align: middle" data-onsuccess="onSignIn">></div>-->
-                            <!--<button id="signin2-button" class="btn btn-default">Connexion</button>-->
-                            <button id="login-btn"  class="btn btn-default" (click)="connectGoogleDrive()" *ngIf="!connectedToGoogleDrive">Google Drive</button>
-                            <button id="logout-btn" class="btn btn-default" (click)="disconnectGoogleDrive()" *ngIf="connectedToGoogleDrive">Déconnexion</button>
-                        </div>
+            @for (disc of discs; track disc) {
+              <div>
+                @if (disc) {
+                  <div class="disc-wrapper" [attr.data-index]="index" [attr.data-discId]="disc.discId" [class.active]="currentTrack && disc.id === currentTrack.disc.id" [class.inTracklist]="discInTracklist && disc === discInTracklist">
+                    <div class="disc-thumb" (click)="disc.clickThumb($event)" (dblclick)="disc.doubleClickThumb($event)" title="{{disc.title}}. Cliquer pour ouvrir la liste des pistes de l'album">
+                      <input type="checkbox" [(ngModel)]="disc.enabledByUser" CHECKED (click)="disc.afterClickThumbCheckbox($event)" title="Cocher cette case pour activer/désactiver ce disque. 'Alt' pour inverser la sélection des autres disques. 'Shift' pour sélectionner un ensemble de disques qui se suivent."/>
+                      @if (!disc.enabled) {
+                        <div class="disabled-video-cache" [class.disabled-by-youtube-video-cache]="disc.disabledByYouTube"></div>
+                      }
+                      <img class="" [src]="'https://img.youtube.com/vi/'+disc.videoId+'/default.jpg'" />
                     </div>
-
-                    <div class="discs">
-
-                      <div *ngFor="let disc of discs">
-                        <div *ngIf="disc" class="disc-wrapper" [attr.data-index]="index" [attr.data-discId]="disc.discId" [class.active]="currentTrack && disc.id === currentTrack.disc.id" [class.inTracklist]="discInTracklist && disc === discInTracklist">
-                            <div class="disc-thumb" (click)="disc.clickThumb($event)" (dblclick)="disc.doubleClickThumb($event)" title="{{disc.title}}. Cliquer pour ouvrir la liste des pistes de l'album">
-                                <input type="checkbox" [(ngModel)]="disc.enabledByUser" CHECKED (click)="disc.afterClickThumbCheckbox($event)" title="Cocher cette case pour activer/désactiver ce disque. 'Alt' pour inverser la sélection des autres disques. 'Shift' pour sélectionner un ensemble de disques qui se suivent."/>
-                                <div class="disabled-video-cache" [class.disabled-by-youtube-video-cache]="disc.disabledByYouTube" *ngIf="!disc.enabled"></div>
-                                <img class="" [src]="'https://img.youtube.com/vi/'+disc.videoId+'/default.jpg'" />
+                    <div class="tracklist" (click)="stopPropagation($event)">
+                      <h2 class="disc-name" [class.active]="currentTrack && disc === discs[currentTrack.disc.index]" (click)="disc.load()">{{disc.title}}</h2>
+                      @if (disc.performer) {
+                        <h3 class="disc-performer">{{disc.performer}}</h3>
+                      }
+                      <a href="edit-cue?id={{disc.id}}" target="_blank">Éditer</a>
+                      <a class="hover-red" (click)="removeDisc(disc)" title="Retirer le disque de cette collection"><span class="glyphter-bin"></span></a>
+                      &nbsp;
+                      @if (disc.src) {
+                        <a [href]="disc.src" title="Voir sur YouTube"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
+                      }
+                      <div class="columns">
+                        <ol class="disc-list">
+                          <!-- TODO : *ngFor sans créer d'élément div dans un li ? -->
+                          @for (file of disc.files; track file) {
+                            <div>
+                              @for (track of file.tracks; track track) {
+                                <li class="track" [class.active]="track == currentTrack" [class.disabled]="!track.enabled" (click)="loadTrack(track)">
+                                  <input type="checkbox" [(ngModel)]="track.enabledByUser" (click)="track.afterClickCheckbox($event)" />
+                                  <span>{{track.title || "Track "+track.number}}</span>
+                                </li>
+                              }
                             </div>
-                            <div class="tracklist" (click)="stopPropagation($event)">
-                                <h2 class="disc-name" [class.active]="currentTrack && disc === discs[currentTrack.disc.index]" (click)="disc.load()">{{disc.title}}</h2>
-                                <h3 class="disc-performer" *ngIf="disc.performer">{{disc.performer}}</h3>
-
-                                <a href="edit-cue?id={{disc.id}}" target="_blank">Éditer</a>
-                                <a class="hover-red" (click)="removeDisc(disc)" title="Retirer le disque de cette collection"><span class="glyphter-bin"></span></a>
-                                &nbsp;
-                                <a [href]="disc.src" title="Voir sur YouTube" *ngIf="disc.src"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
-                                <div class="columns">
-                                    <ol class="disc-list">
-                                        <!-- TODO : *ngFor sans créer d'élément div dans un li ? -->
-                                        <div *ngFor="let file of disc.files">
-                                            <li *ngFor="let track of file.tracks" class="track" [class.active]="track == currentTrack" [class.disabled]="!track.enabled" (click)="loadTrack(track)">
-                                                <input type="checkbox" [(ngModel)]="track.enabledByUser" (click)="track.afterClickCheckbox($event)" />
-                                                <span>{{track.title || "Track "+track.number}}</span>
-                                            </li>
-                                        </div>
-                                    </ol>
-                                </div>
-                            </div>
-                        </div>
-                        <div *ngIf="!disc" class="disc-wrapper">
-                          <div class="disc-thumb">
-                            <div class="disabled-video-cache"></div>
-                            <img src="'https://img.youtube.com/vi/default.jpg'" />
-                          </div>
-                        </div>
+                          }
+                        </ol>
                       </div>
-
                     </div>
-                </div>
+                  </div>
+                }
+                @if (!disc) {
+                  <div class="disc-wrapper">
+                    <div class="disc-thumb">
+                      <div class="disabled-video-cache"></div>
+                      <img src="'https://img.youtube.com/vi/default.jpg'" />
+                    </div>
+                  </div>
+                }
+              </div>
+            }
 
-            </div>
+          </div>
+        </div>
 
-        </div><!-- row -->
-    </div><!-- container -->
+      </div>
+
+    </div><!-- row -->
+  </div><!-- container -->
 </div><!-- remain-container -->
 
 
@@ -77,65 +96,75 @@
 <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
 <div id="player-div">
 
-    <div id="player-wrap">
-        <div id="player"></div>
+  <div id="player-wrap">
+    <div id="player"></div>
+  </div>
+
+  <div id="player-others">
+
+    <div id="player-controls">
+      <form id="player-controls-form">
+        <div class="track-controls">
+          <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-backward active" (click)="previous()" [class.active]="history.length >= 2" title="Piste précédente. Raccourci clavier : haut"></span>
+          @if (isPlaying != undefined && !isPlaying) {
+            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-play active" (click)="play()" title="(Re)Démarre la lecture"></span>
+          }
+          @if (isPlaying == undefined || isPlaying) {
+            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-pause active" (click)="pause(true)" title="Met en pause la lecture. Raccourci clavier : Espace"></span>
+          }
+          <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-forward active" (click)="next()" title="Piste suivante. Raccourci clavier : bas"></span>
+          <span style="font-size: 32px; margin-right: 10px;" class="svg-checkbox glyphter-random" [class.active]="shuffle" (click)="shuffle = !shuffle" title="Mode de lecture aléatoire. Une piste ne sera pas rejouée tant que les autres pistes du disque n'ont pas été jouées."></span>
+          @if (repeatMode != 'track') {
+            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-repeat"  [class.active]="repeatMode === 'disc'"  (click)="toggleRepeatMode()" title="Lit en boucle le disque actuel."></span>
+          }
+          @if (repeatMode == 'track') {
+            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-refresh" [class.active]="repeatMode === 'track'" (click)="toggleRepeatMode()" title="Lit en boucle la piste actuelle."></span>
+          }
+        </div>
+      </form>
     </div>
 
-    <div id="player-others">
+    <div id="player-position">
 
-        <div id="player-controls">
-            <form id="player-controls-form">
-                <div class="track-controls">
-                    <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-backward active" (click)="previous()" [class.active]="history.length >= 2" title="Piste précédente. Raccourci clavier : haut"></span>
-                    <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-play active" (click)="play()" *ngIf="isPlaying != undefined && !isPlaying" title="(Re)Démarre la lecture"></span>
-                    <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-pause active" (click)="pause(true)" *ngIf="isPlaying == undefined || isPlaying" title="Met en pause la lecture. Raccourci clavier : Espace"></span>
-                    <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-forward active" (click)="next()" title="Piste suivante. Raccourci clavier : bas"></span>
-                    <span style="font-size: 32px; margin-right: 10px;" class="svg-checkbox glyphter-random" [class.active]="shuffle" (click)="shuffle = !shuffle" title="Mode de lecture aléatoire. Une piste ne sera pas rejouée tant que les autres pistes du disque n'ont pas été jouées."></span>
-                    <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-repeat"  [class.active]="repeatMode === 'disc'"  (click)="toggleRepeatMode()" *ngIf="repeatMode != 'track'" title="Lit en boucle le disque actuel."></span>
-                    <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-refresh" [class.active]="repeatMode === 'track'" (click)="toggleRepeatMode()" *ngIf="repeatMode == 'track'" title="Lit en boucle la piste actuelle."></span>
-                </div>
-            </form>
-        </div>
+      <div id="player-position-start" class="text">
+        <span title="Durée écoulée depuis le début de la piste">{{slider.max && !trackIsLoading ? formatHMSS(slider.value - slider.min) : '0:00'}}</span> / <span title="Durée totale de la piste">{{slider.max && !trackIsLoading ? formatHMSS(slider.max - slider.min) : '0:00'}}</span>
+      </div>
 
-        <div id="player-position">
+      <div id="player-position-slider">
+        <!--<input name="fileSlider" [(ngModel)]="fileSlider.value" type="range" min="{{fileSlider.min}}" max="{{fileSlider.max}}" readonly/>-->
+        <!-- TODO : à mettre à disabled tant que la vidéo n'est pas chargée -->
+        <app-slider [player]="this"></app-slider>
+      </div>
 
-            <div id="player-position-start" class="text">
-                <span title="Durée écoulée depuis le début de la piste">{{slider.max && !trackIsLoading ? formatHMSS(slider.value - slider.min) : '0:00'}}</span> / <span title="Durée totale de la piste">{{slider.max && !trackIsLoading ? formatHMSS(slider.max - slider.min) : '0:00'}}</span>
-            </div>
-
-            <div id="player-position-slider">
-                <!--<input name="fileSlider" [(ngModel)]="fileSlider.value" type="range" min="{{fileSlider.min}}" max="{{fileSlider.max}}" readonly/>-->
-                <!-- TODO : à mettre à disabled tant que la vidéo n'est pas chargée -->
-                <app-slider [player]="this"></app-slider>
-            </div>
-
-            <div id="player-position-end" class="text" style="right: 0;">
-                <span title="Heure actuelle">{{getTime()}}</span> / <span title="Heure qu'il sera à la fin de la piste">{{getTime(slider.max - slider.value)}}</span>
-            </div>
-        </div>
-
-        <div id="player-infos" *ngIf="currentTrack">
-
-            <h2 id="player-disc-name">
-                {{currentTrack.disc.title}}
-                <a [href]="currentTrack.disc.src" *ngIf="currentTrack.disc.src" title="Voir sur YouTube"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
-            </h2>
-            <h3 id="player-track-name"><span class="track-number">{{currentTrack.number}}.</span> {{currentTrack.title}}</h3><!-- TODO : "Track X" si title vide -->
-            <h4 id="player-track-performer">{{currentTrack.performer}}</h4>
-
-            <!-- TODO : tracklist courante -->
-            <!--
-            <div [(ngModel)]="currentTrack.disc" class="columns">
-                <ol class="disc-list">
-                    <div *ngFor="let file of currentTrack.disc.files">
-                        <li *ngFor="let track of file.tracks" class="track" [class.active]="track ==) discs[currentTrack.disc.index].files[currentTrack.file.index].tracks[currentTrack.index]" [class.disabled]="!track.enabled" (click)="loadTrackIndex($index, $parent.$index)">
-                            <input type="checkbox" [(ngModel)]="track.enabled" (click)="track.afterClickCheckbox($event)" />
-                            <span>{{track.title || "Track "+track.number}}</span>
-                        </li>
-                    </div>
-                </ol>
-            </div>
-            -->
-        </div>
+      <div id="player-position-end" class="text" style="right: 0;">
+        <span title="Heure actuelle">{{getTime()}}</span> / <span title="Heure qu'il sera à la fin de la piste">{{getTime(slider.max - slider.value)}}</span>
+      </div>
     </div>
+
+    @if (currentTrack) {
+      <div id="player-infos">
+        <h2 id="player-disc-name">
+          {{currentTrack.disc.title}}
+          @if (currentTrack.disc.src) {
+            <a [href]="currentTrack.disc.src" title="Voir sur YouTube"><span class="monochrome youtube-color-hover glyphter-YouTube_Play_Button" style="font-size: 16px;"></span></a>
+          }
+        </h2>
+        <h3 id="player-track-name"><span class="track-number">{{currentTrack.number}}.</span> {{currentTrack.title}}</h3><!-- TODO : "Track X" si title vide -->
+        <h4 id="player-track-performer">{{currentTrack.performer}}</h4>
+        <!-- TODO : tracklist courante -->
+        <!--
+        <div [(ngModel)]="currentTrack.disc" class="columns">
+          <ol class="disc-list">
+            <div *ngFor="let file of currentTrack.disc.files">
+              <li *ngFor="let track of file.tracks" class="track" [class.active]="track ==) discs[currentTrack.disc.index].files[currentTrack.file.index].tracks[currentTrack.index]" [class.disabled]="!track.enabled" (click)="loadTrackIndex($index, $parent.$index)">
+                <input type="checkbox" [(ngModel)]="track.enabled" (click)="track.afterClickCheckbox($event)" />
+                <span>{{track.title || "Track "+track.number}}</span>
+              </li>
+            </div>
+          </ol>
+        </div>
+        -->
+      </div>
+    }
+  </div>
 </div>

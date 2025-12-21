@@ -11,19 +11,21 @@
     <div id="collapseOne" class="panel-collapse collapse in">
       <ul class="list-group">
         <li class="list-group-item clickable" (click)="playDefaultCollection()"
-            [class.active]="player.currentCollectionNames.length === 0"><i>Collection par défaut</i></li>
-        <li class="list-group-item clickable" *ngFor="let item of items"
-            [class.active]="item.isCurrent" (click)="item.play()"
-            title="Sélectionner uniquement cette collection comme liste de lecture"
-        >
-          <input style="margin-right: 8px;" type="checkbox"
-                 [checked]="item.isCurrent"
-                 (click)="item.toggle($event)"
-                 [title]="(item.isCurrent ? 'Supprimer' : 'Ajouter') + ' cette collection à la liste de lecture'"
-          />{{item.name}}
-          <mat-icon (click)="item.delete()" align="end" class="right-icon">delete</mat-icon>
-        </li>
-      </ul>
+          [class.active]="player.currentCollectionNames.length === 0"><i>Collection par défaut</i></li>
+          @for (item of items; track item) {
+            <li class="list-group-item clickable"
+              [class.active]="item.isCurrent" (click)="item.play()"
+              title="Sélectionner uniquement cette collection comme liste de lecture"
+              >
+              <input style="margin-right: 8px;" type="checkbox"
+                [checked]="item.isCurrent"
+                (click)="item.toggle($event)"
+                [title]="(item.isCurrent ? 'Supprimer' : 'Ajouter') + ' cette collection à la liste de lecture'"
+                />{{item.name}}
+                <mat-icon (click)="item.delete()" align="end" class="right-icon">delete</mat-icon>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
