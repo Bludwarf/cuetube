@@ -46,3 +46,7 @@ testem.log
 .DS_Store
 Thumbs.db
 /.angular/
+
+# Generated files
+src/environments/.env
+src/environments/.env.json

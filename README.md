@@ -88,6 +88,14 @@ Stockée dans `/client/youtube/*.json`.
 
 Version NodeJS : [4.6.1](https://nodejs.org/en/blog/release/v4.6.1/)
 
+Créer le fichier [.env](src/environments/.env) avec le contenu suivant :
+
+```dotenv
+GOOGLE_API_KEY=[...]
+```
+
+Lancer `npm run generate-dot-env`.
+
 ## cuesheet
 
 Liste des remarques `REM` utilisées :
