@@ -1,13 +1,13 @@
-import { Component, NgZone, OnInit } from '@angular/core';
-import { Disc } from '../../disc';
-import { LocalStoragePersistence } from '../../persistence/LocalStoragePersistence';
-import { HttpClient } from '@angular/common/http';
-import { GapiClientService } from '../gapi-client.service';
-import { Persistence } from '../../persistence';
+import {Component, NgZone, OnInit} from '@angular/core';
+import {Disc} from '../../disc';
+import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
+import {HttpClient} from '@angular/common/http';
+import {GapiClientService} from '../gapi-client.service';
+import {Persistence} from '../../persistence';
 import * as _ from 'underscore';
 import $ from 'jquery';
-import { AppComponent } from '../app.component';
-import { LocalStoragePrefsService } from '../local-storage-prefs.service';
+import {AppComponent} from '../app.component';
+import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import Track = Disc.Track;
 
 @Component({
@@ -21,22 +21,20 @@ export class EditCueComponent implements OnInit {
     private localPersistence: LocalStoragePersistence;
     private persistence: Persistence;
     disc: Disc;
-    /** true si le disque n'existe pas encore */
-    public creationMode = false;
+    /** true si a commencé la création du disque depuis une autre page */
+    public discToCreateFromOtherPage = false;
 
     /** Pistes à supprimer après la sauvegarde du disque */
     removedTracks: Track[] = [];
 
     constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone,
-        public prefs: LocalStoragePrefsService) {
+                public prefs: LocalStoragePrefsService) {
     }
 
     ngOnInit() {
         this.localPersistence = new LocalStoragePersistence(this.http);
         this.persistence = this.getPersistence();
         console.log('persistence =', this.persistence);
-        /** true si le disque n'existe pas encore */
-        let creationMode = false;
 
         const params = {
             id: getParameterByName('id', undefined)
@@ -45,16 +43,16 @@ export class EditCueComponent implements OnInit {
             alert('Veuillez indiquer l\'id du disque à modifier');
             return;
         }
-        this.persistence.init({ gapiClient: this.gapiClient })
-            .then(isInit => this.persistence.getDisc(params.id))
-            .catch(err => {
+        this.persistence.init({gapiClient: this.gapiClient})
+            .then(() => this.persistence.getDisc(params.id))
+            .catch(() => {
 
                 // On est peut-être en train de créer ce disque ?
                 const cue = new cuesheet.CueSheet();
-                const existingCueItem = this.localPersistence.getItem('discToCreate');
-                creationMode = !existingCueItem;
+                const discToCreateJson = this.localPersistence.getItem<string>('discToCreate');
+                this.discToCreateFromOtherPage = !!discToCreateJson;
 
-                if (creationMode) {
+                if (!this.discToCreateFromOtherPage) {
                     const discToCreate = new Disc(cue);
 
                     if (!discToCreate.id) {
@@ -63,21 +61,23 @@ export class EditCueComponent implements OnInit {
                     if (!discToCreate.src) {
                         discToCreate.src = `https://www.youtube.com/watch?v=${params.id}`;
                     }
-                    if (!discToCreate.files || !discToCreate.files.length) {
+                    if (!discToCreate.files?.length) {
                         this.newFile(discToCreate);
                     }
 
                     return discToCreate;
 
                 } else {
-                    _.extend(cue, existingCueItem);
+                    const discToCreate = JSON.parse(discToCreateJson) as Disc;
+                    _.extend(cue, discToCreate);
                     return new Disc(cue);
                 }
             })
-            .then(disc => {
-                this.disc = disc;
+            .then(discToCreate => {
+                this.disc = discToCreate;
                 this.showPlayer();
-                this.zone.run(() => { });
+                this.zone.run(() => {
+                });
             });
 
         // Détection de changement du disque
@@ -110,8 +110,7 @@ export class EditCueComponent implements OnInit {
             // TODO notif à l'appli principale via SharedWebWorkers pour éviter qu'elle n'écrase les modifs en quittant
 
             // TODO remplacer ce code par une notif via SharedWebWorkers
-            if (this.creationMode) {
-                this.creationMode = false;
+            if (this.discToCreateFromOtherPage) {
                 localStorage.removeItem('discToCreate');
                 prompt('Le disque est maintenant créé vous pouvez l\'ajouter dans CueTube avec cette URL :', this.disc.url);
             }
