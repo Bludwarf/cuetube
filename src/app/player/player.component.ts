@@ -1,6 +1,6 @@
 ///<reference path="../../../node_modules/@types/youtube/index.d.ts"/>
 import {AfterViewInit, Component, EventEmitter, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
 // import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
 import {Disc} from '../../disc';
@@ -17,8 +17,7 @@ import {Location as AngularLocation} from '@angular/common';
 import {SubscriptionLike as ISubscription} from 'rxjs';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import $ from 'jquery';
-
-const GOOGLE_KEY = 'AIzaSyBOgJtkG7pN1jX4bmppMUXgeYf2vvIzNbE';
+import {environment} from '../../environments/environment-with-dot-env';
 
 const YT_STATES = [
   'ENDED',
@@ -958,7 +957,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   /** @return Promise https://developers.google.com/youtube/v3/docs/videos#resource */
   getVideoSnippet(videoId, cb) {
     // TODO comment recréer une Promise par dessus le promise de getVideo .
-    this.persistence.getVideo(videoId, GOOGLE_KEY).then(video => {
+    this.persistence.getVideo(videoId, environment.googleApiKey).then(video => {
       cb(null, video.snippet);
     }).catch(err => {
       cb(err);
@@ -1064,7 +1063,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
   // TODO : convertir en promise
   getPlaylistItems(playlistId, cb) {
-    this.persistence.getPlaylistItems(playlistId, GOOGLE_KEY).then(data => {
+    this.persistence.getPlaylistItems(playlistId, environment.googleApiKey).then(data => {
       cb(null, data);
     }).catch(err => {
       cb(err);
