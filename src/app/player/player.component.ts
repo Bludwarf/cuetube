@@ -1111,11 +1111,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     if (existingDiscIndex === -1 && this.cuetubeConf.debug) {
       prompt('Disque créé avec l\'id suivant', disc.id);
     }
-
-    // Lecture auto
-    if (this.cuetubeConf.addDisc.autoplay) {
-      disc.play();
-    }
   }
 
   createNewDiscFromPlaylist(playlistIdOrUrl, url, cb) {
@@ -1194,7 +1189,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param {string} url? URL de la vidéo/playlist, si vide alors on demande à l'utilisateur
    * @param cb? callback
    */
-  createNewDiscFromVideoOrPlaylist(url?: string, cb?: { (collection: Collection) }) {
+  async createNewDiscFromVideoOrPlaylist(url?: string, cb?: { (collection: Collection) }) {
 
     url = url || prompt('URL de la vidéo/playlist YouTube');
     cb = cb || (err => {
@@ -1224,37 +1219,46 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     if (playlistId || videoId) {
       const id = playlistId || videoId;
       console.log(`Récupération du disque ${id}...`);
-      this.persistence.getDisc(id).then(disc => {
-        const msg = 'La vidéo/playlist existe déjà localement. L\'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.';
-        if (confirm(msg)) {
+
+      let disc: Disc;
+      try {
+          disc = await this.persistence.getDisc(id);
+      } catch (err) {
+          console.error('Erreur lors de la récupération locale :', err);
+
+          console.log('On recherche si ' + id + ' n\'est pas déjà connu de CueTube...');
+          return this.getCueService().getCueFromCueTube(id).then(cue => {
+              const msg = 'La vidéo/playlist existe déjà dans CueTube.'
+                  + ' L\'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.';
+              if (confirm(msg)) {
+                  const disc = new Disc(cue);
+                  disc.src = url;
+                  this.importDisc(disc, cb);
+                  console.log('this.$apply(); createNewDiscFromVideoOrPlaylist3');
+              } else {
+                  fallback();
+              }
+          }).catch(err2 => {
+              console.error('Erreur lors de la récupération dans CueTube : ' + err2);
+              fallback();
+          });
+      }
+
+      const msg = 'La vidéo/playlist existe déjà localement. L\'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.';
+      if (confirm(msg)) {
           disc.src = url;
           // Import du disque (sans sauvegarde avec la persistance)
           enrichDisc(disc, this);
           this.createDisc(disc);
           console.log('this.$apply(); createNewDiscFromVideoOrPlaylist2');
-        } else {
+      } else {
           fallback();
-        }
-      }).catch(err => {
-        console.error('Erreur lors de la récupération locale :', err);
+      }
 
-        console.log('On recherche si ' + id + ' n\'est pas déjà connu de CueTube...');
-        this.getCueService().getCueFromCueTube(id).then(cue => {
-          const msg = 'La vidéo/playlist existe déjà dans CueTube.'
-            + ' L\'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.';
-          if (confirm(msg)) {
-            const disc = new Disc(cue);
-            disc.src = url;
-            this.importDisc(disc, cb);
-            console.log('this.$apply(); createNewDiscFromVideoOrPlaylist3');
-          } else {
-            fallback();
-          }
-        }).catch(err2 => {
-          console.error('Erreur lors de la récupération dans CueTube : ' + err2);
-          fallback();
-        });
-      });
+      // Lecture auto
+      if (this.cuetubeConf.addDisc.autoplay) {
+          disc.play();
+      }
 
     } else {
       fallback();
