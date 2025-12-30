@@ -89,6 +89,11 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   private player: YT.Player;
   private isInitYT = false;
 
+  /**
+   * Le player YouTube a déjà lu une video après avoir été prêt ?
+   */
+  private videoPlayingAfterPlayerReady = false;
+
   /** latence si on passe par this.player.getPlayerStat() */
   isPlaying: boolean = undefined;
 
@@ -262,6 +267,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.videoPlaying.subscribe(() => {
       console.log('on video playing');
+      this.videoPlayingAfterPlayerReady = true;
 
       // On vient en fait de démarrer une nouvelle piste ?
       if (this.trackIsLoading) {
@@ -285,15 +291,18 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /** On vient de lancer une vidéo retirée de YouTube */
     this.unstartedVideo.subscribe(() => {
-      // On démarre un chrono de 2 seconde pour détecter si la vidéo a été supprimée
-      if (!this.deletedVideoTimeout) {
-        console.log(`La vidéo n'a pas encore démarré. On attend ${DELETED_VIDEO_TIMEOUT}`
-          + ` secondes avant de la déclarer comme supprimée de YouTube...`);
-        const thisComponent = this;
-        this.deletedVideoTimeout = window.setTimeout(function () {
-          console.error(`La vidéo n'a toujours pas démarrée depuis ${DELETED_VIDEO_TIMEOUT} secondes. On la déclare supprimée.`);
-          thisComponent.deletedVideo.emit();
-        }, DELETED_VIDEO_TIMEOUT * 1000);
+      console.log('on unstarted video', this.videoPlayingAfterPlayerReady);
+      if (this.videoPlayingAfterPlayerReady) {
+          // On démarre un chrono de 2 seconde pour détecter si la vidéo a été supprimée
+          if (!this.deletedVideoTimeout) {
+              console.log(`La vidéo n'a pas encore démarré. On attend ${DELETED_VIDEO_TIMEOUT}`
+                  + ` secondes avant de la déclarer comme supprimée de YouTube...`);
+              const thisComponent = this;
+              this.deletedVideoTimeout = window.setTimeout(function () {
+                  console.error(`La vidéo n'a toujours pas démarrée depuis ${DELETED_VIDEO_TIMEOUT} secondes. On la déclare supprimée.`);
+                  thisComponent.deletedVideo.emit();
+              }, DELETED_VIDEO_TIMEOUT * 1000);
+          }
       }
     });
 
@@ -1298,10 +1307,12 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.prefs.saveAllPlayer(this);
   }
 
-  onPlayerReady(event) {
-    const player = event ? event.target : this.player;
-    player.playVideo();
-    this.videoStarted.emit();
+  onPlayerReady() {
+    console.log('Lecteur YouTube prêt. Veuillez démarrer la lecture manuellement');
+    // Il ne semble pas possible de lire automatiquement une vidéo sans interaction utilisateur
+    // cf. https://stackoverflow.com/questions/7281765/how-to-embed-an-autoplaying-youtube-video-in-an-iframe
+    // Autre piste : https://medium.com/@mihauco/youtube-iframe-api-without-youtube-iframe-api-f0ac5fcf7c74
+    this.videoPlayingAfterPlayerReady = false;
   }
 
   // 5. The API calls this function when the player's state changes.
