@@ -588,7 +588,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
    */
-  getCollectionParam() {
+  getCollectionParam(): string | null {
     const param = getParameterByName('collection', document.location.search);
     if (!param) {
       return null;
@@ -1378,8 +1378,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  removeDisc(disc) {
-    const collectionParam = this.getCollectionParam();
+  removeDisc(disc: Disc) {
+    const collectionParam = this.getCollectionParam() || DEFAULT_COLLECTION;
     const collectionNames = collectionParam.split(',');
     const promises = [];
     let removeConfirmed = true;
