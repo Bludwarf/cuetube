@@ -998,10 +998,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // TODO : cb => Promise
-  createNewDiscFromVideo(videoIdOrUrl, url, cb) {
-    const videoId = getIdOrUrl(videoIdOrUrl, 'Id ou URL de la vidéo YouTube (multipiste)', 'v');
+  createNewDiscFromVideoId(videoId, srcUrl, cb) {
     if (!videoId) {
-      return cb(new Error(`ID de la vidéo YouTube non reconnue dans l'URL ${videoIdOrUrl}`));
+      return cb(new Error(`ID de la vidéo YouTube non reconnue dans l'URL ${srcUrl}`));
     }
     cb = cb || function () {
     };
@@ -1014,7 +1013,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       const videoUrl = this.getVideoUrlFromId(videoId);
       try {
         const disc = ytparser.newDiscFromVideoSnippet(snippet, videoUrl);
-        disc.src = url;
+        disc.src = srcUrl;
         this.importDisc(disc, cb);
       } catch (e) {
         if (e.name === 'youtube.notracklist') {
@@ -1069,7 +1068,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     const playlistId = getParameterByName('list', url);
-    const videoId = getParameterByName('v', url);
+    const videoId = this.getVideoIdFromUrl(url);
     const ctrl = this;
 
     // Si la cue n'est pas connue de CueTube/cues
@@ -1077,7 +1076,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       if (playlistId) {
         return ctrl.createNewDiscFromPlaylist(playlistId, url, cb);
       } else {
-        return ctrl.createNewDiscFromVideo(url, url, cb);
+        return ctrl.createNewDiscFromVideoId(videoId, url, cb);
       }
     }
 
@@ -1129,6 +1128,20 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       fallback();
     }
+  }
+
+  getVideoIdFromUrl(urlString: string): string | undefined {
+      if (urlString.match(/:\/\//)) { // URL ?
+          const url = new URL(urlString);
+          if (url.hostname === 'youtu.be') {
+              // Exemple : https://youtu.be/PcXlmQ-52n4?si=IMngg3XUroRED9Ha
+              return url.pathname.substring(1);
+          } else {
+              return url.searchParams.get('v');
+          }
+      } else {
+          return undefined;
+      }
   }
 
   /**
@@ -1696,7 +1709,13 @@ function getIdOrUrl(idOrUrl, promptMessage, urlParam) {
   if (!idOrUrl) {
     return undefined;
   } else if (idOrUrl.match(/:\/\//)) { // URL ?
-    return getParameterByName(urlParam, idOrUrl);
+    const url = new URL(idOrUrl);
+    if (url.hostname === 'youtu.be') {
+        // Exemple : https://youtu.be/PcXlmQ-52n4?si=IMngg3XUroRED9Ha
+        return url.pathname.substring(1);
+    } else {
+        return url.searchParams[urlParam];
+    }
   } else {
     return idOrUrl;
   }
