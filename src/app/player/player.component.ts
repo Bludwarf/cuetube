@@ -193,14 +193,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       getVideoSnippet: undefined
     };
 
-
-    /*function getVideoIdFromUrl(url) {
-        const i = url.indexOf('?');
-        if (i === -1) return undefined;
-        const query = querystring.decode(url.substr(i+1));
-        return query.v;
-    }*/
-
     this.videoStarted.subscribe(() => {
       this.trackStarted.emit();
     });
@@ -319,62 +311,12 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.next();
     });
 
-    /*function getCueIndexAt(video, time) {
-        const first = video.cues[0];
-        if (time < first.startSeconds) return -1;
-
-        const last = video.cues[video.cues.length - 1];
-        if (time >= last.endSeconds) return -1;
-
-        for (const i = 0; i < video.cues.length; ++i) {
-            const cue = video.cues[i];
-            if (time <= cue.endSeconds) return i;
-        }
-        return -1;
-    }*/
-
-    // this.$watch('currentTrack', function (newTrack, oldTrack) {
-    //   const newDisc = newTrack ? newTrack.disc : null;
-    //   const oldDisc = oldTrack ? oldTrack.disc : null;
-    //   if (newDisc !== oldDisc) {
-    //     document.body.style.backgroundImage = 'url(https://img.youtube.com/vi/' + newDisc.videoId + '/hqdefault.jpg)';
-    //   }
-    // });
-
-    // INIT
-
-    /*
-    this.onSignIn = function(googleUser) {
-      gapiClient.init().then(() => {
-
-        const logoutBtn = document.getElementById("logout-btn");
-        // logoutBtn.innerHTML = `<img src="${googleUser.getImageUrl()}" />${googleUser.getGivenName()}`;
-        logoutBtn.innerHTML = `${googleUser.getGivenName()}`;
-
-        if (!gapi.client.drive) {
-          alert("Google Drive non initialisé");
-          return;
-        }
-        const googleDrivePersistence = new GoogleDrivePersistence(this.http);
-
-        // TODO : synchro avec l'ancienne persistance pour ne rien perdre
-
-        // RAZ de variables/caches, etc...
-        // this.discIdsByCollection = {}; // déjà fait par init()
-
-        persistence = googleDrivePersistence;
-        localStorage.setItem("persistence", "GoogleDrive");
-        this.init();
-      });
-    };
-    */
-
     // FIXME Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
     HistoryUtils.getState = () => {
       return history.state || this.getStateFromLocation(document.location);
     };
 
-    this.locationSubscription = this.location.subscribe(event => {
+    this.locationSubscription = this.location.subscribe(() => {
       const state = HistoryUtils.getState();
       if (state) {
         console.log('state', state);
@@ -386,7 +328,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    this.currentCollectionNamesChange.subscribe(currentCollectionNames => {
+    this.currentCollectionNamesChange.subscribe(() => {
       const isDefaultCollection = this.currentCollectionNames.length === 0;
 
       // Historique navigateur
@@ -419,7 +361,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     window.$scope = component;
 
     // Avant fermeture de la page
-    window.onbeforeunload = function (e) {
+    window.onbeforeunload = function () {
       console.log('Sauvegarde avant fermeture...');
       component.save();
     };
@@ -457,7 +399,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     // Fermeture de la tracklist ouverte si click ailleurs
-    window.document.addEventListener('click', function (e) {
+    window.document.addEventListener('click', function () {
       const lastToggled = component.lastToggledTracklist;
       if (lastToggled != null) {
         $(lastToggled).hide();
@@ -471,8 +413,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     const collectionParam = this.getCollectionParam();
 
     // Collections
-    const isInit = await this.persistence.init({gapiClient: this.gapiClient});
-    const collectionNames = await this.loadCollectionNames();
+    await this.persistence.init({gapiClient: this.gapiClient});
+    await this.loadCollectionNames();
 
     /** @deprecated TODO à remplacer par discsById */
     this.discs = []; // au cas où personne ne l'initialise
@@ -605,7 +547,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     return decodeURIComponent(param);
   }
 
-  toggleRepeatMode(e) {
+  toggleRepeatMode() {
     if (!this.repeatMode) {
       this.repeatMode = 'disc';
     } else if (this.repeatMode === 'disc') {
@@ -698,23 +640,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.isInitYT = true;
     }
-  }
-
-  /**
-   * @param [videoIndex]
-   * @deprecated
-   */
-  loadTrackIndex(trackIndex, fileIndex, discIndex) {
-
-    trackIndex = defaults(trackIndex, this.currentTrack && this.currentTrack.index);
-    fileIndex = defaults(fileIndex, this.currentTrack && this.currentTrack.file.index);
-    discIndex = defaults(discIndex, this.currentTrack && this.indexOf(this.currentTrack.disc));
-
-    const disc = this.discs[discIndex];
-    const file = disc.files[fileIndex];
-    const track = file.tracks[trackIndex];
-
-    this.loadTrack(track);
   }
 
   /**
@@ -917,48 +842,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  /** Ajout d'une nouvelle vidéo */
-  addVideo() {
-    const videoId = prompt('videoId de la nouvelle vidéo ?');
-    if (!videoId) {
-      return;
-    }
-
-    // Structure YouTube
-    // FIXME : remplacer les prompt en cascade par un form
-    const video = {
-      snippet: {
-        title: prompt('Titre'),
-        channelTitle: prompt('Nom de la chaîne')
-      },
-      contentDetails: {
-        duration: prompt('Durée (exemple : "PT2H6M53S" = 2h 6m 53s)')
-      }
-    };
-
-    // Annulé ?
-    if (!video.snippet.title || !video.snippet.channelTitle || !video.contentDetails.duration) {
-      return;
-    }
-
-    this.persistence.saveDisc(videoId, video).then(() => {
-      // POST OK
-      alert('POST OK');
-    }, () => {
-      // POST KO
-      alert('POST KO');
-    });
-  }
-
-  getVideoId() {
-    // return getVideoIdFromUrl(file.name);
-    // return getParameterByName("v", file.name);
-    if (!this.currentTrack) {
-      return undefined;
-    }
-    return this.currentTrack.file.videoId;
-  }
-
   getVideoUrlFromId(id) {
     return 'https://www.youtube.com/watch?v=' + id;
   }
@@ -1041,25 +924,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isPlaying = false;
   }
 
-  /** src : https://coderwall.com/p/ngisma/safe-apply-in-angular-js */
-  safeApply(fn) {
-
-    // // AngularJS
-    // const phase = this.$root.$$phase;
-    // if (phase === '$apply' || phase === '$digest') {
-    //   if (fn && (typeof(fn) === 'function')) {
-    //     fn();
-    //   }
-    // } else {
-    //   this.$apply(fn);
-    // }
-
-    // Angular 4 ?
-    if (fn && (typeof (fn) === 'function')) {
-      fn();
-    }
-  }
-
   /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
   // TODO : convertir en promise
   getPlaylistItems(playlistId, cb) {
@@ -1098,9 +962,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
         console.log('Ajout du disque dans la collection ' + collectionName);
         discIds.push(disc.id);
-        this.persistence.saveCollectionDiscIds(collectionName, discIds).then(discIdsI => {
+        this.persistence.saveCollectionDiscIds(collectionName, discIds).then(() => {
           console.log('Disque ajouté avec succès dans la collection ' + collectionName);
-        }, resKO => {
+        }, () => {
           alert('Erreur lors de l\'ajout du disque dans la collection ' + collectionName);
         });
       }
@@ -1137,7 +1001,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!videoId) {
       return;
     }
-    cb = cb || function (err, disc) {
+    cb = cb || function () {
     };
 
     this.getVideoSnippet(videoId, (err, snippet) => {
@@ -1171,7 +1035,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     console.log('Création du disc...', disc);
     // TODO : pouvoir passer le disc en JSON -> problème de circular ref
-    this.persistence.saveDisc(disc.id, disc).then(createdDisc => {
+    this.persistence.saveDisc(disc.id, disc).then(() => {
       this.createDisc(disc);
       if (cb) {
         cb(null, disc);
@@ -1278,7 +1142,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
       }
       const collection = new Collection(name);
-      this.persistence.saveCollection(collection).then(collectionCreee => {
+      this.persistence.saveCollection(collection).then(() => {
         this.collectionNames.push(collection.name);
         this.collectionNames = this.collectionNames.sort();
         this.collectionNamesChange.emit(this.collectionNames);
@@ -1419,7 +1283,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // Attente des promises
-    Promise.all(promises).then(results => {
+    Promise.all(promises).then(() => {
       if (removeConfirmed) {
         const index = this.discs.indexOf(disc);
         if (index === -1) {
@@ -1686,25 +1550,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   *
-   * @param time
-   * @return {string}
-   * @author https://stackoverflow.com/a/6313008
-   */
-  formatHHMMSS(time) {
-    return formatHHMMSS(time);
-  }
-
-  /**
-   *
-   * @param time
-   * @return {string}
-   */
-  formatMMSS(time) {
-    return formatMMSS(time);
-  }
-
-  /**
    * Format YouTube
    * @param time
    * @return {string}
@@ -1835,14 +1680,6 @@ function getYouTubeStartSeconds(track, time = track.startSeconds) {
   }
 
   return start;
-}
-
-function defaults(value, defaultValue) {
-  if (typeof (value) === 'undefined') {
-    return defaultValue;
-  } else {
-    return value;
-  }
 }
 
 /**
