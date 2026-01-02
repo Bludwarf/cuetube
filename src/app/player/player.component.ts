@@ -1440,9 +1440,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       console.error('Erreur lors du chargement du disque', e);
       return undefined;
     })))
-      .then(loadedDiscs => {
+      .then(loadedAndUndefinedDiscs => {
+        const loadedDiscs = loadedAndUndefinedDiscs.filter(disc => disc);
         console.log('Disques chargés :', loadedDiscs);
-        loadedDiscs = loadedDiscs.filter(disc => disc);
         this.discs = loadedDiscs;
         if (!this.isInitYT) {
           this.initYT(); // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
@@ -1464,7 +1464,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Recherche d'abord dans la mémoire
     let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
-    return new Promise<Disc>((resolve, reject) => {
+    return new Promise<Disc>(resolve => {
       return resolve(this.persistence.getDisc(discId));
     })
       .catch(resKO => {
@@ -1475,14 +1475,16 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         return <Disc>null;
       })
       .then(disc => {
-        enrichDisc(disc, this);
+          if (disc) {
+              enrichDisc(disc, this);
 
-        // Reprise des paramètres sauvegardés
-        this.prefs.restoreDisc(disc);
+              // Reprise des paramètres sauvegardés
+              this.prefs.restoreDisc(disc);
 
-        // Ajout dans le player
-        this.addDisc(disc);
-        return disc;
+              // Ajout dans le player
+              this.addDisc(disc);
+              return disc;
+          }
       });
   }
 
