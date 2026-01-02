@@ -479,7 +479,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     const collectionNames = [];
     const unknownCollectionNames = [];
     requestedCollectionNames.forEach(collectionName => {
-      if (knownCollectionNames.includes(collectionName) && !collectionNames.includes(collectionName)) {
+      if (collectionName === DEFAULT_COLLECTION) {
+        // Collection par défaut
+      } else if (knownCollectionNames.includes(collectionName) && !collectionNames.includes(collectionName)) {
         collectionNames.push(collectionName);
       } else {
         unknownCollectionNames.push(collectionName);
