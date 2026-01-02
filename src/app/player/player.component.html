@@ -107,9 +107,9 @@
         <div class="track-controls">
           <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-backward active" (click)="previous()" [class.active]="history.length >= 2" title="Piste précédente. Raccourci clavier : haut"></span>
           @if (!isPlaying) {
-            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-play active" (click)="play()" title="(Re)Démarre la lecture"></span>
+            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-play active" (click)="play()" title="(Re)Démarre la lecture. Raccourci clavier : Espace"></span>
           } @else {
-            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-pause active" (click)="pause(true)" title="Met en pause la lecture. Raccourci clavier : Espace"></span>
+            <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-pause active" (click)="pause()" title="Met en pause la lecture. Raccourci clavier : Espace"></span>
           }
           <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-forward active" (click)="next()" title="Piste suivante. Raccourci clavier : bas"></span>
           <span style="font-size: 32px; margin-right: 10px;" class="svg-checkbox glyphter-random" [class.active]="shuffle" (click)="shuffle = !shuffle" title="Mode de lecture aléatoire. Une piste ne sera pas rejouée tant que les autres pistes du disque n'ont pas été jouées."></span>

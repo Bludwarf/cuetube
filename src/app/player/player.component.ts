@@ -999,32 +999,26 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.checkCurrentTime();
   }
 
-  playPause(skipForeground = false) {
+  playPause() {
     const player = this.player;
     if (!player) {
       return;
     }
     const state = player.getPlayerState();
     if (state === YT.PlayerState.PLAYING) {
-      this.pause(skipForeground);
+      this.pause();
     } else {
       this.play();
     }
   }
 
-  // TODO : remonter dans app
   showPlayer() {
     this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
     this.$foreground.hide();
   }
 
-  // TODO : remonter dans app
-  hidePlayer(pauseButton = false) {
-    if (pauseButton) {
-      this.$foregroundIcon.html(`<span class="glyphicon glyphicon-pause"></span>`);
-    } else {
-      this.$foregroundIcon.html(`<div id="foreground-overlay-icon" class="center font-size-50p"></div>`);
-    }
+  hidePlayer() {
+    this.$foregroundIcon.html(`<div id="foreground-overlay-icon" class="center font-size-50p"></div>`);
     this.$foreground.show();
   }
 
@@ -1038,15 +1032,12 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isPlaying = true;
   }
 
-  pause(skipForeground) {
+  pause() {
     const player = this.player;
     if (!player) {
       return;
     }
     player.pauseVideo();
-    if (!skipForeground) {
-      this.hidePlayer(true);
-    }
     this.isPlaying = false;
   }
 
