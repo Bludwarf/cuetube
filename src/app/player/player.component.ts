@@ -1001,7 +1001,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   createNewDiscFromVideo(videoIdOrUrl, url, cb) {
     const videoId = getIdOrUrl(videoIdOrUrl, 'Id ou URL de la vidéo YouTube (multipiste)', 'v');
     if (!videoId) {
-      return;
+      return cb(new Error(`ID de la vidéo YouTube non reconnue dans l'URL ${videoIdOrUrl}`));
     }
     cb = cb || function () {
     };
