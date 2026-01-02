@@ -454,7 +454,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     // ];
   }
 
-  async loadCollectionNames(): Promise<string[]> {
+  async loadCollectionNames(): Promise<void> {
     let collectionNames = await this.persistence.getCollectionNames();
     collectionNames = collectionNames
       .filter(collectionName => collectionNames && collectionName.toLowerCase() !== DEFAULT_COLLECTION.toLowerCase());
@@ -464,7 +464,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.collectionNames = collectionNames;
       this.collectionNamesChange.emit(collectionNames);
       console.log('Noms des collections chargés', collectionNames);
-      return collectionNames;
+      return;
     } catch (e) {
       console.error(e);
       alert('Erreur lors du chargement de la liste des collections :' + e);
