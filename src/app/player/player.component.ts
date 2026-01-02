@@ -437,7 +437,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     const current = this.prefs.getCurrentPlayerState();
     if (current) {
       if (current.collectionNames) {
-        console.log('On reprendre la lecture des collections ' + current.collectionNames.join(', '));
+        console.log('On reprend la lecture des collections ' + current.collectionNames.join(', '));
         return this.loadDiscsFromCollections(current.collectionNames);
       }
     }
