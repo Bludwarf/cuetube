@@ -58,7 +58,7 @@ export abstract class Persistence {
 
     public abstract saveSyncState(): Promise<SyncState>;
 
-    constructor(public $http: HttpClient) {
+    protected constructor(public $http: HttpClient) {
     }
 
     /**
@@ -70,7 +70,7 @@ export abstract class Persistence {
     /**
      * @return {Promise<boolean>} true si init OK, false sinon
      */
-    public init(params: any): Promise<boolean> {
+    public init(_params: any): Promise<boolean> {
         return Promise.resolve(true);
     }
 
@@ -113,7 +113,7 @@ export abstract class Persistence {
             }).then(savedCollection2 => {
                 // TODO ajout d'un débrayage en cas de batch save
                 console.log('Sauvegarde de l\'état de la synchro...');
-                return this.saveSyncState().then(syncState => {
+                return this.saveSyncState().then(() => {
                     console.log('Sauvegarde de l\'état de la synchro OK');
                     return savedCollection2;
                 });
@@ -123,25 +123,14 @@ export abstract class Persistence {
 
     protected abstract postCollection(collection: Collection): Promise<Collection>;
 
-    protected saveSyncStatePromise<T>(): (input: T) => Promise<T> {
-        return input => {
-            // TODO ajout d'un débrayage en cas de batch save
-            console.log('Sauvegarde de l\'état de la synchro...');
-            return this.saveSyncState().then(syncState => {
-                console.log('Sauvegarde de l\'état de la synchro OK');
-                return input;
-            });
-        };
-    }
-
     public deleteCollection(collectionName: string): Promise<void> {
         return this._deleteCollection(collectionName).then(() => {
             return this.getSyncState().then(syncState => {
                 syncState.collections.removeById(collectionName);
-            }).then(savedCollection2 => {
+            }).then(() => {
                 // TODO ajout d'un débrayage en cas de batch save
                 console.log('Sauvegarde de l\'état de la synchro...');
-                return this.saveSyncState().then(syncState => {
+                return this.saveSyncState().then(() => {
                     console.log('Sauvegarde de l\'état de la synchro OK');
                 });
             });
@@ -161,7 +150,7 @@ export abstract class Persistence {
         let collection: Collection = await this.getCollection(collectionName);
         if (!collection) {
             collection = new Collection(collectionName);
-            this.saveCollection(collection);
+            await this.saveCollection(collection);
         }
         return collection.discIds;
     }
@@ -198,8 +187,7 @@ export abstract class Persistence {
         return Promise.all(discIds.map(discId => this.getDisc(discId)));
     }
 
-    // FIXME : disc devrait être un Disc
-    public saveDisc(discId: string, disc): Promise<Disc> {
+    public saveDisc(discId: string, disc: Disc): Promise<Disc> {
         return this.postDisc(discId, disc).then(savedDisc => {
             return this.getSyncState().then(syncState => {
                 syncState.discs.push(savedDisc);
@@ -207,7 +195,7 @@ export abstract class Persistence {
             }).then(savedDisc2 => {
                 // TODO ajout d'un débrayage en cas de batch save
                 console.log('Sauvegarde de l\'état de la synchro...');
-                return this.saveSyncState().then(syncState => {
+                return this.saveSyncState().then(() => {
                     console.log('Sauvegarde de l\'état de la synchro OK');
                     return savedDisc2;
                 });
@@ -215,7 +203,7 @@ export abstract class Persistence {
         });
     }
 
-    protected abstract postDisc(discId: string, disc): Promise<Disc>;
+    protected abstract postDisc(discId: string, disc: Disc): Promise<Disc>;
 
     public getVideo(videoId: string, GOOGLE_KEY: string): Promise<GoogleApiYouTubeVideoResource> {
         return new Promise((resolve, reject) => {
@@ -244,11 +232,7 @@ export abstract class Persistence {
     }
 
     /**
-     *
-     * @param {string} discId
-     * @param {number} discIndex
      * @param jsonCuesheet {*} un objet JSON contenant la cuesheet à créér
-     * @return {Disc}
      */
     protected createDisc(discId: string, jsonCuesheet: any): Disc {
         const cue = new cuesheet.CueSheet();
@@ -303,7 +287,7 @@ export abstract class Persistence {
                 [thisSyncState, srcSyncState] = syncStates;
                 return syncStates;
             })
-            .then(syncStates => {
+            .then(() => {
                 const thisCollectionNames = _.keys(thisSyncState.collections.elementsById);
                 const srcCollectionNames = _.keys(srcSyncState.collections.elementsById);
                 return [thisCollectionNames, srcCollectionNames];
@@ -347,7 +331,7 @@ export abstract class Persistence {
                         }))
                 ]);
 
-            }).then(results => {
+            }).then(() => {
                 const thisDiscIds = _.keys(thisSyncState.discs.elementsById);
                 const srcDiscIds = _.keys(srcSyncState.discs.elementsById);
                 return [thisDiscIds, srcDiscIds];
@@ -355,29 +339,35 @@ export abstract class Persistence {
 
                 const [thisDiscIds, srcDiscIds] = results;
 
-                console.log('Début de la synchro des disques...');
+                const discIdsToProcess = {
+                    pull: srcDiscIds.filter(id => !thisDiscIds.includes(id)),
+                    push: thisDiscIds.filter(id => !srcDiscIds.includes(id)),
+                    common: thisDiscIds.filter(id => srcDiscIds.includes(id)),
+                };
+                console.log('Début de la synchro des disques...', discIdsToProcess);
                 return Promise.all([
 
                     /** Disques absents dans this */
-                    Promise.all(srcDiscIds.filter(id => !thisDiscIds.includes(id))
-                        .map(id => {
-                            return src.getDisc(id).then(srcDisc => {
-                                syncResult.discs.pulled.push(srcDisc);
-                                return srcDisc;
-                            });
+                    Promise.all(discIdsToProcess.pull
+                        .map(async id => {
+                            const srcDisc = await src.getDisc(id);
+                            syncResult.discs.pulled.push(srcDisc);
+                            return srcDisc;
                         })),
 
                     /** Disques absents dans la source */
-                    Promise.all(thisDiscIds.filter(id => !srcDiscIds.includes(id))
-                        .map(id => {
-                            return this.getDisc(id).then(thisDisc => {
-                                syncResult.discs.pushed.push(thisDisc);
-                                return thisDisc;
-                            });
-                        })),
+                    Promise.all(discIdsToProcess.push
+                        .map(async id => {
+                            const thisDisc = await this.getDisc(id);
+                            syncResult.discs.pushed.push(thisDisc);
+                            return thisDisc;
+                        }))
+                        .catch(e => {
+                            console.error(`Erreur non bloquante lors de la récupération d'un disque local absent dans la source`, e);
+                        }),
 
                     /** Disques en commun */
-                    Promise.all(thisDiscIds.filter(id => srcDiscIds.includes(id))
+                    Promise.all(discIdsToProcess.common
                         .map(async id => {
                             const thisChecksum = thisSyncState.discs.elementsById[id].checksum;
                             const srcChecksum = srcSyncState.discs.elementsById[id].checksum;
@@ -406,7 +396,7 @@ export abstract class Persistence {
                         }))
                 ]);
 
-            }).then(results => {
+            }).then(() => {
 
                 // Sauvegardes dans les deux persistences
                 return Promise.all([
@@ -435,7 +425,7 @@ export abstract class Persistence {
 
                 ]);
 
-            }).then(results => {
+            }).then(() => {
 
                 console.log('Sauvegarde de l\'état de synchro dans les deux persistances...');
                 return Promise.all([
@@ -443,7 +433,7 @@ export abstract class Persistence {
                     src.saveSyncState()
                 ]);
 
-            }).then(results => {
+            }).then(() => {
 
                 // TODO : post dans les deux persistences
                 return syncResult;
@@ -523,7 +513,7 @@ export abstract class SyncStateElements<T> {
     /** date de la dernière modif d'un élément */
     public lastmod: Date = new Date();
 
-    constructor(public parent: SyncState) {
+    protected constructor(public parent: SyncState) {
     }
 
     /**
@@ -532,7 +522,7 @@ export abstract class SyncStateElements<T> {
      */
     push(element: T): SyncStateElement<T> {
         const id = this.getId(element);
-        let ssElement;
+        let ssElement: SyncStateElement<T>;
         if (!(id in this.elementsById)) {
             ssElement = new SyncStateElement<T>(element, this);
             this.elementsById[id] = ssElement;
@@ -544,10 +534,6 @@ export abstract class SyncStateElements<T> {
             }
             return ssElement;
         }
-    }
-
-    remove(element: T) {
-        this.removeById(this.getId(element));
     }
 
     removeById(id: string) {
@@ -563,13 +549,6 @@ export abstract class SyncStateElements<T> {
     abstract getChecksum(element: T): string;
 
     // TODO méthodes save et load dans la persistence qui utilise un SyncState
-
-    toJSON(): any {
-        const clone = _.extend({}, this);
-        delete clone.parent;
-        return clone;
-    }
-
     load(json: any) {
         this.lastmod = new Date(json.lastmod);
         _.each(json.elementsById, (elementJSON, key) => {
@@ -603,13 +582,6 @@ export class SyncStateElement<T> {
         this.parent.parent.lastmod = this.lastmod;
         return this;
     }
-
-    toJSON(): any {
-        const clone = _.extend({}, this);
-        delete clone.parent;
-        return clone;
-    }
-
 
     load(json: any) {
         _.extend(this, json);
@@ -672,10 +644,6 @@ function syncCommonCollection(thisCollection: Collection, srcCollection: Collect
     if (pushedDiscIds.length) {
         pushOnlyOnce(syncResult.collections.common.pushed, thisCollection);
     }
-
-    /** Disques en commun */
-    const notModifiedDiscIds = thisCollection.discIds.filter(discId => srcCollection.discIds.includes(discId))
-        .map(discId => discId);
 
     // Modification des collections
     if (pulledDiscIds.length || pushedDiscIds.length) {
