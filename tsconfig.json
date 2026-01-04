@@ -15,7 +15,10 @@
     "outDir": "./dist/out-tsc",
     "moduleResolution": "bundler",
     "typeRoots": [
-      "./node_modules/@types"
+      "./node_modules/@types",
+      "../node_modules/@types",
+      "../../node_modules/@types",
+      "./src/@types/CueParser.d.ts",
     ],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

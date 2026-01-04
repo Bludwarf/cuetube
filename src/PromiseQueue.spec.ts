@@ -1,5 +1,4 @@
-import * as Queue from 'promise-queue';
-//const Queue = require('promise-queue');
+import Queue from 'promise-queue';
 
 describe('promise-queue', () => {
 

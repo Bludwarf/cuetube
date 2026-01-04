@@ -1,4 +1,3 @@
-///<reference path="../node_modules/@types/gapi.youtube/index.d.ts"/>
 import * as _ from 'underscore';
 import {Disc} from './disc';
 import {CuePrinter} from './CuePrinter';

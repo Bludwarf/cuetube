@@ -1,8 +1,7 @@
-///<reference path="../../../node_modules/@types/youtube/index.d.ts"/>
 import {AfterViewInit, Component, EventEmitter, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
-// import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
+import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
 import {Disc} from '../../disc';
 import {Collection} from '../../Collection';
 import {Persistence} from '../../persistence';
@@ -18,6 +17,7 @@ import {SubscriptionLike as ISubscription} from 'rxjs';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import $ from 'jquery';
 import {environment} from '../../environments/environment-with-dot-env';
+import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 
 const YT_STATES = [
   'ENDED',
@@ -41,7 +41,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   private cueService: CueService;
 
   private localPersistence: LocalStoragePersistence;
-  // public googleDrivePersistence: GoogleDrivePersistence; // debug
+  public googleDrivePersistence: GoogleDrivePersistence; // debug
   private persistence: Persistence;
 
   private discsParam: string;
@@ -1376,54 +1376,54 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
-  // connectGoogleDrive() {
-  //
-  //   const loginBtn = document.getElementById('login-btn');
-  //   loginBtn.innerText = 'Connexion...';
-  //   // this.hidePlayer();
-  //
-  //   const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
-  //   const googleDrivePersistence = new GoogleDrivePersistence(this.http);
-  //   this.googleDrivePersistence = googleDrivePersistence; // debug
-  //   googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
-  //
-  //     if (isInit) {
-  //       notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
-  //       loginBtn.innerText = 'Connecté·e';
-  //       this.connectedToGoogleDrive = true;
-  //       localStorage.setItem('connectedToGoogleDrive', 'true');
-  //
-  //       // synchro avec l'ancienne persistance pour ne rien perdre
-  //       oldPersistence.sync(googleDrivePersistence).then(syncResult => {
-  //         const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
-  //         console.log(message);
-  //         console.log(syncResult);
-  //         notify(message);
-  //
-  //         // On ne change pas de persistence pour accélérer les perfs
-  //         // puisse qu'on synchronise à chaque démarrage
-  //         // TODO : attention on crée avec this.persistence et pas localStorage
-  //         this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
-  //         localStorage.setItem('persistence', `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`);
-  //
-  //         this.init();
-  //       }).catch(err => {
-  //         loginBtn.innerText = 'Connecté·e';
-  //         // this.showPlayer();
-  //         alert('Erreur de synchro entre la persistance actuelle et Google Drive');
-  //         console.error(err);
-  //       });
-  //     } else {
-  //       loginBtn.innerText = 'Google Drive';
-  //       // this.showPlayer();
-  //     }
-  //   }).catch(err => {
-  //     loginBtn.innerText = 'Google Drive';
-  //     // this.showPlayer();
-  //     alert('Erreur de connexion à Google Drive');
-  //     console.error(err);
-  //   });
-  // }
+  connectGoogleDrive() {
+
+    const loginBtn = document.getElementById('login-btn');
+    loginBtn.innerText = 'Connexion...';
+    // this.hidePlayer();
+
+    const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
+    const googleDrivePersistence = new GoogleDrivePersistence(this.http);
+    this.googleDrivePersistence = googleDrivePersistence; // debug
+    googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
+
+      if (isInit) {
+        notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
+        loginBtn.innerText = 'Connecté·e';
+        this.connectedToGoogleDrive = true;
+        localStorage.setItem('connectedToGoogleDrive', 'true');
+
+        // synchro avec l'ancienne persistance pour ne rien perdre
+        oldPersistence.sync(googleDrivePersistence).then(syncResult => {
+          const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
+          console.log(message);
+          console.log(syncResult);
+          notify(message);
+
+          // On ne change pas de persistence pour accélérer les perfs
+          // puisse qu'on synchronise à chaque démarrage
+          // TODO : attention on crée avec this.persistence et pas localStorage
+          this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
+          localStorage.setItem('persistence', `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`);
+
+          this.init();
+        }).catch(err => {
+          loginBtn.innerText = 'Connecté·e';
+          // this.showPlayer();
+          alert('Erreur de synchro entre la persistance actuelle et Google Drive');
+          console.error(err);
+        });
+      } else {
+        loginBtn.innerText = 'Google Drive';
+        // this.showPlayer();
+      }
+    }).catch(err => {
+      loginBtn.innerText = 'Google Drive';
+      // this.showPlayer();
+      alert('Erreur de connexion à Google Drive');
+      console.error(err);
+    });
+  }
 
   disconnectGoogleDrive() {
     // TODO
@@ -1659,7 +1659,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     console.log('ngAfterViewInit');
     if (this.prefs.isConnectedToGoogleDrive()) {
-      // this.connectGoogleDrive();
+      this.connectGoogleDrive();
     }
   }
 
