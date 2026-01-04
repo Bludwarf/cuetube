@@ -1409,9 +1409,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           this.init();
         }).catch(err => {
           loginBtn.innerText = 'Connecté·e';
-          // this.showPlayer();
-          alert('Erreur de synchro entre la persistance actuelle et Google Drive');
           console.error(err);
+          alert(`Erreur de synchro entre la persistance actuelle et Google Drive. L'appli va être rechargée pour éviter des appels inutiles à Google Drive.`);
+          location.reload();
         });
       } else {
         loginBtn.innerText = 'Google Drive';
