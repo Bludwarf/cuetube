@@ -4,6 +4,7 @@ import {CuePrinter} from './CuePrinter';
 import {HttpClient} from '@angular/common/http';
 import {Collection} from './Collection';
 import {md5} from './md5';
+import {cloneWithout} from './json-utils';
 
 export abstract class Persistence {
 
@@ -548,6 +549,11 @@ export abstract class SyncStateElements<T> {
 
     abstract getChecksum(element: T): string;
 
+    // noinspection JSUnusedGlobalSymbols : utilisée lorsqu'on appelle SyncStateDiscs.stringify
+    toJSON(): any {
+        return cloneWithout(this, ['parent']);
+    }
+
     // TODO méthodes save et load dans la persistence qui utilise un SyncState
     load(json: any) {
         this.lastmod = new Date(json.lastmod);
@@ -581,6 +587,11 @@ export class SyncStateElement<T> {
         this.parent.lastmod = this.lastmod;
         this.parent.parent.lastmod = this.lastmod;
         return this;
+    }
+
+    // noinspection JSUnusedGlobalSymbols : utilisée lorsqu'on appelle SyncStateDiscs.stringify
+    toJSON(): any {
+        return cloneWithout(this, ['parent']);
     }
 
     load(json: any) {

@@ -1,6 +1,6 @@
-import {Disc} from 'disc';
+import {Disc} from './disc';
 import * as _ from 'underscore';
-import {discs} from 'TestUtils';
+import {discs} from './TestUtils';
 
 describe('Disc mono vidéo', function() {
 
