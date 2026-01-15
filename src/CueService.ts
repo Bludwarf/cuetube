@@ -23,8 +23,8 @@ export class CueService {
     }
 
     public async getCueFromCueTube(playlistOrVideoId: string): Promise<CueSheet> {
-        const path = CueService.getPath(playlistOrVideoId+'.cue');
-        const cueUrl = `https://raw.githubusercontent.com/Bludwarf/cuetube/cues/${path}`;
+        const path = CueService.getPath(playlistOrVideoId + '.cue');
+        const cueUrl = `https://raw.githubusercontent.com/Bludwarf/youtube-cues/refs/heads/master/${path}`;
 
         const res = await fetch(cueUrl);
         if (res.status !== 200) {

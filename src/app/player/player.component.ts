@@ -20,12 +20,12 @@ import {environment} from '../../environments/environment-with-dot-env';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 
 const YT_STATES = [
-  'ENDED',
-  'PLAYING',
-  'PAUSED',
-  'BUFFERING',
-  null,
-  'CUED',
+    'ENDED',
+    'PLAYING',
+    'PAUSED',
+    'BUFFERING',
+    null,
+    'CUED',
 ];
 
 const DEFAULT_COLLECTION = '_DEFAULT_';
@@ -38,1665 +38,1666 @@ const DEFAULT_COLLECTION = '_DEFAULT_';
 })
 export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  private cueService: CueService;
+    private cueService: CueService;
 
-  private localPersistence: LocalStoragePersistence;
-  public googleDrivePersistence: GoogleDrivePersistence; // debug
-  private persistence: Persistence;
+    private localPersistence: LocalStoragePersistence;
+    public googleDrivePersistence: GoogleDrivePersistence; // debug
+    private persistence: Persistence;
 
-  private discsParam: string;
-  private discIds: string[];
-  public lastCheckedDisc: Disc;
-  public lastCheckedTrack: Disc.Track;
-  /** disque ouvert dans la liste des pistes (tooltip) */
-  private discInTracklist: Disc;
+    private discsParam: string;
+    private discIds: string[];
+    public lastCheckedDisc: Disc;
+    public lastCheckedTrack: Disc.Track;
+    /** disque ouvert dans la liste des pistes (tooltip) */
+    private discInTracklist: Disc;
 
-  /** Toutes les collections indexées par nom de collection */
-  private discIdsByCollection: { [key: string]: string[] } = {};
+    /** Toutes les collections indexées par nom de collection */
+    private discIdsByCollection: { [key: string]: string[] } = {};
 
-  /**
-   * Nom de toutes les collections disponibles
-   */
-  collectionNames: string[] = [];
+    /**
+     * Nom de toutes les collections disponibles
+     */
+    collectionNames: string[] = [];
 
-  @Output()
-  public collectionNamesChange = new EventEmitter<string[]>();
+    @Output()
+    public collectionNamesChange = new EventEmitter<string[]>();
 
-  /**
-   * Nom de toutes les collections en cours de lecture
-   */
-  currentCollectionNames = [];
+    /**
+     * Nom de toutes les collections en cours de lecture
+     */
+    currentCollectionNames = [];
 
-  @Output()
-  public currentCollectionNamesChange = new EventEmitter<string[]>();
+    @Output()
+    public currentCollectionNamesChange = new EventEmitter<string[]>();
 
-  /** Utilisé par la persistance */
-  public debugData: any;
+    /** Utilisé par la persistance */
+    public debugData: any;
 
-  repeatMode: string;
+    repeatMode: string;
 
-  /** Disques chargés par index */
-  public discs: Disc[];
+    /** Disques chargés par index */
+    public discs: Disc[];
 
-  public shuffle = true;
-  public history = [];
-  public previousTrack: Disc.Track = null;
-  public currentTrack: Disc.Track = null;
-  public trackIsLoading = false;
-  loadingDiscIndex: number;
-  loadingFileIndex: number;
+    public shuffle = true;
+    public history = [];
+    public previousTrack: Disc.Track = null;
+    public currentTrack: Disc.Track = null;
+    public trackIsLoading = false;
+    loadingDiscIndex: number;
+    loadingFileIndex: number;
 
-  private player: YT.Player;
-  private isInitYT = false;
+    private player: YT.Player;
+    private isInitYT = false;
 
-  /**
-   * Le player YouTube a déjà lu une video après avoir été prêt ?
-   */
-  private videoPlayingAfterPlayerReady = false;
+    /**
+     * Le player YouTube a déjà lu une video après avoir été prêt ?
+     */
+    private videoPlayingAfterPlayerReady = false;
 
-  /** latence si on passe par this.player.getPlayerStat() */
-  isPlaying: boolean = undefined;
+    /** latence si on passe par this.player.getPlayerStat() */
+    isPlaying: boolean = undefined;
 
-  // EVENTS //////////////////////
+    // EVENTS //////////////////////
 
-  @Output() videoStarted: EventEmitter<void> = new EventEmitter();
-  @Output() videoPlaying: EventEmitter<void> = new EventEmitter();
-  @Output() videoEnded: EventEmitter<void> = new EventEmitter();
-  @Output() videoManualSeeked: EventEmitter<void> = new EventEmitter();
-  @Output() unstartedVideo: EventEmitter<void> = new EventEmitter();
-  @Output() deletedVideo: EventEmitter<void> = new EventEmitter();
-  @Output() trackStarted: EventEmitter<void> = new EventEmitter();
-  @Output() trackPlaying: EventEmitter<void> = new EventEmitter();
+    @Output() videoStarted: EventEmitter<void> = new EventEmitter();
+    @Output() videoPlaying: EventEmitter<void> = new EventEmitter();
+    @Output() videoEnded: EventEmitter<void> = new EventEmitter();
+    @Output() videoManualSeeked: EventEmitter<void> = new EventEmitter();
+    @Output() unstartedVideo: EventEmitter<void> = new EventEmitter();
+    @Output() deletedVideo: EventEmitter<void> = new EventEmitter();
+    @Output() trackStarted: EventEmitter<void> = new EventEmitter();
+    @Output() trackPlaying: EventEmitter<void> = new EventEmitter();
 
-  private fileSlider = {
-    min: 0,
-    value: 0,
-    max: 100
-  };
-  @ViewChild(SliderComponent, {static: true})
-  slider: SliderComponent;
-
-  private lastCheckedTime: number;
-  private nextCheckCurrentTime: number;
-  /** prochain appel */
-  private checkCurrentTimeTimeout;
-  private deletedVideoTimeout;
-
-  /** @see YT_STATES */
-  private lastPlayerStates: number[] = [];
-
-  public connectedToGoogleDrive = false;
-
-  private lastToggledTracklist;
-
-  // FIXME : à remettre dans le constructeur
-  private cuetubeConf = {
-    debug: false,
-    addDisc: {
-      autoplay: true
-    }
-  };
-
-  private locationSubscription: ISubscription;
-
-  constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone, private location: AngularLocation,
-              public prefs: LocalStoragePrefsService) {
-  }
-
-  ngOnInit() {
-
-    // FIXME pour debugger
-    this.enrichWindow((<any>window));
-
-    this.localPersistence = new LocalStoragePersistence(this.http);
-    this.persistence = this.getPersistence();
-    this.discsParam = getParameterByName('discs', document.location.search);
-
-    // Paramètres
-    this.prefs.restorePlayerPrefs(this);
-    const current = this.prefs.getCurrentPlayerState();
-    if (current) {
-      this.slider.value = current.time;
-    }
-
-    /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
-    const DELETED_VIDEO_TIMEOUT = 10;
-
-
-    const $window = $(window);
-
-    // Ajustement pour le CSS
-    const $fontSize50List = $('.font-size-50p'); // ajuste la taille du texte pour avoir une police qui prend 50% de l'écran
-    // Run the following when the window is resized, and also trigger it once to begin with.
-    $window.resize(() => {
-      // Get the current height of the div and save it as a variable.
-      const height = $window.height() / 2;
-      // Set the font-size and line-height of the text within the div according to the current height.
-      $fontSize50List.css({
-        'font-size': (height / 2) + 'px',
-        'line-height': height + 'px'
-      });
-    }).trigger('resize');
-
-    // const socket = io.connect();
-    // socket.emit('getVideo', this.text);
-
-    /*fetch("/minecraft.json").then((res) => {
-       return res.blob();
-    })*/
-
-    // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
-
-    this.init(); // TODO : on devrait attendre l'authent Google avant d'initialiser
-
-    this.debugData = {
-      getVideoSnippet: undefined
+    private fileSlider = {
+        min: 0,
+        value: 0,
+        max: 100
     };
+    @ViewChild(SliderComponent, {static: true})
+    slider: SliderComponent;
 
-    this.videoStarted.subscribe(() => {
-      this.trackStarted.emit();
-    });
+    private lastCheckedTime: number;
+    private nextCheckCurrentTime: number;
+    /** prochain appel */
+    private checkCurrentTimeTimeout;
+    private deletedVideoTimeout;
 
-    this.trackStarted.subscribe(() => {
-      console.log('on video started');
-      const player = this.player;
-      const track: Disc.Track = this.currentTrack; // loadingTrack vide si manual seeking
+    /** @see YT_STATES */
+    private lastPlayerStates: number[] = [];
 
-      // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
-      const file = track.file;
-      if (!file.duration) {
-        file.duration = player.getDuration();
-      }
-      // TODO : on pourrait stocker cette information sur le serveur
+    public connectedToGoogleDrive = false;
 
-      // Incrémentation du nombre de lectures de la piste courante
-      track.played = track.played ? track.played + 1 : 1;
+    private lastToggledTracklist;
 
-      const disc = file.disc;
-      document.title = track.title + ' - CueTube'; // Youtube affiche : disc.title + " - m3u-YouTube"
-
-      $('.background-overlay').css('background-image', `url(${track.file.background})`);
-
-      // Notif
-      notify((track.title || 'Track ' + track.number), {
-        tag: 'onTrackStarted',
-        body: disc.title,
-        icon: track.file.icon
-      });
-
-      // Historique
-      this.history.push({
-        discId: disc.discId,
-        discIndex: this.indexOf(track.disc),
-        fileIndex: track.file.index,
-        trackIndex: track.index,
-        date: new Date()
-      });
-
-      this.loadingDiscIndex = null;
-      this.loadingFileIndex = null;
-      this.trackIsLoading = false;
-
-      this.trackPlaying.emit();
-    });
-
-    this.trackPlaying.subscribe(() => {
-      const track = this.currentTrack;
-      const file = track.file;
-
-      // Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant
-      // const slider = document.getElementById("player-controls-form").trackPosition;
-      const slider = this.slider;
-      if (slider && (!slider.max || slider.max === undefined)) {
-        console.log('Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant');
-        slider.max = file.duration;
-      }
-      this.fileSlider.max = file.duration;
-
-      this.isPlaying = true;
-      this.changeVideoIHM(); // au cas ou on a déplacé le curseur
-    });
-
-    this.videoPlaying.subscribe(() => {
-      console.log('on video playing');
-      this.videoPlayingAfterPlayerReady = true;
-
-      // On vient en fait de démarrer une nouvelle piste ?
-      if (this.trackIsLoading) {
-        return this.trackStarted.emit();
-      } else {
-        return this.trackPlaying.emit();
-      }
-    });
-
-    this.videoEnded.subscribe(() => {
-      console.log('on video ended"');
-      this.next();
-    });
-
-    this.videoManualSeeked.subscribe(() => {
-      // on cherche la piste courant uniquement pour une vidéo multipiste
-      if (this.currentTrack.disc.tracks.length > 1) {
-        this.checkCurrentTrack();
-      }
-    });
-
-    /** On vient de lancer une vidéo retirée de YouTube */
-    this.unstartedVideo.subscribe(() => {
-      console.log('on unstarted video', this.videoPlayingAfterPlayerReady);
-      if (this.videoPlayingAfterPlayerReady) {
-          // On démarre un chrono de 2 seconde pour détecter si la vidéo a été supprimée
-          if (!this.deletedVideoTimeout) {
-              console.log(`La vidéo n'a pas encore démarré. On attend ${DELETED_VIDEO_TIMEOUT}`
-                  + ` secondes avant de la déclarer comme supprimée de YouTube...`);
-              const thisComponent = this;
-              this.deletedVideoTimeout = window.setTimeout(function () {
-                  console.error(`La vidéo n'a toujours pas démarrée depuis ${DELETED_VIDEO_TIMEOUT} secondes. On la déclare supprimée.`);
-                  thisComponent.deletedVideo.emit();
-              }, DELETED_VIDEO_TIMEOUT * 1000);
-          }
-      }
-    });
-
-    /** On vient de lancer une vidéo retirée de YouTube */
-    this.deletedVideo.subscribe(() => {
-      if (!this.currentTrack) {
-        return;
-      }
-
-      const file = this.currentTrack.file;
-      console.error(`La vidéo ${file.videoId} du disque "${file.disc.title}" n'existe plus sur YouTube.`
-        + ` On la désactive et on passe à la suivante...`);
-      file.disabledByYouTube = true;
-      this.next();
-    });
-
-    // FIXME Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
-    HistoryUtils.getState = () => {
-      return history.state || this.getStateFromLocation(document.location);
-    };
-
-    this.locationSubscription = this.location.subscribe(() => {
-      const state = HistoryUtils.getState();
-      if (state) {
-        console.log('state', state);
-        if ('currentCollectionNames' in state) {
-          this.currentCollectionNames = state.currentCollectionNames;
-          this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-          this.loadDiscsFromCurrentCollections();
+    // FIXME : à remettre dans le constructeur
+    private cuetubeConf = {
+        debug: false,
+        addDisc: {
+            autoplay: true
         }
-      }
-    });
+    };
 
-    this.currentCollectionNamesChange.subscribe(() => {
-      const isDefaultCollection = this.currentCollectionNames.length === 0;
+    private locationSubscription: ISubscription;
 
-      // Historique navigateur
-      const state = {
-        currentCollectionNames: this.currentCollectionNames
-      };
-      // Uniquement si le statut est différent de celui actuel
-      HistoryUtils.pushStateOnlyNew(state, stateBuilder => {
-        if (isDefaultCollection) {
-          stateBuilder.title('CueTube')
-            .searchParam('collection', null);
-        } else {
-          stateBuilder.title('CueTube - ' + this.currentCollectionNames.join(' + '))
-            .searchParam('collection', this.currentCollectionNames);
+    constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone, private location: AngularLocation,
+                public prefs: LocalStoragePrefsService) {
+    }
+
+    ngOnInit() {
+
+        // FIXME pour debugger
+        this.enrichWindow((<any>window));
+
+        this.localPersistence = new LocalStoragePersistence(this.http);
+        this.persistence = this.getPersistence();
+        this.discsParam = getParameterByName('discs', document.location.search);
+
+        // Paramètres
+        this.prefs.restorePlayerPrefs(this);
+        const current = this.prefs.getCurrentPlayerState();
+        if (current) {
+            this.slider.value = current.time;
         }
-        return stateBuilder;
-      });
-    });
 
-    // Attente de notif entre les onglets de l'appli
-    this.prefs.discSaved.subscribe(discId => {
-      console.log(`Le disque ${discId} a été modifié => on le recharge...`);
-      this.reloadDisc(discId);
-    });
+        /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
+        const DELETED_VIDEO_TIMEOUT = 10;
 
-  }
 
-  enrichWindow(window) {
-    const component = this;
-    window.$scope = component;
+        const $window = $(window);
 
-    // Avant fermeture de la page
-    window.onbeforeunload = function () {
-      console.log('Sauvegarde avant fermeture...');
-      component.save();
-    };
+        // Ajustement pour le CSS
+        const $fontSize50List = $('.font-size-50p'); // ajuste la taille du texte pour avoir une police qui prend 50% de l'écran
+        // Run the following when the window is resized, and also trigger it once to begin with.
+        $window.resize(() => {
+            // Get the current height of the div and save it as a variable.
+            const height = $window.height() / 2;
+            // Set the font-size and line-height of the text within the div according to the current height.
+            $fontSize50List.css({
+                'font-size': (height / 2) + 'px',
+                'line-height': height + 'px'
+            });
+        }).trigger('resize');
 
-    // Raccourcis clavier. Ne pas utiliser onkeypress (#159).
-    window.onkeydown = function (event) {
-      const code = event.code;
-      switch (code) {
-        case 'Space':
-          component.playPause();
-          event.stopPropagation();
-          event.preventDefault();
-          break;
-        case 'ArrowUp':
-          component.previous();
-          break;
-        case 'ArrowDown':
-          component.next();
-          break;
-        case 'ArrowLeft':
-          // ...
-          break;
-        case 'ArrowRight':
-          // ...
-          break;
-        default:
-          return;
-      }
-      event.stopPropagation();
-      event.preventDefault();
-    };
+        // const socket = io.connect();
+        // socket.emit('getVideo', this.text);
 
-    window.toggleDiscList = function (discListElement) {
-      $(discListElement).toggle();
-    };
+        /*fetch("/minecraft.json").then((res) => {
+           return res.blob();
+        })*/
 
-    // Fermeture de la tracklist ouverte si click ailleurs
-    window.document.addEventListener('click', function () {
-      const lastToggled = component.lastToggledTracklist;
-      if (lastToggled != null) {
-        $(lastToggled).hide();
-      }
-    });
+        // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
-  }
+        this.init(); // TODO : on devrait attendre l'authent Google avant d'initialiser
 
-  async init(): Promise<any> {
+        this.debugData = {
+            getVideoSnippet: undefined
+        };
 
-    const collectionParam = this.getCollectionParam();
+        this.videoStarted.subscribe(() => {
+            this.trackStarted.emit();
+        });
 
-    // Collections
-    await this.persistence.init({gapiClient: this.gapiClient});
-    await this.loadCollectionNames();
+        this.trackStarted.subscribe(() => {
+            console.log('on video started');
+            const player = this.player;
+            const track: Disc.Track = this.currentTrack; // loadingTrack vide si manual seeking
 
-    /** @deprecated TODO à remplacer par discsById */
-    this.discs = []; // au cas où personne ne l'initialise
+            // On en profite pour renseigner la durée de la vidéo maintenant qu'on la connait
+            const file = track.file;
+            if (!file.duration) {
+                file.duration = player.getDuration();
+            }
+            // TODO : on pourrait stocker cette information sur le serveur
 
-    // Tracklist togglée
-    this.lastToggledTracklist = null;
+            // Incrémentation du nombre de lectures de la piste courante
+            track.played = track.played ? track.played + 1 : 1;
 
-    // Liste des disque en paramètre ?
-    if (this.discsParam) {
-      this.discIds = this.discsParam.split(',');
-      return this.loadDiscs(this.discIds);
+            const disc = file.disc;
+            document.title = track.title + ' - CueTube'; // Youtube affiche : disc.title + " - m3u-YouTube"
+
+            $('.background-overlay').css('background-image', `url(${track.file.background})`);
+
+            // Notif
+            notify((track.title || 'Track ' + track.number), {
+                tag: 'onTrackStarted',
+                body: disc.title,
+                icon: track.file.icon
+            });
+
+            // Historique
+            this.history.push({
+                discId: disc.discId,
+                discIndex: this.indexOf(track.disc),
+                fileIndex: track.file.index,
+                trackIndex: track.index,
+                date: new Date()
+            });
+
+            this.loadingDiscIndex = null;
+            this.loadingFileIndex = null;
+            this.trackIsLoading = false;
+
+            this.trackPlaying.emit();
+        });
+
+        this.trackPlaying.subscribe(() => {
+            const track = this.currentTrack;
+            const file = track.file;
+
+            // Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant
+            // const slider = document.getElementById("player-controls-form").trackPosition;
+            const slider = this.slider;
+            if (slider && (!slider.max || slider.max === undefined)) {
+                console.log('Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant');
+                slider.max = file.duration;
+            }
+            this.fileSlider.max = file.duration;
+
+            this.isPlaying = true;
+            this.changeVideoIHM(); // au cas ou on a déplacé le curseur
+        });
+
+        this.videoPlaying.subscribe(() => {
+            console.log('on video playing');
+            this.videoPlayingAfterPlayerReady = true;
+
+            // On vient en fait de démarrer une nouvelle piste ?
+            if (this.trackIsLoading) {
+                return this.trackStarted.emit();
+            } else {
+                return this.trackPlaying.emit();
+            }
+        });
+
+        this.videoEnded.subscribe(() => {
+            console.log('on video ended"');
+            this.next();
+        });
+
+        this.videoManualSeeked.subscribe(() => {
+            // on cherche la piste courant uniquement pour une vidéo multipiste
+            if (this.currentTrack.disc.tracks.length > 1) {
+                this.checkCurrentTrack();
+            }
+        });
+
+        /** On vient de lancer une vidéo retirée de YouTube */
+        this.unstartedVideo.subscribe(() => {
+            console.log('on unstarted video', this.videoPlayingAfterPlayerReady);
+            if (this.videoPlayingAfterPlayerReady) {
+                // On démarre un chrono de 2 seconde pour détecter si la vidéo a été supprimée
+                if (!this.deletedVideoTimeout) {
+                    console.log(`La vidéo n'a pas encore démarré. On attend ${DELETED_VIDEO_TIMEOUT}`
+                        + ` secondes avant de la déclarer comme supprimée de YouTube...`);
+                    const thisComponent = this;
+                    this.deletedVideoTimeout = window.setTimeout(function () {
+                        console.error(`La vidéo n'a toujours pas démarrée depuis ${DELETED_VIDEO_TIMEOUT} secondes. On la déclare supprimée.`);
+                        thisComponent.deletedVideo.emit();
+                    }, DELETED_VIDEO_TIMEOUT * 1000);
+                }
+            }
+        });
+
+        /** On vient de lancer une vidéo retirée de YouTube */
+        this.deletedVideo.subscribe(() => {
+            if (!this.currentTrack) {
+                return;
+            }
+
+            const file = this.currentTrack.file;
+            console.error(`La vidéo ${file.videoId} du disque "${file.disc.title}" n'existe plus sur YouTube.`
+                + ` On la désactive et on passe à la suivante...`);
+            file.disabledByYouTube = true;
+            this.next();
+        });
+
+        // FIXME Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
+        HistoryUtils.getState = () => {
+            return history.state || this.getStateFromLocation(document.location);
+        };
+
+        this.locationSubscription = this.location.subscribe(() => {
+            const state = HistoryUtils.getState();
+            if (state) {
+                console.log('state', state);
+                if ('currentCollectionNames' in state) {
+                    this.currentCollectionNames = state.currentCollectionNames;
+                    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+                    this.loadDiscsFromCurrentCollections();
+                }
+            }
+        });
+
+        this.currentCollectionNamesChange.subscribe(() => {
+            const isDefaultCollection = this.currentCollectionNames.length === 0;
+
+            // Historique navigateur
+            const state = {
+                currentCollectionNames: this.currentCollectionNames
+            };
+            // Uniquement si le statut est différent de celui actuel
+            HistoryUtils.pushStateOnlyNew(state, stateBuilder => {
+                if (isDefaultCollection) {
+                    stateBuilder.title('CueTube')
+                        .searchParam('collection', null);
+                } else {
+                    stateBuilder.title('CueTube - ' + this.currentCollectionNames.join(' + '))
+                        .searchParam('collection', this.currentCollectionNames);
+                }
+                return stateBuilder;
+            });
+        });
+
+        // Attente de notif entre les onglets de l'appli
+        this.prefs.discSaved.subscribe(discId => {
+            console.log(`Le disque ${discId} a été modifié => on le recharge...`);
+            this.reloadDisc(discId);
+        });
+
     }
 
-    if (collectionParam) {
-      const requestedCollectionNames = collectionParam.split(',');
-      return this.loadDiscsFromCollections(requestedCollectionNames);
+    enrichWindow(window) {
+        const component = this;
+        window.$scope = component;
+
+        // Avant fermeture de la page
+        window.onbeforeunload = function () {
+            console.log('Sauvegarde avant fermeture...');
+            component.save();
+        };
+
+        // Raccourcis clavier. Ne pas utiliser onkeypress (#159).
+        window.onkeydown = function (event) {
+            const code = event.code;
+            switch (code) {
+                case 'Space':
+                    component.playPause();
+                    event.stopPropagation();
+                    event.preventDefault();
+                    break;
+                case 'ArrowUp':
+                    component.previous();
+                    break;
+                case 'ArrowDown':
+                    component.next();
+                    break;
+                case 'ArrowLeft':
+                    // ...
+                    break;
+                case 'ArrowRight':
+                    // ...
+                    break;
+                default:
+                    return;
+            }
+            event.stopPropagation();
+            event.preventDefault();
+        };
+
+        window.toggleDiscList = function (discListElement) {
+            $(discListElement).toggle();
+        };
+
+        // Fermeture de la tracklist ouverte si click ailleurs
+        window.document.addEventListener('click', function () {
+            const lastToggled = component.lastToggledTracklist;
+            if (lastToggled != null) {
+                $(lastToggled).hide();
+            }
+        });
+
     }
 
-    // Récup de l'état de la lecture précédente
-    const current = this.prefs.getCurrentPlayerState();
-    if (current) {
-      if (current.collectionNames) {
-        console.log('On reprend la lecture des collections ' + current.collectionNames.join(', '));
-        return this.loadDiscsFromCollections(current.collectionNames);
-      }
-    }
+    async init(): Promise<any> {
 
-    this.playCollection();
-    // discIds = [
-    //   "Dg0IjOzopYU",
-    //   "RRtlWfi6jiM",
-    //   "TGXwvLupP5A",
-    //   "WGmHaMRAXuI",
-    //   "_VlTKjkDdbs",
-    //   //"8OS4A2a-Fxg", // sushi
-    //   //"zvHQELG1QHE" // démons et manants
-    // ];
-  }
+        const collectionParam = this.getCollectionParam();
 
-  async loadCollectionNames(): Promise<void> {
-    let collectionNames = await this.persistence.getCollectionNames();
-    collectionNames = collectionNames
-      .filter(collectionName => collectionNames && collectionName.toLowerCase() !== DEFAULT_COLLECTION.toLowerCase());
+        // Collections
+        await this.persistence.init({gapiClient: this.gapiClient});
+        await this.loadCollectionNames();
 
-    try {
-      collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
-      this.collectionNames = collectionNames;
-      this.collectionNamesChange.emit(collectionNames);
-      console.log('Noms des collections chargés', collectionNames);
-      return;
-    } catch (e) {
-      console.error(e);
-      alert('Erreur lors du chargement de la liste des collections :' + e);
-      throw e;
-    }
-  }
+        /** @deprecated TODO à remplacer par discsById */
+        this.discs = []; // au cas où personne ne l'initialise
 
-  async loadDiscsFromCollections(requestedCollectionNames: string[]): Promise<Disc[]> {
+        // Tracklist togglée
+        this.lastToggledTracklist = null;
 
-    const knownCollectionNames = this.collectionNames;
-
-    const collectionNames = [];
-    const unknownCollectionNames = [];
-    requestedCollectionNames.forEach(collectionName => {
-      if (collectionName === DEFAULT_COLLECTION) {
-        // Collection par défaut
-      } else if (knownCollectionNames.includes(collectionName) && !collectionNames.includes(collectionName)) {
-        collectionNames.push(collectionName);
-      } else {
-        unknownCollectionNames.push(collectionName);
-      }
-    });
-    if (unknownCollectionNames.length) {
-      alert('Les collections suivantes n\'ont pas été trouvées : ' + unknownCollectionNames.join(', '));
-    }
-    this.currentCollectionNames = collectionNames;
-    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-
-    const promises = [];
-    this.discIdsByCollection = {};
-    collectionNames.forEach(collectionName => {
-
-      promises.push((async () => {
-        const discIds = this.discIdsByCollection[collectionName];
-        if (discIds) {
-          return discIds;
+        // Liste des disque en paramètre ?
+        if (this.discsParam) {
+            this.discIds = this.discsParam.split(',');
+            return this.loadDiscs(this.discIds);
         }
+
+        if (collectionParam) {
+            const requestedCollectionNames = collectionParam.split(',');
+            return this.loadDiscsFromCollections(requestedCollectionNames);
+        }
+
+        // Récup de l'état de la lecture précédente
+        const current = this.prefs.getCurrentPlayerState();
+        if (current) {
+            if (current.collectionNames) {
+                console.log('On reprend la lecture des collections ' + current.collectionNames.join(', '));
+                return this.loadDiscsFromCollections(current.collectionNames);
+            }
+        }
+
+        this.playCollection();
+        // discIds = [
+        //   "Dg0IjOzopYU",
+        //   "RRtlWfi6jiM",
+        //   "TGXwvLupP5A",
+        //   "WGmHaMRAXuI",
+        //   "_VlTKjkDdbs",
+        //   //"8OS4A2a-Fxg", // sushi
+        //   //"zvHQELG1QHE" // démons et manants
+        // ];
+    }
+
+    async loadCollectionNames(): Promise<void> {
+        let collectionNames = await this.persistence.getCollectionNames();
+        collectionNames = collectionNames
+            .filter(collectionName => collectionNames && collectionName.toLowerCase() !== DEFAULT_COLLECTION.toLowerCase());
 
         try {
-          return this.persistence.getCollectionDiscIds(collectionName);
+            collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
+            this.collectionNames = collectionNames;
+            this.collectionNamesChange.emit(collectionNames);
+            console.log('Noms des collections chargés', collectionNames);
+            return;
         } catch (e) {
-          // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
-          try {
-            const collection = await this.persistence.newCollection(collectionName);
-            this.collectionNames = this.collectionNames || [];
-            this.collectionNames.push(collectionName);
-            this.collectionNamesChange.emit(this.collectionNames);
-            console.log('Collection "' + collectionName + '" créée');
-            return collection;
-          } catch (e) {
-            alert('Erreur lors de la création de cette collection');
-            history.back();
-          }
+            console.error(e);
+            alert('Erreur lors du chargement de la liste des collections :' + e);
+            throw e;
         }
-      })());
+    }
 
-    });
+    async loadDiscsFromCollections(requestedCollectionNames: string[]): Promise<Disc[]> {
 
-    return Promise.all(promises.map(p => p.catch(e => e)))
-      .then(collections => {
-        // Liste des disques pour chaque collection
-        collectionNames.forEach((collectionName, i) => {
-          this.discIdsByCollection[collectionName] = collections[i];
+        const knownCollectionNames = this.collectionNames;
+
+        const collectionNames = [];
+        const unknownCollectionNames = [];
+        requestedCollectionNames.forEach(collectionName => {
+            if (collectionName === DEFAULT_COLLECTION) {
+                // Collection par défaut
+            } else if (knownCollectionNames.includes(collectionName) && !collectionNames.includes(collectionName)) {
+                collectionNames.push(collectionName);
+            } else {
+                unknownCollectionNames.push(collectionName);
+            }
         });
-        return this.loadDiscsFromCurrentCollections();
-      })
-      .catch(e => {
-        console.error('Erreur après le chargement des collections ' + requestedCollectionNames.join(', '), e);
-        return [];
-      });
-
-  }
-
-  /**
-   * Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
-   */
-  getCollectionParam(): string | null {
-    const param = getParameterByName('collection', document.location.search);
-    if (!param) {
-      return null;
-    }
-    return decodeURIComponent(param);
-  }
-
-  toggleRepeatMode() {
-    if (!this.repeatMode) {
-      this.repeatMode = 'disc';
-    } else if (this.repeatMode === 'disc') {
-      this.repeatMode = 'track';
-    } else {
-      this.repeatMode = '';
-    }
-  }
-
-  stopPropagation(e) {
-    e.stopPropagation(); // pour ne pas appeler document.onclick
-  }
-
-  // TODO : remonter dans app
-  get $foreground() {
-    return $('#foreground-overlay');
-  }
-
-  // TODO : remonter dans app
-  get $foregroundIcon() {
-    return $('#foreground-overlay-icon');
-  }
-
-  onYouTubeIframeAPIReady() {
-
-    console.log('YouTube initialisé');
-
-    // On cache le masque
-    this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
-    this.$foreground.hide();
-
-    // Si chargement
-    const current = this.prefs.getCurrentPlayerState();
-    if (current) {
-      const disc: Disc = _.find(this.discs, (discI) => discI && discI.id === current.discId);
-
-      if (!disc) {
-        console.warn(`Disque anciennement joué d'id ${current.discId} non retrouvé. On lance un disque aléatoirement`);
-        this.repeatMode = null;
-        this.next(); // FIXME que faire si aucun disque n'est trouvé ?
-        return;
-      } else {
-        console.log('Chargement de la précédente lecture...', current);
-
-        const file = disc.files[current.fileIndex];
-        const track = file ? file.tracks[current.trackIndex] : disc.nextTrack(this.shuffle, undefined);
-
-        // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
-        this.loadTrack(track, current.time);
-
-        return;
-      }
-    }
-
-    // Premier lancement ...
-    if ((!this.discs || !this.discs.length)) {
-      // ... de l'application
-      if (!this.getCollectionParam()) {
-        alert('Bienvenue sur CueTube mec ! Pour lancer du gros son ajoute un album avec le bouton en haut à droite. Enjoy !');
-      } else {
-        alert('Cette collection est vide pour le moment. Ajoute un disque et fais péter les watts.');
-      }
-      return;
-    }
-
-    this.next();
-  }
-
-
-  initYT() {
-    if (!this.isInitYT) {
-      // TODO : éviter l'erreur : Uncaught ReferenceError: ytcfg is not defined
-      console.log('Initialisation de YouTube');
-
-
-      // 3. This function creates an <iframe> (and YouTube player)
-      //    after the API code downloads.
-      // Appelé automatiquement par l'IFRAME YouTube
-      const component = this;
-      (<any>window).onYouTubeIframeAPIReady = function () {
-        component.onYouTubeIframeAPIReady();
-      };
-
-      // 2. This code loads the IFrame Player API code asynchronously.
-      const tag = document.createElement('script');
-
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-      this.isInitYT = true;
-    }
-  }
-
-  /**
-   * @param track {Disc.Track} piste à charger TODO devrait être remplacé par file pour éviter des désynchro
-   */
-  loadTrack(track: Disc.Track, time?) {
-
-    clearTimeout(this.checkCurrentTimeTimeout); // suppression de tous les timers
-
-    const file = track.file;
-    const disc = file.disc;
-    const multiTrack = file.tracks.length > 1;
-
-    if (time < track.startSeconds || time > track.endSeconds) {
-      console.error(`Impossible de charger la piste #${track.index} du disque ${disc.title} à t=${time} car`
-        + ` début=${track.startSeconds} et fin =${track.endSeconds}.`, track);
-      track = file.getTrackAt(time);
-      console.log(`On charge la piste #${track.index} à la place`);
-    }
-
-    // On active automatiquement cette piste et ce disque
-    disc.enabledByUser = true;
-    file.disabledByYouTube = false; // On tente également de réactiver la vidéo pour voir si elle est de nouveau dispo sur YouTube
-    track.enabledByUser = true;
-
-    // Suppression dans la liste des suivants auto
-    if (this.shuffle) {
-      const nextTracks = disc.nextTracks;
-      const i = nextTracks.indexOf(track.number);
-      nextTracks.splice(i, 1); // on supprime que celui-ci
-    }
-
-    this.showOnlyPlaylist(this.indexOf(disc));
-
-    const start = getYouTubeStartSeconds(track, time); // YouTube n'accèpte que des entiers
-    const end = multiTrack && track.endSeconds ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
-    if (start || end) {
-      console.log(`Piste ${track.number} du disque ${disc.id} (de ${start}s à ${end}s) : ${track.title}`);
-    }
-
-    this.previousTrack = this.currentTrack;
-    this.currentTrack = track;
-    this.trackIsLoading = true;
-    if (!this.player) {
-      const component = this;
-      // On peut récupérer cette variable a posteriori avec : YT.get("player")
-      const aspect = 16 / 9;
-      const height = 180;
-      this.player = new YT.Player('player', {
-        height: height,
-        width: height * aspect,
-        videoId: track.file.videoId,
-        playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
-          autoplay: 1,
-          start: start,
-          end: end
-        },
-        events: {
-          // 4. The API will call this function when the video player is ready.
-          onReady: component.onPlayerReady.bind(component), // https://stackoverflow.com/a/38245500/1655155
-          onStateChange: component.onPlayerStateChange.bind(component) // https://stackoverflow.com/a/38245500/1655155
+        if (unknownCollectionNames.length) {
+            alert('Les collections suivantes n\'ont pas été trouvées : ' + unknownCollectionNames.join(', '));
         }
-      });
-    } else {
+        this.currentCollectionNames = collectionNames;
+        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
 
-      const player = this.player;
+        const promises = [];
+        this.discIdsByCollection = {};
+        collectionNames.forEach(collectionName => {
 
-      // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
-      if (this.previousTrack === this.currentTrack || player && player.getVideoUrl
-        && getParameterByName('v', player.getVideoUrl()) === track.file.videoId) {
-        this.seekToTrack(track);
-      } else {
-        // FIXME : graphiquement on ne voit plus les bornes start et end
-        player.loadVideoById({
-          videoId: track.file.videoId,
-          startSeconds: start,
-          endSeconds: end,
-          // suite : KO Angular4
-          // playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
-          //   autoplay: 1,
-          //   start: start,
-          //   end: end
-          // }
+            promises.push((async () => {
+                const discIds = this.discIdsByCollection[collectionName];
+                if (discIds) {
+                    return discIds;
+                }
+
+                try {
+                    return this.persistence.getCollectionDiscIds(collectionName);
+                } catch (e) {
+                    // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
+                    try {
+                        const collection = await this.persistence.newCollection(collectionName);
+                        this.collectionNames = this.collectionNames || [];
+                        this.collectionNames.push(collectionName);
+                        this.collectionNamesChange.emit(this.collectionNames);
+                        console.log('Collection "' + collectionName + '" créée');
+                        return collection;
+                    } catch (e) {
+                        alert('Erreur lors de la création de cette collection');
+                        history.back();
+                    }
+                }
+            })());
+
         });
-      }
+
+        return Promise.all(promises.map(p => p.catch(e => e)))
+            .then(collections => {
+                // Liste des disques pour chaque collection
+                collectionNames.forEach((collectionName, i) => {
+                    this.discIdsByCollection[collectionName] = collections[i];
+                });
+                return this.loadDiscsFromCurrentCollections();
+            })
+            .catch(e => {
+                console.error('Erreur après le chargement des collections ' + requestedCollectionNames.join(', '), e);
+                return [];
+            });
+
     }
-  }
 
-  /**
-   * Charge une piste de la vidéo (file) déjà en cours de lecture
-   * @param track {Disc.Track} piste à charger
-   */
-  seekToTrack(track) {
-    track = track || this.currentTrack;
-    this.trackIsLoading = true;
-    const start = getYouTubeStartSeconds(track); // YouTube n'accèpte que des entiers
-    this.seekTo(start ? start : 0); // start undefined quand video non multitrack
-  }
-
-  seekTo(time) {
-    if (isNaN(time)) {
-      return false;
-    }
-    if (this.checkCurrentTimeTimeout) {
-      clearTimeout(this.checkCurrentTimeTimeout);
-    }
-    // console.log("TODO : seekTo("+time+")");
-    this.player.seekTo(time, true);
-    this.slider.value = time;
-    this.fileSlider.value = time;
-  }
-
-  /**
-   * Prochaine piste (si disponible, sinon aucune action mais aucune erreur)
-   */
-  next() {
-    const discs = this.discs;
-    let track = this.currentTrack;
-    let disc = track && track.disc;
-
-    const possibleDiscs = [];
-    // Répétition du disque ? (uniquement si disque existant)
-    if (!this.repeatMode || !disc) {
-      for (let i = 0; i < discs.length; ++i) {
-        const nextDisc = discs[i];
-        if (nextDisc && nextDisc.enabled && nextDisc.playable) {
-          possibleDiscs.push(nextDisc);
+    /**
+     * Par défaut on se place toujours dans une collection pour éviter de perdre toutes ses données
+     */
+    getCollectionParam(): string | null {
+        const param = getParameterByName('collection', document.location.search);
+        if (!param) {
+            return null;
         }
-      }
-    } else {
-      possibleDiscs.push(disc);
+        return decodeURIComponent(param);
     }
 
-    // Aucun disque jouable ?
-    if (!possibleDiscs.length) {
-      console.warn('Aucun disque activé (ou sans piste activées)');
-      return;
-    }
-
-    const discIndex = possibleDiscs.indexOf(disc);
-
-    // Répétition de la piste ?
-    if (this.repeatMode === 'track') {
-      console.log('On répète la même piste comme demandé');
-    } else if (this.shuffle) {
-      disc = weightedRandom(possibleDiscs, discI => discI.tracks.length);
-      track = disc.nextTrack(this.shuffle, this.currentTrack); // FIXME : arrêter la lecture si plus aucune piste
-    } else {
-
-      // prochaine piste ou 1ère du prochain disque
-      do {
-        if (track) {
-          track = track.next;
-        }
-        if (!track) {
-          disc = discIndex < possibleDiscs.length - 1 ? possibleDiscs[discIndex + 1] : possibleDiscs[0];
-          track = disc.tracks[0];
-        }
-      } while (!track.enabled);
-    }
-
-    // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
-    if (track) {
-      this.loadTrack(track);
-    } else {
-      alert('Aucun disque à lire !');
-    }
-  }
-
-  previous() {
-
-    const previousEntry = this.history.length >= 2 && this.history[this.history.length - 2];
-    if (!previousEntry) {
-      return;
-    }
-
-    const disc = this.discs[previousEntry.discIndex];
-    if (!disc) {
-      console.error(`Cannot find previous track's disc ! discIndex = ${previousEntry.discIndex}, previousEntry =`, previousEntry);
-      this.history.pop();
-      return;
-    }
-    const file = disc.files[previousEntry.fileIndex];
-    const track = file.tracks[previousEntry.trackIndex];
-
-    this.history.pop(); // suppression du previous
-    this.loadTrack(track);
-    this.history.pop(); // suppression du previous (ajouté par loadTrack)
-  }
-
-  showOnlyPlaylist(discIndex) {
-    const discs = $('#playlist .disc');
-    discs.each(function () {
-      const list = $('.disc-list', this);
-      if (this.dataset.index === discIndex) {
-        list.show();
-      } else {
-        list.hide();
-      }
-    });
-  }
-
-  getVideoUrlFromId(id) {
-    return 'https://www.youtube.com/watch?v=' + id;
-  }
-
-  /** @return Promise https://developers.google.com/youtube/v3/docs/videos#resource */
-  getVideoSnippet(videoId, cb) {
-    // TODO comment recréer une Promise par dessus le promise de getVideo .
-    this.persistence.getVideo(videoId, environment.googleApiKey).then(video => {
-      cb(null, video.snippet);
-    }).catch(err => {
-      cb(err);
-    });
-  }
-
-  checkCurrentTrack() {
-    const track = this.currentTrack.file.getTrackAt(this.player.getCurrentTime());
-    if (track && track !== this.currentTrack) {
-      console.log(`On est passé à la piste #${track.number} ${track.title}`);
-      this.currentTrack = track;
-      this.videoStarted.emit();
-    }
-  }
-
-  /**
-   * Déclenché à chaque mise à jour de la position
-   */
-  changeVideoIHM() {
-    const track = this.currentTrack;
-
-    // Slider
-    // const form = document.getElementById("player-controls-form");
-    // const slider = form.trackPosition;
-    const slider = this.slider;
-    slider.min = track.startSeconds;
-    slider.max = track.endSeconds;
-    this.fileSlider.max = track.file.duration;
-
-    this.checkCurrentTime();
-  }
-
-  playPause() {
-    const player = this.player;
-    if (!player) {
-      return;
-    }
-    const state = player.getPlayerState();
-    if (state === YT.PlayerState.PLAYING) {
-      this.pause();
-    } else {
-      this.play();
-    }
-  }
-
-  showPlayer() {
-    this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
-    this.$foreground.hide();
-  }
-
-  hidePlayer() {
-    this.$foregroundIcon.html(`<div id="foreground-overlay-icon" class="center font-size-50p"></div>`);
-    this.$foreground.show();
-  }
-
-  play() {
-    const player = this.player;
-    if (!player) {
-      return;
-    }
-    this.showPlayer();
-    player.playVideo();
-    this.isPlaying = true;
-  }
-
-  pause() {
-    const player = this.player;
-    if (!player) {
-      return;
-    }
-    player.pauseVideo();
-    this.isPlaying = false;
-  }
-
-  /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
-  // TODO : convertir en promise
-  getPlaylistItems(playlistId, cb) {
-    this.persistence.getPlaylistItems(playlistId, environment.googleApiKey).then(data => {
-      cb(null, data);
-    }).catch(err => {
-      cb(err);
-    });
-  }
-
-  createDisc(disc: Disc) {
-    console.log('Disque créé');
-
-    const existingDiscIndex = this.indexOf(disc);
-    if (existingDiscIndex !== -1) {
-      if (!confirm('Ce disque est déjà dans le lecteur. Voulez-vous le remplacer ?')) {
-        console.log('Création du disque annulée');
-        return;
-      }
-      this.discs[existingDiscIndex] = disc;
-    } else {
-      this.discs.push(disc);
-    }
-
-    // On ajoute également le disque à la collection courante
-    const collectionNames = this.getCurrentCollectionNames();
-    collectionNames.forEach(collectionName => {
-
-      // uniquement si non existant
-      const discIds = this.discIdsByCollection[collectionName];
-      if (discIds.indexOf(disc.id) === -1) {
-
-        if (collectionNames.length > 1 && !confirm(`On ajoute cette vidéo à la collection ${collectionName} ?`)) {
-          return;
-        }
-
-        console.log('Ajout du disque dans la collection ' + collectionName);
-        discIds.push(disc.id);
-        this.persistence.saveCollectionDiscIds(collectionName, discIds).then(() => {
-          console.log('Disque ajouté avec succès dans la collection ' + collectionName);
-        }, () => {
-          alert('Erreur lors de l\'ajout du disque dans la collection ' + collectionName);
-        });
-      }
-
-    });
-
-    // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
-    if (existingDiscIndex === -1 && this.cuetubeConf.debug) {
-      prompt('Disque créé avec l\'id suivant', disc.id);
-    }
-  }
-
-  createNewDiscFromPlaylist(playlistIdOrUrl, url, cb) {
-    const playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
-    if (!playlistId) {
-      return cb('Aucun id de playlist');
-    }
-
-    this.getPlaylistItems(playlistId, (err, playlistItems) => {
-      if (err) {
-        return cb('Erreur createNewDiscFromPlaylist : ' + err.message);
-      }
-
-      playlistItems = playlistItems.items || playlistItems;
-      const disc = ytparser.newDiscFromPlaylistItems(playlistItems, prompt('Nom du disque', playlistItems[0].snippet.title));
-      disc.src = url;
-      this.importDisc(disc, cb);
-    });
-  }
-
-  // TODO : cb => Promise
-  createNewDiscFromVideoId(videoId, srcUrl, cb) {
-    if (!videoId) {
-      return cb(new Error(`ID de la vidéo YouTube non reconnue dans l'URL ${srcUrl}`));
-    }
-    cb = cb || function () {
-    };
-
-    this.getVideoSnippet(videoId, (err, snippet) => {
-      if (err) {
-        return cb(err);
-      }
-
-      const videoUrl = this.getVideoUrlFromId(videoId);
-      try {
-        const disc = ytparser.newDiscFromVideoSnippet(snippet, videoUrl);
-        disc.src = srcUrl;
-        this.importDisc(disc, cb);
-      } catch (e) {
-        if (e.name === 'youtube.notracklist') {
-          const disc = e.disc;
-          this.localPersistence.setItem('discToCreate', disc);
-          alert('La description de la vidéo ne contient aucune tracklist, on va commencer la création du disque...');
-          openInNewTab(`edit-cue?id=${disc.id}`);
+    toggleRepeatMode() {
+        if (!this.repeatMode) {
+            this.repeatMode = 'disc';
+        } else if (this.repeatMode === 'disc') {
+            this.repeatMode = 'track';
         } else {
-          if (confirm(`Erreur lors de la création du disque : ${e.message}. On crée quand même la playlist ?`)) {
-            openInNewTab(`edit-cue?id=${videoId}`);
-          }
+            this.repeatMode = '';
         }
-      }
-    });
-
-  }
-
-  importDisc(disc, cb) {
-    enrichDisc(disc, this);
-
-    console.log('Création du disc...', disc);
-    // TODO : pouvoir passer le disc en JSON -> problème de circular ref
-    this.persistence.saveDisc(disc.id, disc).then(() => {
-      this.createDisc(disc);
-      if (cb) {
-        cb(null, disc);
-      }
-    }, resKO => {
-      alert('Erreur postDisc : ' + resKO.data);
-      if (cb) {
-        cb(resKO.data);
-      }
-    });
-  }
-
-  /**
-   * Création d'un nouveau disque à partir d'une vidéo ou d'une playlist YouTube
-   * @param {string} url? URL de la vidéo/playlist, si vide alors on demande à l'utilisateur
-   * @param cb? callback
-   */
-  async createNewDiscFromVideoOrPlaylist(url?: string, cb?: { (collection: Collection) }) {
-
-    url = url || prompt('URL de la vidéo/playlist YouTube');
-    cb = cb || (err => {
-      console.log('this.$apply(); createNewDiscFromVideoOrPlaylist');
-      if (err) {
-        console.error(err);
-        alert(err);
-      }
-    });
-    if (!url) {
-      return;
-    }
-    const playlistId = getParameterByName('list', url);
-    const videoId = this.getVideoIdFromUrl(url);
-    const ctrl = this;
-
-    // Si la cue n'est pas connue de CueTube/cues
-    function fallback() {
-      if (playlistId) {
-        return ctrl.createNewDiscFromPlaylist(playlistId, url, cb);
-      } else {
-        return ctrl.createNewDiscFromVideoId(videoId, url, cb);
-      }
     }
 
-    // Vidéo déjà connue sur CueTube/cues ?
-    if (playlistId || videoId) {
-      const id = playlistId || videoId;
-      console.log(`Récupération du disque ${id}...`);
-
-      let disc: Disc;
-      try {
-          disc = await this.persistence.getDisc(id);
-      } catch (err) {
-          console.error('Erreur lors de la récupération locale :', err);
-
-          console.log('On recherche si ' + id + ' n\'est pas déjà connu de CueTube...');
-          return this.getCueService().getCueFromCueTube(id).then(cue => {
-              const msg = 'La vidéo/playlist existe déjà dans CueTube.'
-                  + ' L\'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.';
-              if (confirm(msg)) {
-                  const disc = new Disc(cue);
-                  disc.src = url;
-                  this.importDisc(disc, cb);
-                  console.log('this.$apply(); createNewDiscFromVideoOrPlaylist3');
-              } else {
-                  fallback();
-              }
-          }).catch(err2 => {
-              console.error('Erreur lors de la récupération dans CueTube : ' + err2);
-              fallback();
-          });
-      }
-
-      const msg = 'La vidéo/playlist existe déjà localement. L\'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.';
-      if (confirm(msg)) {
-          disc.src = url;
-          // Import du disque (sans sauvegarde avec la persistance)
-          enrichDisc(disc, this);
-          this.createDisc(disc);
-          console.log('this.$apply(); createNewDiscFromVideoOrPlaylist2');
-      } else {
-          fallback();
-      }
-
-      // Lecture auto
-      if (this.cuetubeConf.addDisc.autoplay) {
-          disc.play();
-      }
-
-    } else {
-      fallback();
-    }
-  }
-
-  getVideoIdFromUrl(urlString: string): string | undefined {
-      if (urlString.match(/:\/\//)) { // URL ?
-          const url = new URL(urlString);
-          if (url.hostname === 'youtu.be') {
-              // Exemple : https://youtu.be/PcXlmQ-52n4?si=IMngg3XUroRED9Ha
-              return url.pathname.substring(1);
-          } else {
-              return url.searchParams.get('v');
-          }
-      } else {
-          return undefined;
-      }
-  }
-
-  /**
-   * Création d'une nouvelle collection vide
-   * @param {string} name? nom de la collection, si vide alors on demande à l'utilisateur
-   */
-  createCollection(name?: string) {
-    name = name || prompt('Nom de la collection à créer');
-    if (name) {
-      name = name.trim();
-      if (this.collectionNames.indexOf(name) !== -1) {
-        alert('Cette collection existe déjà mec !');
-        return;
-      }
-      const collection = new Collection(name);
-      this.persistence.saveCollection(collection).then(() => {
-        this.collectionNames.push(collection.name);
-        this.collectionNames = this.collectionNames.sort();
-        this.collectionNamesChange.emit(this.collectionNames);
-        this.openCollection(name);
-      });
-    }
-  }
-
-  openCollection(name) {
-    this.playCollection(name);
-  }
-
-  /**
-   * Sauvegarde l'état actuel dans le localStorage
-   */
-  save() {
-    this.prefs.saveAllPlayer(this);
-  }
-
-  onPlayerReady() {
-    console.log('Lecteur YouTube prêt. Veuillez démarrer la lecture manuellement');
-    // Il ne semble pas possible de lire automatiquement une vidéo sans interaction utilisateur
-    // cf. https://stackoverflow.com/questions/7281765/how-to-embed-an-autoplaying-youtube-video-in-an-iframe
-    // Autre piste : https://medium.com/@mihauco/youtube-iframe-api-without-youtube-iframe-api-f0ac5fcf7c74
-    this.videoPlayingAfterPlayerReady = false;
-  }
-
-  // 5. The API calls this function when the player's state changes.
-  //    The function indicates that when playing a video (state=1),
-  // liste des codes : http://stackoverflow.com/a/8204143/1655155
-  /**
-   * -1 (unstarted)
-   * 0  YT.PlayerState.ENDED
-   * 1  YT.PlayerState.PLAYING
-   * 2  YT.PlayerState.PAUSED
-   * 3  YT.PlayerState.BUFFERING
-   * 5  YT.PlayerState.CUED
-   */
-  onPlayerStateChange(event) {
-    // const player = event.target;
-    const state = event.data;
-
-    if (this.lastPlayerStates.length >= 10) {
-      this.lastPlayerStates.shift();
-    }
-    const lastState = this.lastPlayerStates.length ? this.lastPlayerStates[this.lastPlayerStates.length - 1] : undefined;
-    this.lastPlayerStates.push(state);
-
-    console.log('%c player state : ' + state + (YT_STATES[state] ? ':' + YT_STATES[state] : ''),
-      `background: no-repeat left center url(https://youtube.com/favicon.ico); background-size: 16px; padding-left: 20px;`);
-
-    // N'importe quel évènement après un chrono de deleted video => la supprimée n'est pas supprimée
-    if (this.deletedVideoTimeout) {
-      window.clearTimeout(this.deletedVideoTimeout);
-      delete this.deletedVideoTimeout;
+    stopPropagation(e) {
+        e.stopPropagation(); // pour ne pas appeler document.onclick
     }
 
-    // Fin de la vidéo
-    // on vérifie lastPlayedVideoIndex car cet évènement est souvent appelé deux fois
-    // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
-    // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
-    if (state === YT.PlayerState.ENDED && (!this.trackIsLoading ||
-      this.previousTrack.disc.id !== this.currentTrack.disc.id &&
-      this.previousTrack.file.index !== this.currentTrack.file.index &&
-      this.previousTrack.index !== this.currentTrack.index)) {
-      // est-ce que la vidéo était en lecture actuellement ?
-      if (lastState === YT.PlayerState.PLAYING) {
-        this.videoEnded.emit();
-      } else {
-        console.log('La vidéo ne s\'est pas vraiment arrêtée');
-      }
-    } else if (state === YT.PlayerState.PLAYING) {
-      this.isPlaying = true;
-      this.videoPlaying.emit();
-    } else if (state === YT.PlayerState.PAUSED) {
-      this.isPlaying = false;
+    // TODO : remonter dans app
+    get $foreground() {
+        return $('#foreground-overlay');
     }
 
-    // Détection d'une série de 3 évènements
-    if (this.lastPlayerStates.length >= 3) {
-      const states = new Array(3);
-      for (let i = 0; i < 3; ++i) {
-        states[i] = this.lastPlayerStates[this.lastPlayerStates.length - (3 - i)];
-      }
-
-      if (states[0] === YT.PlayerState.PAUSED &&
-        states[1] === YT.PlayerState.BUFFERING &&
-        states[2] === YT.PlayerState.PLAYING) {
-        this.videoManualSeeked.emit();
-      }
-
-      if (states[0] === -1 &&
-        states[1] === YT.PlayerState.BUFFERING &&
-        states[2] === -1) {
-        this.unstartedVideo.emit();
-      }
-    } else if (state === -1) {
-      this.unstartedVideo.emit();
+    // TODO : remonter dans app
+    get $foregroundIcon() {
+        return $('#foreground-overlay-icon');
     }
-  }
 
-  removeDisc(disc: Disc) {
-    const collectionParam = this.getCollectionParam() || DEFAULT_COLLECTION;
-    const collectionNames = collectionParam.split(',');
-    const promises = [];
-    let removeConfirmed = true;
-    collectionNames.forEach(collectionName => {
+    onYouTubeIframeAPIReady() {
 
-      if (collectionNames.length > 1 && !confirm(`Supprimer le disque ${disc.title} de la collection ${collectionName} ?`)) {
-        removeConfirmed = false;
-        return false;
-      }
+        console.log('YouTube initialisé');
 
-      promises.push(Promise.resolve(collectionParam)
-        .then(collectionParamI => {
-          const discIdsI = this.discIdsByCollection[collectionParamI];
-          if (discIdsI) {
-            return discIdsI;
-          } else {
-            return this.persistence.getCollectionDiscIds(collectionName);
-          }
-        })
-        .then(discIdsI => {
-          const index = discIdsI.indexOf(disc.id);
-          if (index === -1) {
-            return discIdsI;
-          }
+        // On cache le masque
+        this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
+        this.$foreground.hide();
 
-          discIdsI.splice(index, 1);
-          return this.persistence.saveCollectionDiscIds(collectionName, discIdsI);
-        })
-        .then(discIds => {
-          this.discIdsByCollection[collectionName] = discIds;
-          console.log(`Disques sauvegardés pour la collection ${collectionName}`, discIds);
-          return discIds;
-        })
-      );
-    });
+        // Si chargement
+        const current = this.prefs.getCurrentPlayerState();
+        if (current) {
+            const disc: Disc = _.find(this.discs, (discI) => discI && discI.id === current.discId);
 
-    // Attente des promises
-    Promise.all(promises).then(() => {
-      if (removeConfirmed) {
-        const index = this.discs.indexOf(disc);
-        if (index === -1) {
-          return;
+            if (!disc) {
+                console.warn(`Disque anciennement joué d'id ${current.discId} non retrouvé. On lance un disque aléatoirement`);
+                this.repeatMode = null;
+                this.next(); // FIXME que faire si aucun disque n'est trouvé ?
+                return;
+            } else {
+                console.log('Chargement de la précédente lecture...', current);
+
+                const file = disc.files[current.fileIndex];
+                const track = file ? file.tracks[current.trackIndex] : disc.nextTrack(this.shuffle, undefined);
+
+                // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
+                this.loadTrack(track, current.time);
+
+                return;
+            }
         }
 
-        // Suppression dans les disques actuellement affichés
-        this.discs.splice(index, 1);
-      }
-    });
-  }
+        // Premier lancement ...
+        if ((!this.discs || !this.discs.length)) {
+            // ... de l'application
+            if (!this.getCollectionParam()) {
+                alert('Bienvenue sur CueTube mec ! Pour lancer du gros son ajoute un album avec le bouton en haut à droite. Enjoy !');
+            } else {
+                alert('Cette collection est vide pour le moment. Ajoute un disque et fais péter les watts.');
+            }
+            return;
+        }
 
-  toggleCollection(collectionName, $event) {
-
-    this.hidePlayer();
-    $event.stopPropagation();
-
-    // Coché ?
-    const index = this.currentCollectionNames.indexOf(collectionName);
-    const checked = index === -1;
-    if (checked) {
-      this.currentCollectionNames.push(collectionName);
-    } else {
-      this.currentCollectionNames.splice(index, 1);
-    }
-    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-
-    this.loadDiscsFromCurrentCollections();
-  }
-
-  async removeCollection(collectionName: string): Promise<boolean> {
-
-    await this.persistence.deleteCollection(collectionName);
-
-    this.collectionNames = this.collectionNames.filter(collectionNameI => collectionNameI !== collectionName);
-    this.currentCollectionNames = this.currentCollectionNames.filter(collectionNameI => collectionNameI !== collectionName);
-    console.log(`Collection "${collectionName}" supprimée avec succès`);
-    this.collectionNamesChange.emit(this.collectionNames);
-    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-
-    return true;
-  }
-
-  // TODO : comment déclarer des services avec Angular ?
-  getCueService() {
-    if (!this.cueService) {
-      this.cueService = new CueService(this.http);
-    }
-    return this.cueService;
-  }
-
-  async getDiscsIds(collectionName): Promise<string[]> {
-
-    // Recherche d'abord dans la mémoire
-    let discIds = await this.discIdsByCollection[collectionName];
-    if (discIds) {
-      return discIds;
+        this.next();
     }
 
-    // Recherche dans la persistance
-    try {
-      discIds = await this.persistence.getCollectionDiscIds(collectionName);
-      return this.discIdsByCollection[collectionName] = discIds; // mémoire
-    } catch (err) {
-      alert('Impossible d\'ouvrir la collection : ' + collectionName + ' : ' + err);
-      return [];
-    }
-  }
 
-  playCollection(collectionName?): Promise<Disc[]> {
-    console.log('Lecture de la collection ' + (collectionName ? collectionName : 'par défaut'));
-    this.currentCollectionNames = collectionName ? [collectionName] : [];
-    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-    return this.loadDiscsFromCurrentCollections();
-  }
-
-  // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
-  connectGoogleDrive() {
-
-    const loginBtn = document.getElementById('login-btn');
-    loginBtn.innerText = 'Connexion...';
-    // this.hidePlayer();
-
-    const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
-    const googleDrivePersistence = new GoogleDrivePersistence(this.http);
-    this.googleDrivePersistence = googleDrivePersistence; // debug
-    googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
-
-      if (isInit) {
-        notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
-        loginBtn.innerText = 'Connecté·e';
-        this.connectedToGoogleDrive = true;
-        localStorage.setItem('connectedToGoogleDrive', 'true');
-
-        // synchro avec l'ancienne persistance pour ne rien perdre
-        oldPersistence.sync(googleDrivePersistence).then(syncResult => {
-          const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
-          console.log(message);
-          console.log(syncResult);
-          notify(message);
-
-          // On ne change pas de persistence pour accélérer les perfs
-          // puisse qu'on synchronise à chaque démarrage
-          // TODO : attention on crée avec this.persistence et pas localStorage
-          this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
-          localStorage.setItem('persistence', `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`);
-
-          this.init();
-        }).catch(err => {
-          loginBtn.innerText = 'Connecté·e';
-          console.error(err);
-          alert(`Erreur de synchro entre la persistance actuelle et Google Drive. L'appli va être rechargée pour éviter des appels inutiles à Google Drive.`);
-          location.reload();
-        });
-      } else {
-        loginBtn.innerText = 'Google Drive';
-        // this.showPlayer();
-      }
-    }).catch(err => {
-      loginBtn.innerText = 'Google Drive';
-      // this.showPlayer();
-      alert('Erreur de connexion à Google Drive');
-      console.error(err);
-    });
-  }
-
-  disconnectGoogleDrive() {
-    // TODO
-    this.connectedToGoogleDrive = false;
-    const loginBtn = document.getElementById('login-btn');
-
-    localStorage.removeItem('persistence');
-    this.persistence = this.getPersistence();
-
-    loginBtn.innerText = 'Google Drive';
-  }
-
-  // TODO : remonter dans app
-  getPersistence(): Persistence {
-    const persistence = AppComponent.getPersistence(this.localPersistence, this.http);
-    console.log('getPersistence() => ' + persistence.title);
-    return persistence;
-  }
-
-  loadDiscs(discIdsToLoad: string[]): Promise<Disc[]> {
-
-    console.log('Chargement des disques :', discIdsToLoad);
-    this.hidePlayer();
-
-    this.discs = [];
-    const discLoaders = discIdsToLoad.map(discId => this.loadDisc(discId));
-
-    return Promise.all(discLoaders.map(p => p.catch(e => {
-      console.error('Erreur lors du chargement du disque', e);
-      return undefined;
-    })))
-      .then(loadedAndUndefinedDiscs => {
-        const loadedDiscs = loadedAndUndefinedDiscs.filter(disc => disc);
-        console.log('Disques chargés :', loadedDiscs);
-        this.discs = loadedDiscs;
+    initYT() {
         if (!this.isInitYT) {
-          this.initYT(); // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
+            // TODO : éviter l'erreur : Uncaught ReferenceError: ytcfg is not defined
+            console.log('Initialisation de YouTube');
+
+
+            // 3. This function creates an <iframe> (and YouTube player)
+            //    after the API code downloads.
+            // Appelé automatiquement par l'IFRAME YouTube
+            const component = this;
+            (<any>window).onYouTubeIframeAPIReady = function () {
+                component.onYouTubeIframeAPIReady();
+            };
+
+            // 2. This code loads the IFrame Player API code asynchronously.
+            const tag = document.createElement('script');
+
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+            this.isInitYT = true;
+        }
+    }
+
+    /**
+     * @param track {Disc.Track} piste à charger TODO devrait être remplacé par file pour éviter des désynchro
+     */
+    loadTrack(track: Disc.Track, time?) {
+
+        clearTimeout(this.checkCurrentTimeTimeout); // suppression de tous les timers
+
+        const file = track.file;
+        const disc = file.disc;
+        const multiTrack = file.tracks.length > 1;
+
+        if (time < track.startSeconds || time > track.endSeconds) {
+            console.error(`Impossible de charger la piste #${track.index} du disque ${disc.title} à t=${time} car`
+                + ` début=${track.startSeconds} et fin =${track.endSeconds}.`, track);
+            track = file.getTrackAt(time);
+            console.log(`On charge la piste #${track.index} à la place`);
+        }
+
+        // On active automatiquement cette piste et ce disque
+        disc.enabledByUser = true;
+        file.disabledByYouTube = false; // On tente également de réactiver la vidéo pour voir si elle est de nouveau dispo sur YouTube
+        track.enabledByUser = true;
+
+        // Suppression dans la liste des suivants auto
+        if (this.shuffle) {
+            const nextTracks = disc.nextTracks;
+            const i = nextTracks.indexOf(track.number);
+            nextTracks.splice(i, 1); // on supprime que celui-ci
+        }
+
+        this.showOnlyPlaylist(this.indexOf(disc));
+
+        const start = getYouTubeStartSeconds(track, time); // YouTube n'accèpte que des entiers
+        const end = multiTrack && track.endSeconds ? Math.floor(track.endSeconds) : undefined; // YouTube n'accèpte que des entiers
+        if (start || end) {
+            console.log(`Piste ${track.number} du disque ${disc.id} (de ${start}s à ${end}s) : ${track.title}`);
+        }
+
+        this.previousTrack = this.currentTrack;
+        this.currentTrack = track;
+        this.trackIsLoading = true;
+        if (!this.player) {
+            const component = this;
+            // On peut récupérer cette variable a posteriori avec : YT.get("player")
+            const aspect = 16 / 9;
+            const height = 180;
+            this.player = new YT.Player('player', {
+                height: height,
+                width: height * aspect,
+                videoId: track.file.videoId,
+                playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
+                    autoplay: 1,
+                    start: start,
+                    end: end
+                },
+                events: {
+                    // 4. The API will call this function when the video player is ready.
+                    onReady: component.onPlayerReady.bind(component), // https://stackoverflow.com/a/38245500/1655155
+                    onStateChange: component.onPlayerStateChange.bind(component) // https://stackoverflow.com/a/38245500/1655155
+                }
+            });
         } else {
-          this.showPlayer();
+
+            const player = this.player;
+
+            // TODO Ne pas recharger si on ne change pas de vidéo (videoId)
+            if (this.previousTrack === this.currentTrack || player && player.getVideoUrl
+                && getParameterByName('v', player.getVideoUrl()) === track.file.videoId) {
+                this.seekToTrack(track);
+            } else {
+                // FIXME : graphiquement on ne voit plus les bornes start et end
+                player.loadVideoById({
+                    videoId: track.file.videoId,
+                    startSeconds: start,
+                    endSeconds: end,
+                    // suite : KO Angular4
+                    // playerVars: { // https://developers.google.com/youtube/player_parameters?hl=fr
+                    //   autoplay: 1,
+                    //   start: start,
+                    //   end: end
+                    // }
+                });
+            }
         }
-        return loadedDiscs;
-      })
-      .catch(e => {
-        console.error('Erreur après le chargement des disques', e);
-        return [];
-      });
+    }
 
-  }
+    /**
+     * Charge une piste de la vidéo (file) déjà en cours de lecture
+     * @param track {Disc.Track} piste à charger
+     */
+    seekToTrack(track) {
+        track = track || this.currentTrack;
+        this.trackIsLoading = true;
+        const start = getYouTubeStartSeconds(track); // YouTube n'accèpte que des entiers
+        this.seekTo(start ? start : 0); // start undefined quand video non multitrack
+    }
 
-  loadDisc(discId: string): Promise<Disc> {
-
-    console.log(`Chargement du disque ${discId}`);
-
-    // Recherche d'abord dans la mémoire
-    let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
-    return new Promise<Disc>(resolve => {
-      return resolve(this.persistence.getDisc(discId));
-    })
-      .catch(resKO => {
-        console.error(`Error lors de la récupération du disque ${discId}:`, resKO || resKO.data);
-        if (continueConfirm) {
-          continueConfirm = prompt('Veuillez ajouter la cuesheet ' + discId, discId) !== null;
+    seekTo(time) {
+        if (isNaN(time)) {
+            return false;
         }
-        return <Disc>null;
-      })
-      .then(disc => {
-          if (disc) {
-              enrichDisc(disc, this);
-
-              // Reprise des paramètres sauvegardés
-              this.prefs.restoreDisc(disc);
-
-              // Ajout dans le player
-              this.addDisc(disc);
-              return disc;
-          }
-      });
-  }
-
-  /**
-   *
-   * @param disc
-   * @return {number} l'index dans player.discs où le disque a été inséré (ajout ou remplacement)
-   */
-  addDisc(disc: Disc): number {
-    const discIndex = this.indexOf(disc);
-    if (discIndex !== -1) {
-      this.discs[discIndex] = disc;
-    } else {
-      this.discs.push(disc);
-      return this.discs.length - 1;
-    }
-  }
-
-  reloadDisc(discId: string): Promise<Disc> {
-    const disc = this.getDisc(discId);
-    if (disc) {
-      return this.loadDisc(disc.id);
-    } else {
-      throw new Error(`Impossible de recharger le disque ${discId} car il n'existe pas/plus`);
-    }
-  }
-
-  getDisc(discId: string): Disc {
-    return this.discs.find(disc => disc.id === discId);
-  }
-
-  indexOf(disc: Disc): number {
-    return this.discs
-      .map(disc => disc.id)
-      .indexOf(disc.id);
-  }
-
-  getCurrentCollectionNames(): string[] {
-    return this.currentCollectionNames.length ? this.currentCollectionNames : [DEFAULT_COLLECTION];
-  }
-
-  loadDiscsFromCurrentCollections(): Promise<Disc[]> {
-    this.hidePlayer();
-    const currentCollectionNames = this.getCurrentCollectionNames();
-
-    // On récupère la liste des disques de toutes les collections actives
-    const getDiscsIds = currentCollectionNames
-      .map(collectionName => this.getDiscsIds(collectionName));
-    return Promise.all(getDiscsIds.map(p => p.catch(e => e)))
-      .then(discIdsByIndex => discIdsByIndex.reduce((all: Array<string>, array: Array<string>) => {
-        // On concatère les disques sans doublons
-        array.forEach(item => {
-          if (all.indexOf(item) === -1) {
-            all.push(item);
-          }
-        });
-        return all;
-      }, []))
-      .then(discIds => this.loadDiscs(discIds))
-      .catch(e => {
-        console.error(e);
-        alert('Erreur lors du chargement des disques des collections : ' + e);
-        throw e;
-      });
-  }
-
-  /**
-   * Format YouTube
-   * @param time
-   * @return {string}
-   */
-  formatHMSS(time) {
-    return formatHMSS(time);
-  }
-
-
-  /**
-   * Actualise l'IHM à chaque changement de seconde ou sur demande (en l'appelant)
-   */
-  checkCurrentTime() {
-
-    if (this.checkCurrentTimeTimeout) {
-      clearTimeout(this.checkCurrentTimeTimeout);
-    }
-    // FIXME par moment this.player devient un élément IFRAME au lieu d'un objet
-    const time = this.player && this.player.getCurrentTime ? this.player.getCurrentTime() : undefined;
-    // console.log(`time=${time}`);
-
-    const component = this;
-
-    function scheduleNextCheckCurrentTime() {
-      // on actualise qu'au prochain changement de seconde
-      component.nextCheckCurrentTime = (1 - (component.player.getCurrentTime() % 1)) * 1000;
-      component.checkCurrentTimeTimeout = setTimeout(component.checkCurrentTime.bind(component), component.nextCheckCurrentTime); // boucle
-    }
-
-    // changement de secondes ?
-    if (this.lastCheckedTime === undefined || Math.floor(time) !== Math.floor(this.lastCheckedTime)) {
-      this.zone.run(() => {
+        if (this.checkCurrentTimeTimeout) {
+            clearTimeout(this.checkCurrentTimeTimeout);
+        }
+        // console.log("TODO : seekTo("+time+")");
+        this.player.seekTo(time, true);
         this.slider.value = time;
         this.fileSlider.value = time;
-        this.lastCheckedTime = time;
-        // Changement de piste ?
-        if (this.slider.value >= this.slider.max) {
-          this.onTrackEnded();
+    }
+
+    /**
+     * Prochaine piste (si disponible, sinon aucune action mais aucune erreur)
+     */
+    next() {
+        const discs = this.discs;
+        let track = this.currentTrack;
+        let disc = track && track.disc;
+
+        const possibleDiscs = [];
+        // Répétition du disque ? (uniquement si disque existant)
+        if (!this.repeatMode || !disc) {
+            for (let i = 0; i < discs.length; ++i) {
+                const nextDisc = discs[i];
+                if (nextDisc && nextDisc.enabled && nextDisc.playable) {
+                    possibleDiscs.push(nextDisc);
+                }
+            }
+        } else {
+            possibleDiscs.push(disc);
         }
-        scheduleNextCheckCurrentTime();
-      });
-    } else {
-      scheduleNextCheckCurrentTime();
+
+        // Aucun disque jouable ?
+        if (!possibleDiscs.length) {
+            console.warn('Aucun disque activé (ou sans piste activées)');
+            return;
+        }
+
+        const discIndex = possibleDiscs.indexOf(disc);
+
+        // Répétition de la piste ?
+        if (this.repeatMode === 'track') {
+            console.log('On répète la même piste comme demandé');
+        } else if (this.shuffle) {
+            disc = weightedRandom(possibleDiscs, discI => discI.tracks.length);
+            track = disc.nextTrack(this.shuffle, this.currentTrack); // FIXME : arrêter la lecture si plus aucune piste
+        } else {
+
+            // prochaine piste ou 1ère du prochain disque
+            do {
+                if (track) {
+                    track = track.next;
+                }
+                if (!track) {
+                    disc = discIndex < possibleDiscs.length - 1 ? possibleDiscs[discIndex + 1] : possibleDiscs[0];
+                    track = disc.tracks[0];
+                }
+            } while (!track.enabled);
+        }
+
+        // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
+        if (track) {
+            this.loadTrack(track);
+        } else {
+            alert('Aucun disque à lire !');
+        }
     }
-  }
 
-  onTrackEnded(event?) {
-    const scope = event ? event.currentScope : this;
+    previous() {
 
-    if (scope.repeatMode === 'track') {
-      scope.seekToTrack();
-    } else if (scope.shuffle) {
-      scope.next();
-    } else {
-      scope.checkCurrentTrack();
-    }
-  }
+        const previousEntry = this.history.length >= 2 && this.history[this.history.length - 2];
+        if (!previousEntry) {
+            return;
+        }
 
+        const disc = this.discs[previousEntry.discIndex];
+        if (!disc) {
+            console.error(`Cannot find previous track's disc ! discIndex = ${previousEntry.discIndex}, previousEntry =`, previousEntry);
+            this.history.pop();
+            return;
+        }
+        const file = disc.files[previousEntry.fileIndex];
+        const track = file.tracks[previousEntry.trackIndex];
 
-  toggleTracklist(tracklist, disc) {
-    const lastToggledTracklist = this.lastToggledTracklist;
-    if (lastToggledTracklist !== null && lastToggledTracklist !== tracklist) {
-      $(lastToggledTracklist).hide();
-    }
-
-    $(tracklist).toggle();
-
-    if ($(tracklist).is(':visible')) {
-      this.discInTracklist = disc;
-    } else {
-      this.discInTracklist = null;
+        this.history.pop(); // suppression du previous
+        this.loadTrack(track);
+        this.history.pop(); // suppression du previous (ajouté par loadTrack)
     }
 
-    this.lastToggledTracklist = tracklist;
-  }
-
-  /**
-   * L'heure actuelle
-   * @param offset décalage en secondes
-   * @return {string} exemple "12:48"
-   */
-  getTime(offset = 0) {
-    const d = new Date();
-    if (offset) {
-      d.setTime(d.getTime() + offset * 1000);
+    showOnlyPlaylist(discIndex) {
+        const discs = $('#playlist .disc');
+        discs.each(function () {
+            const list = $('.disc-list', this);
+            if (this.dataset.index === discIndex) {
+                list.show();
+            } else {
+                list.hide();
+            }
+        });
     }
-    return d.toTimeString().substring(0, 5);
-  }
 
-  ngAfterViewInit(): void {
-    console.log('ngAfterViewInit');
-    if (this.prefs.isConnectedToGoogleDrive()) {
-      this.connectGoogleDrive();
+    getVideoUrlFromId(id) {
+        return 'https://www.youtube.com/watch?v=' + id;
     }
-  }
 
-  ngOnDestroy(): void {
-    this.locationSubscription.unsubscribe();
-  }
-
-  /**
-   * Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
-   * @param location
-   */
-  getStateFromLocation(location: Location): State {
-    const url = new URL(location.toString());
-    const state: State = {};
-    if (url.searchParams.get('collection')) {
-      state.currentCollectionNames = url.searchParams.get('collection').split(',');
+    /** @return Promise https://developers.google.com/youtube/v3/docs/videos#resource */
+    getVideoSnippet(videoId, cb) {
+        // TODO comment recréer une Promise par dessus le promise de getVideo .
+        this.persistence.getVideo(videoId, environment.googleApiKey).then(video => {
+            cb(null, video.snippet);
+        }).catch(err => {
+            cb(err);
+        });
     }
-    return state;
-  }
+
+    checkCurrentTrack() {
+        const track = this.currentTrack.file.getTrackAt(this.player.getCurrentTime());
+        if (track && track !== this.currentTrack) {
+            console.log(`On est passé à la piste #${track.number} ${track.title}`);
+            this.currentTrack = track;
+            this.videoStarted.emit();
+        }
+    }
+
+    /**
+     * Déclenché à chaque mise à jour de la position
+     */
+    changeVideoIHM() {
+        const track = this.currentTrack;
+
+        // Slider
+        // const form = document.getElementById("player-controls-form");
+        // const slider = form.trackPosition;
+        const slider = this.slider;
+        slider.min = track.startSeconds;
+        slider.max = track.endSeconds;
+        this.fileSlider.max = track.file.duration;
+
+        this.checkCurrentTime();
+    }
+
+    playPause() {
+        const player = this.player;
+        if (!player) {
+            return;
+        }
+        const state = player.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) {
+            this.pause();
+        } else {
+            this.play();
+        }
+    }
+
+    showPlayer() {
+        this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
+        this.$foreground.hide();
+    }
+
+    hidePlayer() {
+        this.$foregroundIcon.html(`<div id="foreground-overlay-icon" class="center font-size-50p"></div>`);
+        this.$foreground.show();
+    }
+
+    play() {
+        const player = this.player;
+        if (!player) {
+            return;
+        }
+        this.showPlayer();
+        player.playVideo();
+        this.isPlaying = true;
+    }
+
+    pause() {
+        const player = this.player;
+        if (!player) {
+            return;
+        }
+        player.pauseVideo();
+        this.isPlaying = false;
+    }
+
+    /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
+    // TODO : convertir en promise
+    getPlaylistItems(playlistId, cb) {
+        this.persistence.getPlaylistItems(playlistId, environment.googleApiKey).then(data => {
+            cb(null, data);
+        }).catch(err => {
+            cb(err);
+        });
+    }
+
+    createDisc(disc: Disc) {
+        console.log('Disque créé');
+
+        const existingDiscIndex = this.indexOf(disc);
+        if (existingDiscIndex !== -1) {
+            if (!confirm('Ce disque est déjà dans le lecteur. Voulez-vous le remplacer ?')) {
+                console.log('Création du disque annulée');
+                return;
+            }
+            this.discs[existingDiscIndex] = disc;
+        } else {
+            this.discs.push(disc);
+        }
+
+        // On ajoute également le disque à la collection courante
+        const collectionNames = this.getCurrentCollectionNames();
+        collectionNames.forEach(collectionName => {
+
+            // uniquement si non existant
+            const discIds = this.discIdsByCollection[collectionName];
+            if (discIds.indexOf(disc.id) === -1) {
+
+                if (collectionNames.length > 1 && !confirm(`On ajoute cette vidéo à la collection ${collectionName} ?`)) {
+                    return;
+                }
+
+                console.log('Ajout du disque dans la collection ' + collectionName);
+                discIds.push(disc.id);
+                this.persistence.saveCollectionDiscIds(collectionName, discIds).then(() => {
+                    console.log('Disque ajouté avec succès dans la collection ' + collectionName);
+                }, () => {
+                    alert('Erreur lors de l\'ajout du disque dans la collection ' + collectionName);
+                });
+            }
+
+        });
+
+        // On affiche l'id du disque pour que l'utilisateur puisse l'ajouter dans sa playlist (URL)
+        if (existingDiscIndex === -1 && this.cuetubeConf.debug) {
+            prompt('Disque créé avec l\'id suivant', disc.id);
+        }
+    }
+
+    createNewDiscFromPlaylist(playlistIdOrUrl, url, cb) {
+        const playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
+        if (!playlistId) {
+            return cb('Aucun id de playlist');
+        }
+
+        this.getPlaylistItems(playlistId, (err, playlistItems) => {
+            if (err) {
+                return cb('Erreur createNewDiscFromPlaylist : ' + err.message);
+            }
+
+            playlistItems = playlistItems.items || playlistItems;
+            const disc = ytparser.newDiscFromPlaylistItems(playlistItems, prompt('Nom du disque', playlistItems[0].snippet.title));
+            disc.src = url;
+            this.importDisc(disc, cb);
+        });
+    }
+
+    // TODO : cb => Promise
+    createNewDiscFromVideoId(videoId, srcUrl, cb) {
+        if (!videoId) {
+            return cb(new Error(`ID de la vidéo YouTube non reconnue dans l'URL ${srcUrl}`));
+        }
+        cb = cb || function () {
+        };
+
+        this.getVideoSnippet(videoId, (err, snippet) => {
+            if (err) {
+                return cb(err);
+            }
+
+            const videoUrl = this.getVideoUrlFromId(videoId);
+            try {
+                const disc = ytparser.newDiscFromVideoSnippet(snippet, videoUrl);
+                disc.src = srcUrl;
+                this.importDisc(disc, cb);
+            } catch (e) {
+                if (e.name === 'youtube.notracklist') {
+                    const disc = e.disc;
+                    this.localPersistence.setItem('discToCreate', disc);
+                    alert('La description de la vidéo ne contient aucune tracklist, on va commencer la création du disque...');
+                    openInNewTab(`edit-cue?id=${disc.id}`);
+                } else {
+                    if (confirm(`Erreur lors de la création du disque : ${e.message}. On crée quand même la playlist ?`)) {
+                        openInNewTab(`edit-cue?id=${videoId}`);
+                    }
+                }
+            }
+        });
+
+    }
+
+    importDisc(disc, cb) {
+        enrichDisc(disc, this);
+
+        console.log('Création du disc...', disc);
+        // TODO : pouvoir passer le disc en JSON -> problème de circular ref
+        this.persistence.saveDisc(disc.id, disc).then(() => {
+            this.createDisc(disc);
+            if (cb) {
+                cb(null, disc);
+            }
+        }, resKO => {
+            alert('Erreur postDisc : ' + resKO.data);
+            if (cb) {
+                cb(resKO.data);
+            }
+        });
+    }
+
+    /**
+     * Création d'un nouveau disque à partir d'une vidéo ou d'une playlist YouTube
+     * @param {string} url? URL de la vidéo/playlist, si vide alors on demande à l'utilisateur
+     * @param cb? callback
+     */
+    async createNewDiscFromVideoOrPlaylist(url?: string, cb?: { (collection: Collection) }) {
+
+        url = url || prompt('URL de la vidéo/playlist YouTube');
+        cb = cb || (err => {
+            console.log('this.$apply(); createNewDiscFromVideoOrPlaylist');
+            if (err) {
+                console.error(err);
+                alert(err);
+            }
+        });
+        if (!url) {
+            return;
+        }
+        const playlistId = getParameterByName('list', url);
+        const videoId = this.getVideoIdFromUrl(url);
+        const ctrl = this;
+
+        // Si la cue n'est pas connue de CueTube/cues
+        function fallback() {
+            if (playlistId) {
+                return ctrl.createNewDiscFromPlaylist(playlistId, url, cb);
+            } else {
+                return ctrl.createNewDiscFromVideoId(videoId, url, cb);
+            }
+        }
+
+        // Vidéo déjà connue sur CueTube/cues ?
+        if (playlistId || videoId) {
+            const id = playlistId || videoId;
+            console.log(`Récupération du disque ${id}...`);
+
+            let disc: Disc;
+            try {
+                disc = await this.persistence.getDisc(id);
+            } catch (err) {
+                console.error('Erreur lors de la récupération locale :', err);
+
+                const cuesRepositoryName = 'youtube-cues';
+                console.log(`On recherche si ` + id + ` n'est pas déjà connu de ${cuesRepositoryName}...`);
+                return this.getCueService().getCueFromCueTube(id).then(cue => {
+                    if (confirm(`La vidéo/playlist existe déjà dans ${cuesRepositoryName}. Veux-tu l'importer ?\nSi tu annules le disque sera récréé à partir de YouTube.`)) {
+                        const disc = new Disc(cue);
+                        if (!disc.src) {
+                            disc.src = url;
+                        }
+                        this.importDisc(disc, cb);
+                        console.log('this.$apply(); createNewDiscFromVideoOrPlaylist3');
+                    } else {
+                        fallback();
+                    }
+                }).catch(err2 => {
+                    console.error('Erreur lors de la récupération dans CueTube : ' + err2);
+                    fallback();
+                });
+            }
+
+            const msg = 'La vidéo/playlist existe déjà localement. L\'importer ?\nSi vous annulez le disque sera récréé à partir de YouTube.';
+            if (confirm(msg)) {
+                disc.src = url;
+                // Import du disque (sans sauvegarde avec la persistance)
+                enrichDisc(disc, this);
+                this.createDisc(disc);
+                console.log('this.$apply(); createNewDiscFromVideoOrPlaylist2');
+            } else {
+                fallback();
+            }
+
+            // Lecture auto
+            if (this.cuetubeConf.addDisc.autoplay) {
+                disc.play();
+            }
+
+        } else {
+            fallback();
+        }
+    }
+
+    getVideoIdFromUrl(urlString: string): string | undefined {
+        if (urlString.match(/:\/\//)) { // URL ?
+            const url = new URL(urlString);
+            if (url.hostname === 'youtu.be') {
+                // Exemple : https://youtu.be/PcXlmQ-52n4?si=IMngg3XUroRED9Ha
+                return url.pathname.substring(1);
+            } else {
+                return url.searchParams.get('v');
+            }
+        } else {
+            return undefined;
+        }
+    }
+
+    /**
+     * Création d'une nouvelle collection vide
+     * @param {string} name? nom de la collection, si vide alors on demande à l'utilisateur
+     */
+    createCollection(name?: string) {
+        name = name || prompt('Nom de la collection à créer');
+        if (name) {
+            name = name.trim();
+            if (this.collectionNames.indexOf(name) !== -1) {
+                alert('Cette collection existe déjà mec !');
+                return;
+            }
+            const collection = new Collection(name);
+            this.persistence.saveCollection(collection).then(() => {
+                this.collectionNames.push(collection.name);
+                this.collectionNames = this.collectionNames.sort();
+                this.collectionNamesChange.emit(this.collectionNames);
+                this.openCollection(name);
+            });
+        }
+    }
+
+    openCollection(name) {
+        this.playCollection(name);
+    }
+
+    /**
+     * Sauvegarde l'état actuel dans le localStorage
+     */
+    save() {
+        this.prefs.saveAllPlayer(this);
+    }
+
+    onPlayerReady() {
+        console.log('Lecteur YouTube prêt. Veuillez démarrer la lecture manuellement');
+        // Il ne semble pas possible de lire automatiquement une vidéo sans interaction utilisateur
+        // cf. https://stackoverflow.com/questions/7281765/how-to-embed-an-autoplaying-youtube-video-in-an-iframe
+        // Autre piste : https://medium.com/@mihauco/youtube-iframe-api-without-youtube-iframe-api-f0ac5fcf7c74
+        this.videoPlayingAfterPlayerReady = false;
+    }
+
+    // 5. The API calls this function when the player's state changes.
+    //    The function indicates that when playing a video (state=1),
+    // liste des codes : http://stackoverflow.com/a/8204143/1655155
+    /**
+     * -1 (unstarted)
+     * 0  YT.PlayerState.ENDED
+     * 1  YT.PlayerState.PLAYING
+     * 2  YT.PlayerState.PAUSED
+     * 3  YT.PlayerState.BUFFERING
+     * 5  YT.PlayerState.CUED
+     */
+    onPlayerStateChange(event) {
+        // const player = event.target;
+        const state = event.data;
+
+        if (this.lastPlayerStates.length >= 10) {
+            this.lastPlayerStates.shift();
+        }
+        const lastState = this.lastPlayerStates.length ? this.lastPlayerStates[this.lastPlayerStates.length - 1] : undefined;
+        this.lastPlayerStates.push(state);
+
+        console.log('%c player state : ' + state + (YT_STATES[state] ? ':' + YT_STATES[state] : ''),
+            `background: no-repeat left center url(https://youtube.com/favicon.ico); background-size: 16px; padding-left: 20px;`);
+
+        // N'importe quel évènement après un chrono de deleted video => la supprimée n'est pas supprimée
+        if (this.deletedVideoTimeout) {
+            window.clearTimeout(this.deletedVideoTimeout);
+            delete this.deletedVideoTimeout;
+        }
+
+        // Fin de la vidéo
+        // on vérifie lastPlayedVideoIndex car cet évènement est souvent appelé deux fois
+        // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
+        // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
+        if (state === YT.PlayerState.ENDED && (!this.trackIsLoading ||
+            this.previousTrack.disc.id !== this.currentTrack.disc.id &&
+            this.previousTrack.file.index !== this.currentTrack.file.index &&
+            this.previousTrack.index !== this.currentTrack.index)) {
+            // est-ce que la vidéo était en lecture actuellement ?
+            if (lastState === YT.PlayerState.PLAYING) {
+                this.videoEnded.emit();
+            } else {
+                console.log('La vidéo ne s\'est pas vraiment arrêtée');
+            }
+        } else if (state === YT.PlayerState.PLAYING) {
+            this.isPlaying = true;
+            this.videoPlaying.emit();
+        } else if (state === YT.PlayerState.PAUSED) {
+            this.isPlaying = false;
+        }
+
+        // Détection d'une série de 3 évènements
+        if (this.lastPlayerStates.length >= 3) {
+            const states = new Array(3);
+            for (let i = 0; i < 3; ++i) {
+                states[i] = this.lastPlayerStates[this.lastPlayerStates.length - (3 - i)];
+            }
+
+            if (states[0] === YT.PlayerState.PAUSED &&
+                states[1] === YT.PlayerState.BUFFERING &&
+                states[2] === YT.PlayerState.PLAYING) {
+                this.videoManualSeeked.emit();
+            }
+
+            if (states[0] === -1 &&
+                states[1] === YT.PlayerState.BUFFERING &&
+                states[2] === -1) {
+                this.unstartedVideo.emit();
+            }
+        } else if (state === -1) {
+            this.unstartedVideo.emit();
+        }
+    }
+
+    removeDisc(disc: Disc) {
+        const collectionParam = this.getCollectionParam() || DEFAULT_COLLECTION;
+        const collectionNames = collectionParam.split(',');
+        const promises = [];
+        let removeConfirmed = true;
+        collectionNames.forEach(collectionName => {
+
+            if (collectionNames.length > 1 && !confirm(`Supprimer le disque ${disc.title} de la collection ${collectionName} ?`)) {
+                removeConfirmed = false;
+                return false;
+            }
+
+            promises.push(Promise.resolve(collectionParam)
+                .then(collectionParamI => {
+                    const discIdsI = this.discIdsByCollection[collectionParamI];
+                    if (discIdsI) {
+                        return discIdsI;
+                    } else {
+                        return this.persistence.getCollectionDiscIds(collectionName);
+                    }
+                })
+                .then(discIdsI => {
+                    const index = discIdsI.indexOf(disc.id);
+                    if (index === -1) {
+                        return discIdsI;
+                    }
+
+                    discIdsI.splice(index, 1);
+                    return this.persistence.saveCollectionDiscIds(collectionName, discIdsI);
+                })
+                .then(discIds => {
+                    this.discIdsByCollection[collectionName] = discIds;
+                    console.log(`Disques sauvegardés pour la collection ${collectionName}`, discIds);
+                    return discIds;
+                })
+            );
+        });
+
+        // Attente des promises
+        Promise.all(promises).then(() => {
+            if (removeConfirmed) {
+                const index = this.discs.indexOf(disc);
+                if (index === -1) {
+                    return;
+                }
+
+                // Suppression dans les disques actuellement affichés
+                this.discs.splice(index, 1);
+            }
+        });
+    }
+
+    toggleCollection(collectionName, $event) {
+
+        this.hidePlayer();
+        $event.stopPropagation();
+
+        // Coché ?
+        const index = this.currentCollectionNames.indexOf(collectionName);
+        const checked = index === -1;
+        if (checked) {
+            this.currentCollectionNames.push(collectionName);
+        } else {
+            this.currentCollectionNames.splice(index, 1);
+        }
+        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+
+        this.loadDiscsFromCurrentCollections();
+    }
+
+    async removeCollection(collectionName: string): Promise<boolean> {
+
+        await this.persistence.deleteCollection(collectionName);
+
+        this.collectionNames = this.collectionNames.filter(collectionNameI => collectionNameI !== collectionName);
+        this.currentCollectionNames = this.currentCollectionNames.filter(collectionNameI => collectionNameI !== collectionName);
+        console.log(`Collection "${collectionName}" supprimée avec succès`);
+        this.collectionNamesChange.emit(this.collectionNames);
+        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+
+        return true;
+    }
+
+    // TODO : comment déclarer des services avec Angular ?
+    getCueService() {
+        if (!this.cueService) {
+            this.cueService = new CueService(this.http);
+        }
+        return this.cueService;
+    }
+
+    async getDiscsIds(collectionName): Promise<string[]> {
+
+        // Recherche d'abord dans la mémoire
+        let discIds = await this.discIdsByCollection[collectionName];
+        if (discIds) {
+            return discIds;
+        }
+
+        // Recherche dans la persistance
+        try {
+            discIds = await this.persistence.getCollectionDiscIds(collectionName);
+            return this.discIdsByCollection[collectionName] = discIds; // mémoire
+        } catch (err) {
+            alert('Impossible d\'ouvrir la collection : ' + collectionName + ' : ' + err);
+            return [];
+        }
+    }
+
+    playCollection(collectionName?): Promise<Disc[]> {
+        console.log('Lecture de la collection ' + (collectionName ? collectionName : 'par défaut'));
+        this.currentCollectionNames = collectionName ? [collectionName] : [];
+        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+        return this.loadDiscsFromCurrentCollections();
+    }
+
+    // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
+    connectGoogleDrive() {
+
+        const loginBtn = document.getElementById('login-btn');
+        loginBtn.innerText = 'Connexion...';
+        // this.hidePlayer();
+
+        const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
+        const googleDrivePersistence = new GoogleDrivePersistence(this.http);
+        this.googleDrivePersistence = googleDrivePersistence; // debug
+        googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
+
+            if (isInit) {
+                notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
+                loginBtn.innerText = 'Connecté·e';
+                this.connectedToGoogleDrive = true;
+                localStorage.setItem('connectedToGoogleDrive', 'true');
+
+                // synchro avec l'ancienne persistance pour ne rien perdre
+                oldPersistence.sync(googleDrivePersistence).then(syncResult => {
+                    const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
+                    console.log(message);
+                    console.log(syncResult);
+                    notify(message);
+
+                    // On ne change pas de persistence pour accélérer les perfs
+                    // puisse qu'on synchronise à chaque démarrage
+                    // TODO : attention on crée avec this.persistence et pas localStorage
+                    this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
+                    localStorage.setItem('persistence', `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`);
+
+                    this.init();
+                }).catch(err => {
+                    loginBtn.innerText = 'Connecté·e';
+                    console.error(err);
+                    alert(`Erreur de synchro entre la persistance actuelle et Google Drive. L'appli va être rechargée pour éviter des appels inutiles à Google Drive.`);
+                    location.reload();
+                });
+            } else {
+                loginBtn.innerText = 'Google Drive';
+                // this.showPlayer();
+            }
+        }).catch(err => {
+            loginBtn.innerText = 'Google Drive';
+            // this.showPlayer();
+            alert('Erreur de connexion à Google Drive');
+            console.error(err);
+        });
+    }
+
+    disconnectGoogleDrive() {
+        // TODO
+        this.connectedToGoogleDrive = false;
+        const loginBtn = document.getElementById('login-btn');
+
+        localStorage.removeItem('persistence');
+        this.persistence = this.getPersistence();
+
+        loginBtn.innerText = 'Google Drive';
+    }
+
+    // TODO : remonter dans app
+    getPersistence(): Persistence {
+        const persistence = AppComponent.getPersistence(this.localPersistence, this.http);
+        console.log('getPersistence() => ' + persistence.title);
+        return persistence;
+    }
+
+    loadDiscs(discIdsToLoad: string[]): Promise<Disc[]> {
+
+        console.log('Chargement des disques :', discIdsToLoad);
+        this.hidePlayer();
+
+        this.discs = [];
+        const discLoaders = discIdsToLoad.map(discId => this.loadDisc(discId));
+
+        return Promise.all(discLoaders.map(p => p.catch(e => {
+            console.error('Erreur lors du chargement du disque', e);
+            return undefined;
+        })))
+            .then(loadedAndUndefinedDiscs => {
+                const loadedDiscs = loadedAndUndefinedDiscs.filter(disc => disc);
+                console.log('Disques chargés :', loadedDiscs);
+                this.discs = loadedDiscs;
+                if (!this.isInitYT) {
+                    this.initYT(); // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
+                } else {
+                    this.showPlayer();
+                }
+                return loadedDiscs;
+            })
+            .catch(e => {
+                console.error('Erreur après le chargement des disques', e);
+                return [];
+            });
+
+    }
+
+    loadDisc(discId: string): Promise<Disc> {
+
+        console.log(`Chargement du disque ${discId}`);
+
+        // Recherche d'abord dans la mémoire
+        let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
+        return new Promise<Disc>(resolve => {
+            return resolve(this.persistence.getDisc(discId));
+        })
+            .catch(resKO => {
+                console.error(`Error lors de la récupération du disque ${discId}:`, resKO || resKO.data);
+                if (continueConfirm) {
+                    continueConfirm = prompt('Veuillez ajouter la cuesheet ' + discId, discId) !== null;
+                }
+                return <Disc>null;
+            })
+            .then(disc => {
+                if (disc) {
+                    enrichDisc(disc, this);
+
+                    // Reprise des paramètres sauvegardés
+                    this.prefs.restoreDisc(disc);
+
+                    // Ajout dans le player
+                    this.addDisc(disc);
+                    return disc;
+                }
+            });
+    }
+
+    /**
+     *
+     * @param disc
+     * @return {number} l'index dans player.discs où le disque a été inséré (ajout ou remplacement)
+     */
+    addDisc(disc: Disc): number {
+        const discIndex = this.indexOf(disc);
+        if (discIndex !== -1) {
+            this.discs[discIndex] = disc;
+        } else {
+            this.discs.push(disc);
+            return this.discs.length - 1;
+        }
+    }
+
+    reloadDisc(discId: string): Promise<Disc> {
+        const disc = this.getDisc(discId);
+        if (disc) {
+            return this.loadDisc(disc.id);
+        } else {
+            throw new Error(`Impossible de recharger le disque ${discId} car il n'existe pas/plus`);
+        }
+    }
+
+    getDisc(discId: string): Disc {
+        return this.discs.find(disc => disc.id === discId);
+    }
+
+    indexOf(disc: Disc): number {
+        return this.discs
+            .map(disc => disc.id)
+            .indexOf(disc.id);
+    }
+
+    getCurrentCollectionNames(): string[] {
+        return this.currentCollectionNames.length ? this.currentCollectionNames : [DEFAULT_COLLECTION];
+    }
+
+    loadDiscsFromCurrentCollections(): Promise<Disc[]> {
+        this.hidePlayer();
+        const currentCollectionNames = this.getCurrentCollectionNames();
+
+        // On récupère la liste des disques de toutes les collections actives
+        const getDiscsIds = currentCollectionNames
+            .map(collectionName => this.getDiscsIds(collectionName));
+        return Promise.all(getDiscsIds.map(p => p.catch(e => e)))
+            .then(discIdsByIndex => discIdsByIndex.reduce((all: Array<string>, array: Array<string>) => {
+                // On concatère les disques sans doublons
+                array.forEach(item => {
+                    if (all.indexOf(item) === -1) {
+                        all.push(item);
+                    }
+                });
+                return all;
+            }, []))
+            .then(discIds => this.loadDiscs(discIds))
+            .catch(e => {
+                console.error(e);
+                alert('Erreur lors du chargement des disques des collections : ' + e);
+                throw e;
+            });
+    }
+
+    /**
+     * Format YouTube
+     * @param time
+     * @return {string}
+     */
+    formatHMSS(time) {
+        return formatHMSS(time);
+    }
+
+
+    /**
+     * Actualise l'IHM à chaque changement de seconde ou sur demande (en l'appelant)
+     */
+    checkCurrentTime() {
+
+        if (this.checkCurrentTimeTimeout) {
+            clearTimeout(this.checkCurrentTimeTimeout);
+        }
+        // FIXME par moment this.player devient un élément IFRAME au lieu d'un objet
+        const time = this.player && this.player.getCurrentTime ? this.player.getCurrentTime() : undefined;
+        // console.log(`time=${time}`);
+
+        const component = this;
+
+        function scheduleNextCheckCurrentTime() {
+            // on actualise qu'au prochain changement de seconde
+            component.nextCheckCurrentTime = (1 - (component.player.getCurrentTime() % 1)) * 1000;
+            component.checkCurrentTimeTimeout = setTimeout(component.checkCurrentTime.bind(component), component.nextCheckCurrentTime); // boucle
+        }
+
+        // changement de secondes ?
+        if (this.lastCheckedTime === undefined || Math.floor(time) !== Math.floor(this.lastCheckedTime)) {
+            this.zone.run(() => {
+                this.slider.value = time;
+                this.fileSlider.value = time;
+                this.lastCheckedTime = time;
+                // Changement de piste ?
+                if (this.slider.value >= this.slider.max) {
+                    this.onTrackEnded();
+                }
+                scheduleNextCheckCurrentTime();
+            });
+        } else {
+            scheduleNextCheckCurrentTime();
+        }
+    }
+
+    onTrackEnded(event?) {
+        const scope = event ? event.currentScope : this;
+
+        if (scope.repeatMode === 'track') {
+            scope.seekToTrack();
+        } else if (scope.shuffle) {
+            scope.next();
+        } else {
+            scope.checkCurrentTrack();
+        }
+    }
+
+
+    toggleTracklist(tracklist, disc) {
+        const lastToggledTracklist = this.lastToggledTracklist;
+        if (lastToggledTracklist !== null && lastToggledTracklist !== tracklist) {
+            $(lastToggledTracklist).hide();
+        }
+
+        $(tracklist).toggle();
+
+        if ($(tracklist).is(':visible')) {
+            this.discInTracklist = disc;
+        } else {
+            this.discInTracklist = null;
+        }
+
+        this.lastToggledTracklist = tracklist;
+    }
+
+    /**
+     * L'heure actuelle
+     * @param offset décalage en secondes
+     * @return {string} exemple "12:48"
+     */
+    getTime(offset = 0) {
+        const d = new Date();
+        if (offset) {
+            d.setTime(d.getTime() + offset * 1000);
+        }
+        return d.toTimeString().substring(0, 5);
+    }
+
+    ngAfterViewInit(): void {
+        console.log('ngAfterViewInit');
+        if (this.prefs.isConnectedToGoogleDrive()) {
+            this.connectGoogleDrive();
+        }
+    }
+
+    ngOnDestroy(): void {
+        this.locationSubscription.unsubscribe();
+    }
+
+    /**
+     * Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
+     * @param location
+     */
+    getStateFromLocation(location: Location): State {
+        const url = new URL(location.toString());
+        const state: State = {};
+        if (url.searchParams.get('collection')) {
+            state.currentCollectionNames = url.searchParams.get('collection').split(',');
+        }
+        return state;
+    }
 }
 
 interface State {
-  currentCollectionNames?: string[];
+    currentCollectionNames?: string[];
 }
 
 // TODO à déplacer dans yt-helper
 function getYouTubeStartSeconds(track, time = track.startSeconds) {
-  const file = track.file;
-  const multiTrack = file.tracks.length > 1;
-  let start = multiTrack ? Math.floor(time) : time; // YouTube n'accèpte que des entiers, on met undefined si !multitrack et pas de time
+    const file = track.file;
+    const multiTrack = file.tracks.length > 1;
+    let start = multiTrack ? Math.floor(time) : time; // YouTube n'accèpte que des entiers, on met undefined si !multitrack et pas de time
 
-  // Youtube ne redémarre pas à 0 si on lui indique exactement 0
-  if (multiTrack && !start) {
-    start = 0.001; // FIXME : OK  alors que YouTube n'accèpte que des entiers ?
-  }
+    // Youtube ne redémarre pas à 0 si on lui indique exactement 0
+    if (multiTrack && !start) {
+        start = 0.001; // FIXME : OK  alors que YouTube n'accèpte que des entiers ?
+    }
 
-  return start;
+    return start;
 }
 
 /**
@@ -1705,50 +1706,50 @@ function getYouTubeStartSeconds(track, time = track.startSeconds) {
  * @return l'id à partir d'un ID ou d'une URL
  */
 function getIdOrUrl(idOrUrl, promptMessage, urlParam) {
-  idOrUrl = idOrUrl || prompt(promptMessage);
-  if (!idOrUrl) {
-    return undefined;
-  } else if (idOrUrl.match(/:\/\//)) { // URL ?
-    const url = new URL(idOrUrl);
-    if (url.hostname === 'youtu.be') {
-        // Exemple : https://youtu.be/PcXlmQ-52n4?si=IMngg3XUroRED9Ha
-        return url.pathname.substring(1);
+    idOrUrl = idOrUrl || prompt(promptMessage);
+    if (!idOrUrl) {
+        return undefined;
+    } else if (idOrUrl.match(/:\/\//)) { // URL ?
+        const url = new URL(idOrUrl);
+        if (url.hostname === 'youtu.be') {
+            // Exemple : https://youtu.be/PcXlmQ-52n4?si=IMngg3XUroRED9Ha
+            return url.pathname.substring(1);
+        } else {
+            return url.searchParams[urlParam];
+        }
     } else {
-        return url.searchParams[urlParam];
+        return idOrUrl;
     }
-  } else {
-    return idOrUrl;
-  }
 }
 
 function openInNewTab(url) {
-  const win = window.open(url, '_blank');
-  win.focus();
-  return win;
+    const win = window.open(url, '_blank');
+    win.focus();
+    return win;
 }
 
 function enrichDisc(disc, player: PlayerComponent) {
 
-  disc.player = player;
+    disc.player = player;
 
-  for (let fileIndex = 0; fileIndex < disc.files.length; ++fileIndex) {
-    const file = disc.files[fileIndex];
+    for (let fileIndex = 0; fileIndex < disc.files.length; ++fileIndex) {
+        const file = disc.files[fileIndex];
 
-    for (let trackIndex = 0; trackIndex < file.tracks.length; ++trackIndex) {
-      const track = file.tracks[trackIndex];
+        for (let trackIndex = 0; trackIndex < file.tracks.length; ++trackIndex) {
+            const track = file.tracks[trackIndex];
 
-      Object.defineProperties(track, {
-        isCurrent: {
-          get: function () {
-            return this.currentTrack &&
-              this.currentTrack.index === this.index &&
-              this.currentTrack.file.index === this.file.index &&
-              this.currentTrack.disc.index === this.file.disc.index;
-          }
+            Object.defineProperties(track, {
+                isCurrent: {
+                    get: function () {
+                        return this.currentTrack &&
+                            this.currentTrack.index === this.index &&
+                            this.currentTrack.file.index === this.file.index &&
+                            this.currentTrack.disc.index === this.file.disc.index;
+                    }
+                }
+            });
         }
-      });
     }
-  }
 
-  return disc;
+    return disc;
 }
