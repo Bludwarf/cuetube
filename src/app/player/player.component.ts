@@ -160,7 +160,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
-        const DELETED_VIDEO_TIMEOUT = 10;
+        const DELETED_VIDEO_TIMEOUT = 60;
 
 
         const $window = $(window);
