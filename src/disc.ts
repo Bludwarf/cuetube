@@ -418,8 +418,8 @@ export class Disc {
   reIndexTracks() {
     const tracks = _.flatten(this.files.map(file => file.tracks));
 
-    for (let index = 0; index < this.tracks.length; ++index) {
-      const track = this.tracks[index];
+    for (let index = 0; index < tracks.length; ++index) {
+      const track = tracks[index];
       const number = index + 1;
       if (number !== track.number) {
         console.warn(`On doit corriger le numéro de la piste ${number} du fichier ${track.file.name} qui était à ${track.number}`);
