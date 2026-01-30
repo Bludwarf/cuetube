@@ -417,7 +417,7 @@ export class Disc {
 
   reIndexTracks() {
     const tracks = _.flatten(this.files.map(file => file.tracks));
-    
+
     for (let index = 0; index < this.tracks.length; ++index) {
       const track = this.tracks[index];
       const number = index + 1;
@@ -501,13 +501,24 @@ export module Disc {
     }
 
     newTrack() {
-      const tracks = this.disc.tracks;
-      const number = tracks.length + 1;
-      this.disc.cuesheet.newTrack(number, File.DEFAULT_TYPE);
-      const cuesheetTrack = this.disc.cuesheet.getCurrentTrack();
+      const number = this.tracks.length + 1;
+      const cuesheetTrack = new cuesheet.Track(number, File.DEFAULT_TYPE);
+      if (!this.cuesheetFile.tracks) {
+          this.cuesheetFile.tracks = [];
+      }
+      this.cuesheetFile.tracks.push(cuesheetTrack);
       const track = new Disc.Track(this, cuesheetTrack);
       this.tracks.push(track);
       this._tracksInTime = undefined; // RAZ du cache pour tracksInTime
+
+      // Décalage des index des pistes des fichiers suivants
+      const nextFiles: File[] = this.disc.files.slice(this.index + 1);
+      for (const nextFile of nextFiles) {
+          for (const nextTrack of nextFile.tracks) {
+              nextTrack.number++;
+          }
+      }
+
       return track;
     }
 

@@ -15,6 +15,11 @@ declare module cuesheet {
         getCurrentFile(): File;
         getCurrentTrack(): Track;
         newFile(): CueSheet;
+
+        /**
+         * Ne pas utiliser si on souhaite ajouter une piste dans un fichier qui n'est pas le fichier courant (getCurrentFile).
+         * Dans ce cas, utiliser plutôt Disc.File.newTrack
+         */
         newTrack(number?: number, type?: string): CueSheet;
     }
 
