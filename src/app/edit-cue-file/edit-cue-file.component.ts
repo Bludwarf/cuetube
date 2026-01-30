@@ -1,10 +1,10 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Disc} from '../../disc';
 import {yth} from '../../yt-helper';
-import Track = Disc.Track;
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import {EditCueComponent} from '../edit-cue/edit-cue.component';
 import $ from 'jquery';
+import Track = Disc.Track;
 
 @Component({
     selector: 'app-edit-cue-file',
@@ -35,6 +35,7 @@ export class EditCueFileComponent implements OnInit {
     setTracklist(tracklist, file) {
         yth.setTracklist(tracklist, file);
     }
+
     setTracklistFromButton($event, file) {
         const button = $event.currentTarget;
         const $textarea = $('textarea', button.parent);
@@ -42,12 +43,24 @@ export class EditCueFileComponent implements OnInit {
     }
 
     removeTrack(track: Track) {
-      track.remove();
-      this.parent.removedTracks.push(track);
+        track.remove();
+        this.parent.removedTracks.push(track);
     }
 
     removeFile(file: Disc.File) {
         this.fileRemove.emit(file);
+    }
+
+    get fileAnchorId(): string {
+        return `file-${this.file.index}`;
+    }
+
+    get tracksAnchorId(): string {
+        return this.fileAnchorId + '-tracks';
+    }
+
+    get tracklistAnchorId(): string {
+        return this.fileAnchorId + '-tracklist';
     }
 
 }

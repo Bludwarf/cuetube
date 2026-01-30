@@ -16,15 +16,15 @@
         <!-- On a dû ajouter : data-bs-toggle="tab" -->
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <a class="nav-link active" data-bs-toggle="tab" href="#tracks">Pistes</a>
+                <a class="nav-link active" data-bs-toggle="tab" href="#{{tracksAnchorId}}">Pistes</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tracklist">Tracklist</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#{{tracklistAnchorId}}">Tracklist</a>
             </li>
         </ul>
 
         <div class="tab-content">
-            <div id="tracks" class="tab-pane in active form-inline">
+            <div id="{{tracksAnchorId}}" class="tab-pane in active form-inline">
                 @for (track of file.tracks; track track; let index = $index) {
                     <fieldset class="track">
                         <mat-icon>audiotrack</mat-icon>
@@ -51,7 +51,7 @@
                 </button>
             </div>
 
-            <div id="tracklist" class="tab-pane">
+            <div id="{{tracklistAnchorId}}" class="tab-pane">
                 <p>Liste des pistes au format YouTube</p>
                 <p>Utilise le bouton suivant pour copier-coller cette liste dans un commentaire YouTube. Les
                     utilisateurs
