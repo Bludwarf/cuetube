@@ -37,8 +37,8 @@ export class EditCueFileComponent implements OnInit {
     }
 
     setTracklistFromButton($event, file) {
-        const button = $event.currentTarget;
-        const $textarea = $('textarea', button.parent);
+        const button: HTMLButtonElement = $event.currentTarget;
+        const $textarea = $('textarea', button.parentElement);
         this.setTracklist($textarea.val(), file);
     }
 
