@@ -501,7 +501,7 @@ export module Disc {
     }
 
     newTrack() {
-      // Compute the global track number across all files (tracks in preceding files + tracks in this file + 1)
+      // Compute the global track number: sum of tracks in preceding files + tracks already in this file + 1
       let precedingTracksCount = 0;
       for (let i = 0; i < this.index; ++i) {
         precedingTracksCount += this.disc.files[i].tracks.length;
@@ -572,8 +572,9 @@ export module Disc {
       files.splice(indexInDisc, 1);
       this.disc.cuesheet.files.splice(indexInDisc, 1);
 
-      // Only update the global track number for tracks from following files
-      // (track.index is file-local and does not need to change)
+      // Only update the global track number for tracks from following files.
+      // track.index is the 0-based position within the track's own file and does not change
+      // when a different file is removed.
       for (let i = firstFollowingTrackIndex; i < tracks.length; ++i) {
         const track = tracks[i];
         track.number -= deletedTracks;

@@ -81,17 +81,17 @@ describe('Disc.Track', function () {
         const track5 = file2.newTrack();
 
         expect(disc.tracks.length).toBe(5);
-        expect(disc.tracks[3]).toEqual(track4);
+        expect(disc.tracks[3]).toBe(track4);
         expect(disc.tracks[3].number).toBe(4);
-        expect(disc.tracks[4]).toEqual(track5);
+        expect(disc.tracks[4]).toBe(track5);
         expect(disc.tracks[4].number).toBe(5);
 
         track4.remove();
 
         expect(disc.tracks.length).toBe(4);
-        expect(disc.tracks[2]).toEqual(track3);
+        expect(disc.tracks[2]).toBe(track3);
         expect(disc.tracks[2].number).toBe(3);
-        expect(disc.tracks[3]).toEqual(track5);
+        expect(disc.tracks[3]).toBe(track5);
         expect(disc.tracks[3].number).toBe(4);
 
         // Suppression jusqu'à supprimer file2
@@ -101,7 +101,7 @@ describe('Disc.Track', function () {
 
         expect(disc.tracks.length).toBe(2);
         expect(disc.files.length).toBe(1);
-        expect(disc.files[0]).toEqual(file1);
+        expect(disc.files[0]).toBe(file1);
 
     });
 

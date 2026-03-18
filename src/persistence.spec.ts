@@ -377,7 +377,8 @@ describe('persistence', () => {
       const savedDisc = await persistence.saveDisc(discId, discV1);
       expect(savedDisc.title).toEqual(premierTitre);
 
-      // Modif uniquement locale
+      // Modif uniquement locale — on attend 1ms pour garantir un lastmod strictement plus récent
+      await new Promise(resolve => setTimeout(resolve, 1));
       const discV2 = new Disc();
       discV2.id = discId;
       const deuxiemeTitre = 'Deuxième titre';

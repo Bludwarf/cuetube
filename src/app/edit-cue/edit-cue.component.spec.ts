@@ -3,7 +3,6 @@ import {waitForAsync, ComponentFixture, TestBed} from '@angular/core/testing';
 import {EditCueComponent} from './edit-cue.component';
 import {AppComponent} from '../app.component';
 import {BrowserModule} from '@angular/platform-browser';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PlayerCollectionsComponent} from '../player-collections/player-collections.component';
@@ -27,7 +26,7 @@ describe('EditCueComponent', () => {
         FormsModule,
         RouterTestingModule,
         MatIconModule],
-    providers: [provideHttpClient(withInterceptorsFromDi())]
+    providers
 })
     .compileComponents();
   }));
@@ -35,6 +34,7 @@ describe('EditCueComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(EditCueComponent);
     component = fixture.componentInstance;
+    spyOn(window, 'alert'); // ngOnInit calls alert() when no disc id is found in URL params
     fixture.detectChanges();
   });
 
