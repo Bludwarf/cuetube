@@ -1380,8 +1380,21 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     connectGoogleDrive() {
 
         const loginBtn = document.getElementById('login-btn');
-        loginBtn.innerText = 'Connexion...';
+        loginBtn.innerText = 'requestStorageAccess...';
         // this.hidePlayer();
+
+        if ('requestStorageAccess' in document) {
+            document.requestStorageAccess().catch(err => {
+                alert('requestStorageAccess refusé');
+            }).then(() => {
+                this.connectGoogleDrive2();
+            });
+        }
+    }
+
+    connectGoogleDrive2() {
+        const loginBtn = document.getElementById('login-btn');
+        loginBtn.innerText = 'Connexion...';
 
         const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
         const googleDrivePersistence = new GoogleDrivePersistence(this.http);
