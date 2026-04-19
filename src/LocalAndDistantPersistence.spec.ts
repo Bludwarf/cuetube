@@ -73,7 +73,7 @@ describe('LocalAndDistantPersistence with broken distant', () => {
     collection.pushDiscs(disc1);
     p.saveCollection(collection)
       .then(() => done.fail())
-      .catch(done);
+      .catch(() => done());
   });
 
   it('should save collections but not delete them', (done) => {
@@ -117,7 +117,7 @@ describe('LocalAndDistantPersistence with broken distant', () => {
         // On supprime maintenant la collection
         return p.deleteCollection(collection.name)
           .then(() => done.fail())
-          .catch(done);
+          .catch(() => done());
       });
   });
 

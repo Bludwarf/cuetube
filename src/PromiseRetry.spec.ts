@@ -9,7 +9,7 @@ describe('promise-retry', () => {
         promiseRetry((retry, number) => {
             console.log('test1 attempt number', number);
             return p.catch(retry);
-        }).then(done).catch(err => {
+        }).then(() => done()).catch(err => {
             fail(err);
         });
     });
