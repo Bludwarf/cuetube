@@ -8,22 +8,21 @@ import {SliderComponent} from './slider/slider.component';
 import {FormsModule} from '@angular/forms';
 import {EditCueComponent} from './edit-cue/edit-cue.component';
 import {EditCueFileComponent} from './edit-cue-file/edit-cue-file.component';
-import {
-  PlayerCollectionDeleteDialogComponent,
-  PlayerCollectionsComponent
-} from './player-collections/player-collections.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import {PlayerCollectionDeleteDialogComponent, PlayerCollectionsComponent} from './player-collections/player-collections.component';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatIconModule} from '@angular/material/icon';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {LocalStoragePrefsService} from './local-storage-prefs.service';
 import {provideHttpClient} from '@angular/common/http';
+import {SpotifyComponent} from './player/skins/spotify/spotify.component';
 
 const appRoutes: Routes = [
   {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
   {path: 'player', component: PlayerComponent},
-  {path: 'edit-cue', component: EditCueComponent}
+  {path: 'edit-cue', component: EditCueComponent},
+  {path: 'skins-spotify', component: SpotifyComponent}, // FIXME ne marche pas avec skins/spotify // TODO debug only
 ];
 
 export const imports = [
