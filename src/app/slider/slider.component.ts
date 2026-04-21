@@ -4,7 +4,7 @@ import {PlayerComponent} from '../player/player.component';
 @Component({
     selector: 'app-slider',
     templateUrl: './slider.component.html',
-    styleUrls: ['./slider.component.css'],
+    styleUrls: ['./slider.component.scss'],
     standalone: false
 })
 export class SliderComponent implements OnInit {

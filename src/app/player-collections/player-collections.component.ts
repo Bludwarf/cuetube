@@ -6,7 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
     selector: 'app-player-collections',
     templateUrl: './player-collections.component.html',
-    styleUrls: ['./player-collections.component.css'],
+    styleUrls: ['./player-collections.component.scss'],
     standalone: false
 })
 export class PlayerCollectionsComponent implements OnInit {

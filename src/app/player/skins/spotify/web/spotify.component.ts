@@ -23,7 +23,7 @@ import $ from 'jquery';
         './xpui-root-dialogs.25458546.css',
         './xpui-routes-your-library-x.ea3af739.css',
 
-        './spotify.component.css',
+        './spotify.component.scss',
     ],
 })
 export class SpotifyComponent implements OnInit {

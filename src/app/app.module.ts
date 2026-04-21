@@ -16,13 +16,13 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {LocalStoragePrefsService} from './local-storage-prefs.service';
 import {provideHttpClient} from '@angular/common/http';
-import {SpotifyComponent} from './player/skins/spotify/spotify.component';
+import {PlayerComponent as SpotifyPlayerComponent} from './player/skins/spotify/mobile/player/player.component';
 
 const appRoutes: Routes = [
   {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
   {path: 'player', component: PlayerComponent},
   {path: 'edit-cue', component: EditCueComponent},
-  {path: 'skins-spotify', component: SpotifyComponent}, // FIXME ne marche pas avec skins/spotify // TODO debug only
+  {path: 'skins-spotify-mobile', component: SpotifyPlayerComponent}, // FIXME ne marche pas avec skins/spotify // TODO route debug only
 ];
 
 export const imports = [

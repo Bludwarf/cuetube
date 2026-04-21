@@ -33,7 +33,7 @@ const DEFAULT_COLLECTION = '_DEFAULT_';
 @Component({
     selector: 'app-player',
     templateUrl: './player.component.html',
-    styleUrls: ['./player.component.css'],
+    styleUrls: ['./player.component.scss'],
     standalone: false
 })
 export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {

@@ -9,7 +9,7 @@ import Track = Disc.Track;
 @Component({
     selector: 'app-edit-cue-file',
     templateUrl: './edit-cue-file.component.html',
-    styleUrls: ['./edit-cue-file.component.css'],
+    styleUrls: ['./edit-cue-file.component.scss'],
     standalone: false
 })
 export class EditCueFileComponent implements OnInit {
