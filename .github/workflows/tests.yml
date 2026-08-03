@@ -1,0 +1,22 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm install --save-dev supertest jest @types/supertest @types/jest
+      - run: NODE_ENV=test npx jest spec/server.spec.js --detectOpenHandles
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-coverage
+          path: coverage/
