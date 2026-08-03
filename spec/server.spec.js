@@ -16,17 +16,75 @@
 
 const request = require('supertest');
 
-// Import de l'application Express depuis server.js
-// Note: server.js doit exporter l'app avec module.exports = app;
-// Pour activer l'export, démarrer le serveur avec NODE_ENV=test
-const app = require('../server.js');
-
-// Mock des dépendances externes
+// Mock des dépendances externes AVAnt d'importer server.js
 jest.mock('cue-parser', () => ({
   parse: jest.fn().mockImplementation((content) => {
     return {
       files: [{ name: 'test.cue', tracks: [] }]
     };
+  })
+}));
+
+// Mock des services Node.js qui ont des dépendances manquantes
+jest.mock('../services/CueService', () => ({
+  getCue: jest.fn().mockImplementation((id, options, cb) => {
+    if (id && id.includes('error')) {
+      return cb(new Error('Cuesheet not found'));
+    }
+    return cb(null, {
+      title: 'Test Cue',
+      performer: 'Test Artist',
+      tracks: []
+    });
+  }),
+  getCueFile: jest.fn().mockImplementation((id, options, cb) => {
+    return cb(null, '/tmp/test.cue');
+  }),
+  getDiscsIds: jest.fn().mockImplementation((cb) => {
+    return cb(null, ['disc1', 'disc2']);
+  }),
+  getPath: jest.fn().mockImplementation((id) => {
+    return `/tmp/${id}`;
+  }),
+  writeCueFile: jest.fn().mockImplementation((path, disc, cb) => {
+    return cb(null);
+  }),
+  reload: jest.fn()
+}));
+
+jest.mock('../services/VideoService', () => ({
+  createVideo: jest.fn().mockImplementation((title, performer, duration, cue) => {
+    return {
+      title: title,
+      performer: performer,
+      duration: duration,
+      cue: cue
+    };
+  }),
+  createVideoFiles: jest.fn().mockImplementation((videoId, body, cb) => {
+    return cb(null);
+  }),
+  reload: jest.fn()
+}));
+
+jest.mock('../services/CollectionService', () => ({
+  getDiscsIds: jest.fn().mockImplementation((id, cb) => {
+    if (id === 'error') {
+      return cb(new Error('Collection not found'));
+    }
+    return cb(null, ['disc1', 'disc2']);
+  }),
+  setDiscsIds: jest.fn().mockImplementation((id, body, cb) => {
+    return cb(null);
+  }),
+  getCollectionNames: jest.fn().mockImplementation((cb) => {
+    return cb(null, ['collection1', 'collection2']);
+  }),
+  setCollectionNames: jest.fn().mockImplementation((body, cb) => {
+    return cb(null);
+  }),
+  getCollectionsIds: jest.fn().mockImplementation((cb) => {
+    return cb(null, ['col1', 'col2']);
   })
 }));
 
@@ -63,12 +121,12 @@ const mockPersistence = {
   listCollections: jest.fn().mockResolvedValue(['collection1', 'collection2'])
 };
 
-jest.mock('./src/persistence/LocalAndDistantPersistence', () => ({
+jest.mock('../src/persistence/LocalAndDistantPersistence', () => ({
   LocalAndDistantPersistence: jest.fn().mockImplementation(() => mockPersistence)
 }));
 
 // Mock de YouTube API
-jest.mock('./src/yt-helper', () => ({
+jest.mock('../src/yt-helper', () => ({
   fetchVideo: jest.fn().mockImplementation((videoId) => {
     if (videoId === 'deleted' || videoId === 'invalid') {
       return Promise.reject({ status: 404, message: 'Video not found' });
@@ -83,6 +141,11 @@ jest.mock('./src/yt-helper', () => ({
     });
   })
 }));
+
+// Import de l'application Express depuis server.js
+// Note: server.js doit exporter l'app avec module.exports = app;
+// Pour activer l'export, démarrer le serveur avec NODE_ENV=test
+const app = require('../server.js');
 
 describe('Server.js - Backend Express', () => {
   // Réinitialiser les mocks avant chaque test
