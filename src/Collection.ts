@@ -28,7 +28,7 @@ export class Collection {
      */
     pushDiscs(... discs: Disc[]): string[] {
         return discs.map(disc => {
-            this.discIds.push(disc.id)
+            this.discIds.push(disc.id);
             return disc.id;
         });
     }
@@ -40,7 +40,7 @@ export class Collection {
      */
     pushDiscIds(... discIds: string[]): string[] {
         return discIds.map(discId => {
-            this.discIds.push(discId)
+            this.discIds.push(discId);
             return discId;
         });
     }

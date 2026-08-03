@@ -34,14 +34,14 @@ export class yth {
    * @param {[Disc.Track]} tracks
    */
   static getTracklist(tracks) {
-    let lines = [];
+    const lines = [];
     tracks.forEach(track => {
-      let timecode = yth.getTimecode(track);
+      const timecode = yth.getTimecode(track);
       let line = `${timecode} - ${track.title}`;
       if (track.performer) line += ` - ${track.performer}`;
       lines.push(line);
     });
-    return lines.join("\n");
+    return lines.join('\n');
   };
 
   /**

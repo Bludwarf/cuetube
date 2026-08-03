@@ -14,7 +14,7 @@ import dotenv from 'dotenv';
     path: 'src/environments/.env'
   });
   const envConfigFile = JSON.stringify({
-    googleApiKey: process.env.GOOGLE_API_KEY,
+    googleApiKey: process.env.GOOGLE_API_KEY || '',
     appVersion,
   }, undefined, 2);
   console.log(colors.magenta(`The file '${targetPath}' will be written with the following content: \n`));

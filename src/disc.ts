@@ -501,7 +501,12 @@ export module Disc {
     }
 
     newTrack() {
-      const number = this.tracks.length + 1;
+      // Compute the global track number: sum of tracks in preceding files + tracks already in this file + 1
+      let precedingTracksCount = 0;
+      for (let i = 0; i < this.index; ++i) {
+        precedingTracksCount += this.disc.files[i].tracks.length;
+      }
+      const number = precedingTracksCount + this.tracks.length + 1;
       const cuesheetTrack = new cuesheet.Track(number, File.DEFAULT_TYPE);
       if (!this.cuesheetFile.tracks) {
           this.cuesheetFile.tracks = [];
@@ -556,14 +561,22 @@ export module Disc {
 
       const tracks = this.disc.tracks;
 
-      files.splice(indexInDisc, 1);
-      this.disc.cuesheet.files.splice(indexInDisc, 1);
+      // Compute the index of the first track that belongs to a file after this one
+      let firstFollowingTrackIndex = 0;
+      for (let i = 0; i <= indexInDisc; ++i) {
+        firstFollowingTrackIndex += files[i].tracks.length;
+      }
+
       const deletedTracks = this.tracks.length;
 
-      // On décale l'index de toutes les pistes suivantes
-      for (let i = indexInDisc; i < tracks.length; ++i) {
+      files.splice(indexInDisc, 1);
+      this.disc.cuesheet.files.splice(indexInDisc, 1);
+
+      // Only update the global track number for tracks from following files.
+      // track.index is the 0-based position within the track's own file and does not change
+      // when a different file is removed.
+      for (let i = firstFollowingTrackIndex; i < tracks.length; ++i) {
         const track = tracks[i];
-        track.index -= deletedTracks;
         track.number -= deletedTracks;
       }
     }
