@@ -5,6 +5,7 @@ import {Persistence} from '../persistence';
 import {LocalServerPersistence} from '../persistence/LocalServerPersistence';
 import {GoogleDrivePersistence} from '../persistence/GoogleDrivePersistence';
 import { HttpClient } from '@angular/common/http';
+import {getParameterByName} from '../utils/utils';
 
 @Component({
     selector: 'app-root',

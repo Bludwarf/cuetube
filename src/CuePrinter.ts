@@ -1,8 +1,5 @@
 /** Using same format than MusicBrainz Picard */
 
-///<reference path='@types/utils.d.ts'/>
-// require("./utils");
-
 // FIXME : comment importer utils.js dans le CuePrinter (client) quand on est dans CueService (serveur) ?
 function pad2(i: any) {
     if (!i) {

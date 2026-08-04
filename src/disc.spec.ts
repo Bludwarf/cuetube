@@ -68,7 +68,7 @@ describe('Disc.Track', function () {
         expect(track7.endSeconds).toEqual(nextInTime.startSeconds);
     });
 
-    // On dirait que ce test peut provoquer une impression de page (peut-être quand il échoue, ou quand on utilise expect(file).toBe(file))
+    // Ce test provoque une impression de page si on utilise .toBe(track) au lieu de .toEqual(track)
     it('remove', () => {
         const disc = new Disc();
         const file1 = disc.newFile();
@@ -188,11 +188,12 @@ describe('Disc.File', function () {
         expect(file2.cuesheetFile.tracks).toEqual([track2.cuesheetTrack]);
     });
 
+    // Ce test provoque une impression de page si on utilise .toBe(file) au lieu de .toEqual(file)
     it('remove', () => {
         const disc = new Disc();
         const file1 = disc.newFile();
         // noinspection JSUnusedLocalSymbols
-        const track1 = file1.newTrack();
+        file1.newTrack();
         file1.newTrack();
 
         const file2 = disc.newFile();
@@ -204,17 +205,17 @@ describe('Disc.File', function () {
         const track6 = file3.newTrack();
 
         expect(disc.tracks.length).toBe(6);
-        expect(disc.tracks[3]).toBe(track4);
+        expect(disc.tracks[3]).toEqual(track4);
         expect(disc.tracks[3].number).toBe(4);
-        expect(disc.tracks[4]).toBe(track5);
+        expect(disc.tracks[4]).toEqual(track5);
         expect(disc.tracks[4].number).toBe(5);
 
         file2.remove();
 
         expect(disc.tracks.length).toBe(4);
-        expect(disc.tracks[2]).toBe(track5);
+        expect(disc.tracks[2]).toEqual(track5);
         expect(disc.tracks[2].number).toBe(3);
-        expect(disc.tracks[3]).toBe(track6);
+        expect(disc.tracks[3]).toEqual(track6);
         expect(disc.tracks[3].number).toBe(4);
     });
 

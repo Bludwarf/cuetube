@@ -18,6 +18,7 @@ import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import $ from 'jquery';
 import {environment} from '../../environments/environment-with-dot-env';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
+import {formatHMSS, getParameterByName, notify, weightedRandom} from '../../utils/utils';
 
 const YT_STATES = [
     'ENDED',
@@ -1581,16 +1582,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     /**
-     * Format YouTube
-     * @param time
-     * @return {string}
-     */
-    formatHMSS(time) {
-        return formatHMSS(time);
-    }
-
-
-    /**
      * Actualise l'IHM à chaque changement de seconde ou sur demande (en l'appelant)
      */
     checkCurrentTime() {
@@ -1693,6 +1684,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         return state;
     }
+
+    protected readonly formatHMSS = formatHMSS;
 }
 
 interface State {
