@@ -1,5 +1,5 @@
 import {CuePrinter} from './CuePrinter';
-import {readFile} from 'TestUtils';
+import {readFile} from './TestUtils';
 
 describe('CuePrinter', () => {
 

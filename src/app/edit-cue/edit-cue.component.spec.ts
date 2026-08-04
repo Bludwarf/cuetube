@@ -1,44 +1,48 @@
-import {waitForAsync, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 
 import {EditCueComponent} from './edit-cue.component';
 import {AppComponent} from '../app.component';
 import {BrowserModule} from '@angular/platform-browser';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PlayerCollectionsComponent} from '../player-collections/player-collections.component';
 import {EditCueFileComponent} from '../edit-cue-file/edit-cue-file.component';
-import { MatIconModule } from '@angular/material/icon';
-import {providers} from '../app.module';
+import {MatIconModule} from '@angular/material/icon';
+import {PROVIDER_SPIES} from '../../utils/test-utils';
 
 describe('EditCueComponent', () => {
-  let component: EditCueComponent;
-  let fixture: ComponentFixture<EditCueComponent>;
+    let component: EditCueComponent;
+    let fixture: ComponentFixture<EditCueComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-    declarations: [
-        AppComponent,
-        EditCueComponent,
-        EditCueFileComponent,
-        PlayerCollectionsComponent
-    ],
-    imports: [BrowserModule,
-        FormsModule,
-        RouterTestingModule,
-        MatIconModule],
-    providers: [provideHttpClient(withInterceptorsFromDi())]
-})
-    .compileComponents();
-  }));
+    beforeEach(waitForAsync(() => {
+        TestBed.configureTestingModule({
+            declarations: [
+                AppComponent,
+                EditCueComponent,
+                EditCueFileComponent,
+                PlayerCollectionsComponent
+            ],
+            imports: [BrowserModule,
+                FormsModule,
+                RouterTestingModule,
+                MatIconModule],
+            providers: [
+                provideHttpClient(withInterceptorsFromDi()),
+                PROVIDER_SPIES.GapiClientService,
+                PROVIDER_SPIES.LocalStoragePrefsService,
+            ]
+        })
+            .compileComponents();
+    }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(EditCueComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(EditCueComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

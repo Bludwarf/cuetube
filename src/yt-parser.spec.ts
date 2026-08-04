@@ -2,7 +2,7 @@
  * Created by mlavigne on 27/06/2017.
  */
 import {ytparser} from './yt-parser';
-import {youtube} from 'TestUtils';
+import {youtube} from './TestUtils';
 
 describe('Parser réponses YouTube', function () {
 

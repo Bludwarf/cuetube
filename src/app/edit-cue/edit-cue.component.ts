@@ -9,6 +9,7 @@ import $ from 'jquery';
 import {AppComponent} from '../app.component';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import Track = Disc.Track;
+import {getParameterByName} from '../../utils/utils';
 
 @Component({
     selector: 'app-edit-cue',
