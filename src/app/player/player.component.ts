@@ -122,6 +122,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     /** prochain appel */
     private checkCurrentTimeTimeout;
     private deletedVideoTimeout;
+    
+    /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
+    DELETED_VIDEO_TIMEOUT = 60;
 
     /** @see YT_STATES */
     private lastPlayerStates: number[] = [];
@@ -159,9 +162,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         if (current) {
             this.slider.value = current.time;
         }
-
-        /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
-        const DELETED_VIDEO_TIMEOUT = 60;
 
 
         const $window = $(window);
@@ -288,13 +288,13 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             if (this.videoPlayingAfterPlayerReady) {
                 // On démarre un chrono de 2 seconde pour détecter si la vidéo a été supprimée
                 if (!this.deletedVideoTimeout) {
-                    console.log(`La vidéo n'a pas encore démarré. On attend ${DELETED_VIDEO_TIMEOUT}`
+                    console.log(`La vidéo n'a pas encore démarré. On attend ${this.DELETED_VIDEO_TIMEOUT}`
                         + ` secondes avant de la déclarer comme supprimée de YouTube...`);
                     const thisComponent = this;
                     this.deletedVideoTimeout = window.setTimeout(function () {
-                        console.error(`La vidéo n'a toujours pas démarrée depuis ${DELETED_VIDEO_TIMEOUT} secondes. On la déclare supprimée.`);
+                        console.error(`La vidéo n'a toujours pas démarrée depuis ${this.DELETED_VIDEO_TIMEOUT} secondes. On la déclare supprimée.`);
                         thisComponent.deletedVideo.emit();
-                    }, DELETED_VIDEO_TIMEOUT * 1000);
+                    }, this.DELETED_VIDEO_TIMEOUT * 1000);
                 }
             }
         });
@@ -855,7 +855,31 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         this.persistence.getVideo(videoId, environment.googleApiKey).then(video => {
             cb(null, video.snippet);
         }).catch(err => {
-            cb(err);
+            // Enrichir l'erreur avec des informations pour le frontend
+            let error = err;
+            if (err && err.status) {
+                // Déjà enrichie par persistence
+                error = err;
+            } else {
+                // Créer une erreur enrichie
+                error = new Error(err.message || String(err));
+                (error as any).status = err.status || 0;
+                (error as any).type = 'UNKNOWN_ERROR';
+                (error as any).originalError = err;
+            }
+            
+            // Déterminer le type d'erreur si ce n'est pas déjà fait
+            if (!error.type) {
+                if (err.status === 404 || err.message.includes('not found')) {
+                    (error as any).type = 'VIDEO_DELETED';
+                } else if (err.status === 403) {
+                    (error as any).type = 'VIDEO_PRIVATE';
+                } else if (err.status === 0) {
+                    (error as any).type = 'NETWORK_ERROR';
+                }
+            }
+            
+            cb(error);
         });
     }
 
@@ -1008,6 +1032,27 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.getVideoSnippet(videoId, (err, snippet) => {
             if (err) {
+                // Gestion des erreurs YouTube API
+                const error = err as any;
+                let message = err.message || String(err);
+                
+                // Déterminer le type d'erreur et afficher un message adapté
+                if (error.type === 'VIDEO_DELETED' || error.type === 'VIDEO_GONE') {
+                    message = `La vidéo ${videoId} a été supprimée de YouTube.`;
+                } else if (error.type === 'VIDEO_PRIVATE') {
+                    message = `La vidéo ${videoId} est privée ou restreinte.`;
+                } else if (error.type === 'QUOTA_EXCEEDED' || error.type === 'RATE_LIMIT_EXCEEDED') {
+                    message = `Quota API YouTube épuisé. Veuillez réessayer plus tard.`;
+                } else if (error.type === 'NETWORK_ERROR') {
+                    message = `Erreur réseau lors de la récupération de la vidéo. Vérifiez votre connexion.`;
+                } else if (error.status === 404) {
+                    message = `La vidéo ${videoId} est introuvable.`;
+                } else if (error.status === 403) {
+                    message = `Accès refusé à la vidéo ${videoId}.`;
+                }
+                
+                // Afficher le message à l'utilisateur
+                alert(message);
                 return cb(err);
             }
 

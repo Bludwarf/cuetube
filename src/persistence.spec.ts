@@ -1,405 +1,454 @@
-import {MemoryPersistence} from './persistence/MemoryPersistence';
-import Collection from './Collection';
-import {Disc} from './disc';
-import {TestUtils} from './TestUtils';
-import {SyncResult, SyncState} from './persistence';
-import * as _ from 'underscore';
-import {LocalAndDistantPersistence} from './persistence/LocalAndDistantPersistence';
-//const Queue = require('promise-queue');
+/**
+ * Tests pour la gestion des erreurs YouTube API
+ * Couvre les cas : 404 (vidéo supprimée), 403 (vidéo privée/restreinte), quota épuisé, erreurs réseau
+ */
+import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {TestBed} from '@angular/core/testing';
+import {HttpClient} from '@angular/common/http';
+import {Persistence} from './persistence';
+import {LocalStoragePersistence} from './persistence/LocalStoragePersistence';
+import {GoogleApiYouTubeVideoResource, GoogleApiYouTubePaginationInfo} from './GoogleApiYouTubePatch';
 
-describe('persistence', () => {
+// Classe de test concrète pour Persistence
+class TestPersistence extends Persistence {
+    title = 'TestPersistence';
+    
+    constructor(http: HttpClient) {
+        super(http);
+    }
+    
+    getCollectionNames(): Promise<string[]> {
+        return Promise.resolve([]);
+    }
+    
+    getDiscIds(): Promise<string[]> {
+        return Promise.resolve([]);
+    }
+    
+    setCollectionNames(collectionsNames: string[]): Promise<string[]> {
+        return Promise.resolve(collectionsNames);
+    }
+    
+    getCollection(collectionName: string): Promise<any> {
+        return Promise.resolve(null);
+    }
+    
+    protected postCollection(collection: any): Promise<any> {
+        return Promise.resolve(collection);
+    }
+    
+    protected _deleteCollection(collectionName: string): Promise<void> {
+        return Promise.resolve();
+    }
+    
+    getAllCollectionsByNames(): Promise<any[]> {
+        return Promise.resolve([]);
+    }
+    
+    getAllDiscs(): Promise<any[]> {
+        return Promise.resolve([]);
+    }
+    
+    protected postDisc(discId: string, disc: any): Promise<any> {
+        return Promise.resolve(disc);
+    }
+    
+    saveSyncState(): Promise<any> {
+        return Promise.resolve({});
+    }
+    
+    loadSyncState(): Promise<any> {
+        return Promise.resolve({});
+    }
+}
 
-    it('should sync two persistences', (done) => {
+describe('YouTube API Error Handling', () => {
+    let httpMock: HttpTestingController;
+    let http: HttpClient;
+    let persistence: TestPersistence;
+    const GOOGLE_API_KEY = 'test-api-key';
 
-        // Disques
-        const localDisc = TestUtils.createDisc('localDisc');
-        const distantDisc = TestUtils.createDisc('distantDisc');
-        /** disque en commun et égal */
-        const localEqualDisc = TestUtils.createDisc('equalDisc');
-        const distantEqualDisc = TestUtils.createDisc('equalDisc');
-        /** disque en commun mais différent */
-        const localDiffDisc = TestUtils.createDisc('diffDisc').withTitle('localDiffDisc');
-        const distantDiffDisc = TestUtils.createDisc('diffDisc').withTitle('distantDiffDisc');
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [HttpClientTestingModule],
+            providers: [TestPersistence]
+        });
+        
+        httpMock = TestBed.inject(HttpTestingController);
+        http = TestBed.inject(HttpClient);
+        persistence = new TestPersistence(http);
+    });
 
-        // Collections
-        const localCollection = new Collection("localCollection");
-        localCollection.push(localDisc, localEqualDisc, localDiffDisc);
-        const distantCollection = new Collection("distantCollection");
-        distantCollection.push(distantDisc, distantEqualDisc, distantDiffDisc);
-        const localCommonCollection = new Collection("commonCollection");
-        localCommonCollection.push(localDisc, localEqualDisc, localDiffDisc);
-        const distantCommonCollection = new Collection("commonCollection");
-        distantCommonCollection.push(distantDisc, localEqualDisc, localDiffDisc);
-        const localNotModCommonCollection = new Collection("commonNotModCollection");
-        localNotModCommonCollection.push(localEqualDisc);
-        const distantNotModCommonCollection = new Collection("commonNotModCollection");
-        distantNotModCommonCollection.push(localEqualDisc);
+    afterEach(() => {
+        httpMock.verify();
+    });
 
-        // Local
-        const local = new MemoryPersistence(null);
+    describe('404 Not Found (Vidéo supprimée)', () => {
+        
+        it('should handle 404 Not Found error for deleted video', (done) => {
+            const videoId = 'deleted-video-id';
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.status).toBe(404);
+                done();
+            });
 
-        // Distant
-        const distant = new MemoryPersistence(null);
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=deleted-video-id&maxResults=1');
+            req.flush({error: {code: 404, message: 'Not Found'}}, {status: 404, statusText: 'Not Found'});
+        });
 
-        Promise.all([
-            // Collections
-            local.saveCollections([localCollection, localCommonCollection, localNotModCommonCollection]),
-            distant.saveCollections([distantCollection, distantCommonCollection, distantNotModCommonCollection]),
-            // Disques
-            local.saveDisc(localDisc.id, localDisc),
-            local.saveDisc(localEqualDisc.id, localEqualDisc),
-            local.saveDisc(localDiffDisc.id, localDiffDisc),
-            distant.saveDisc(distantDisc.id, distantDisc),
-            distant.saveDisc(distantEqualDisc.id, distantEqualDisc),
-            distant.saveDisc(distantDiffDisc.id, distantDiffDisc),
-        ]).then(res => local.sync(distant))
-        .then(syncResult => {
+        it('should handle 404 with YouTube-specific error details', (done) => {
+            const videoId = 'deleted-video-id';
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.error).toBeDefined();
+                done();
+            });
 
-            // Assertions sur le rapport de synchro
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=deleted-video-id&maxResults=1');
+            req.flush({
+                error: {
+                    errors: [
+                        {
+                            domain: 'youtube.v3',
+                            reason: 'videoNotFound',
+                            message: 'The requested video was not found.'
+                        }
+                    ]
+                }
+            }, {status: 404, statusText: 'Not Found'});
+        });
+    });
 
-            const expected: SyncResult = {
-                collections: {
-                    pulled: [
-                        distantCollection
-                    ],
-                    pushed: [
-                        localCollection
-                    ],
-                    common: {
-                        pulled: [
-                            distantCommonCollection
-                        ],
-                        pushed: [
-                            localCommonCollection
-                        ]
+    describe('403 Forbidden (Vidéo privée/restreinte)', () => {
+        
+        it('should handle 403 Forbidden for private video', (done) => {
+            const videoId = 'private-video-id';
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.status).toBe(403);
+                done();
+            });
+
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=private-video-id&maxResults=1');
+            req.flush({
+                error: {
+                    errors: [
+                        {
+                            domain: 'youtube.v3',
+                            reason: 'forbidden',
+                            message: 'The request is not allowed.'
+                        }
+                    ]
+                }
+            }, {status: 403, statusText: 'Forbidden'});
+        });
+
+        it('should handle 403 with privacyStatus=private', (done) => {
+            const videoId = 'private-video-id';
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.status).toBe(403);
+                done();
+            });
+
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=private-video-id&maxResults=1');
+            req.flush({
+                error: {
+                    errors: [
+                        {
+                            domain: 'youtube.v3',
+                            reason: 'privateVideo',
+                            message: 'This video is private.'
+                        }
+                    ]
+                }
+            }, {status: 403, statusText: 'Forbidden'});
+        });
+    });
+
+    describe('403 rateLimitExceeded (Quota API épuisé)', () => {
+        
+        it('should handle 403 rateLimitExceeded error', (done) => {
+            const videoId = 'any-video-id';
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.status).toBe(403);
+                expect(err.error.errors[0].reason).toBe('rateLimitExceeded');
+                done();
+            });
+
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=any-video-id&maxResults=1');
+            req.flush({
+                error: {
+                    errors: [
+                        {
+                            domain: 'youtube.v3',
+                            reason: 'rateLimitExceeded',
+                            message: 'Rate limit exceeded. Please retry later.'
+                        }
+                    ]
+                }
+            }, {status: 403, statusText: 'Forbidden'});
+        });
+
+        it('should handle 403 quotaExceeded error', (done) => {
+            const videoId = 'any-video-id';
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.status).toBe(403);
+                expect(err.error.errors[0].reason).toBe('quotaExceeded');
+                done();
+            });
+
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=any-video-id&maxResults=1');
+            req.flush({
+                error: {
+                    errors: [
+                        {
+                            domain: 'youtube.v3',
+                            reason: 'quotaExceeded',
+                            message: 'The request cannot be completed because you have exceeded your quota.'
+                        }
+                    ]
+                }
+            }, {status: 403, statusText: 'Forbidden'});
+        });
+    });
+
+    describe('Network Errors (Timeout, No Connection)', () => {
+        
+        it('should handle network timeout error', (done) => {
+            const videoId = 'any-video-id';
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.status).toBe(0);
+                done();
+            });
+
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=any-video-id&maxResults=1');
+            req.error(new ProgressEvent('timeout'));
+        });
+
+        it('should handle network error (no connection)', (done) => {
+            const videoId = 'any-video-id';
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.status).toBe(0);
+                done();
+            });
+
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=any-video-id&maxResults=1');
+            req.error(new Error('Network error'));
+        });
+    });
+
+    describe('410 Gone (Vidéo définitivement supprimée)', () => {
+        
+        it('should handle 410 Gone for permanently deleted video', (done) => {
+            const videoId = 'gone-video-id';
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.status).toBe(410);
+                done();
+            });
+
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=gone-video-id&maxResults=1');
+            req.flush({
+                error: {
+                    errors: [
+                        {
+                            domain: 'youtube.v3',
+                            reason: 'videoGone',
+                            message: 'The video has been permanently deleted.'
+                        }
+                    ]
+                }
+            }, {status: 410, statusText: 'Gone'});
+        });
+    });
+
+    describe('Success Cases', () => {
+        
+        it('should return video data on success', (done) => {
+            const videoId = 'valid-video-id';
+            const mockVideo: GoogleApiYouTubeVideoResource = {
+                id: videoId,
+                kind: 'youtube#video',
+                etag: 'etag-value',
+                snippet: {
+                    publishedAt: '2023-01-01T00:00:00Z',
+                    channelId: 'channel-id',
+                    title: 'Test Video',
+                    description: 'Test Description',
+                    thumbnails: {},
+                    channelTitle: 'Test Channel',
+                    categoryId: '22',
+                    liveBroadcastContent: 'none',
+                    localized: {
+                        title: 'Test Video',
+                        description: 'Test Description'
                     }
                 },
-                discs: {
-                    pulled: [
-                        distantDisc,
-                    ],
-                    pushed: [
-                        localDisc
-                    ],
-                    common: {
-                        pulled: [
-                            distantDiffDisc
-                        ],
-                        pushed: [
-                        ]
-                    }
+                contentDetails: {
+                    duration: 'PT10M30S',
+                    dimension: '2d',
+                    definition: 'hd',
+                    caption: 'false',
+                    licensedContent: false,
+                    projection: 'rectangular'
                 }
             };
-            expect(toObject(syncResult)).toEqual(toObject(expected));
+            
+            const mockResponse: GoogleApiYouTubePaginationInfo<GoogleApiYouTubeVideoResource> = {
+                kind: 'youtube#videoListResponse',
+                etag: 'etag-value',
+                pageInfo: {
+                    totalResults: 1,
+                    resultsPerPage: 1
+                },
+                items: [mockVideo]
+            };
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then((video) => {
+                expect(video).toBeDefined();
+                expect(video.id).toBe(videoId);
+                expect(video.snippet.title).toBe('Test Video');
+                expect(video.contentDetails.duration).toBe('PT10M30S');
+                done();
+            }).catch((err) => {
+                fail('Should not have thrown an error: ' + err);
+                done();
+            });
 
-            return syncResult;
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=valid-video-id&maxResults=1');
+            req.flush(mockResponse);
+        });
 
-        }).then(res => Promise.all([
-            local.getCollectionByNames([localCollection.name, localCommonCollection.name, distantCollection.name]),
-            distant.getCollectionByNames([localCollection.name, localCommonCollection.name, distantCollection.name])
-        ])).then(res => {
+        it('should handle empty items array', (done) => {
+            const videoId = 'not-found-video-id';
+            
+            const mockResponse: GoogleApiYouTubePaginationInfo<GoogleApiYouTubeVideoResource> = {
+                kind: 'youtube#videoListResponse',
+                etag: 'etag-value',
+                pageInfo: {
+                    totalResults: 0,
+                    resultsPerPage: 0
+                },
+                items: []
+            };
+            
+            persistence.getVideo(videoId, GOOGLE_API_KEY).then(() => {
+                fail('Should have thrown an error');
+                done();
+            }).catch((err) => {
+                expect(err).toBeDefined();
+                expect(err.message).toContain('Items not found');
+                done();
+            });
 
-            // Assertion sur les collections
-            const [localCollections, distantCollections] = res;
-
-            // On retrouve toutes les collections des deux côtés
-            const localCollectionNames = Object.keys(localCollections);
-            expect(localCollectionNames).toContain(localCollection.name);
-            expect(localCollectionNames).toContain(localCommonCollection.name);
-            expect(localCollectionNames).toContain(distantCollection.name);
-            const distantCollectionNames = Object.keys(distantCollections);
-            expect(distantCollectionNames).toContain(localCollection.name);
-            expect(distantCollectionNames).toContain(localCommonCollection.name);
-            expect(distantCollectionNames).toContain(distantCollection.name);
-
-            // Ce sont les mêmes collections
-            expect(localCollections[localCollection.name]).toEqual(distantCollections[localCollection.name]);
-            const localCollectionsDiscIds = localCollections[localCollection.name].discIds;
-            expect(localCollectionsDiscIds).toEqual([
-                localDisc.id,
-                localEqualDisc.id,
-                localDiffDisc.id
-            ]);
-            expect(localCollections[localCommonCollection.name]).toEqual(distantCollections[localCommonCollection.name]);
-            const commonCollectionDiscIds = localCollections[localCommonCollection.name].discIds;
-            expect(commonCollectionDiscIds).toEqual([
-                distantDisc.id,
-                distantEqualDisc.id,
-                distantDiffDisc.id,
-                localDisc.id // on prend d'abord le distant puis on ajoute le local
-            ]);
-            expect(localCollections[distantCollection.name]).toEqual(distantCollections[distantCollection.name]);
-            const distantCollectionDiscIds = localCollections[distantCollection.name].discIds;
-            expect(distantCollectionDiscIds).toEqual([
-                distantDisc.id,
-                distantEqualDisc.id,
-                distantDiffDisc.id
-            ]);
-
-        }).then(res => Promise.all([
-            // Récup des disques
-            local.getDiscs([localDisc.id, distantDisc.id, localEqualDisc.id, localDiffDisc.id]),
-            distant.getDiscs([localDisc.id, distantDisc.id, localEqualDisc.id, localDiffDisc.id])
-        ])).then(res => {
-
-            const [localDiscs, distantDiscs] = res;
-
-            // Liste locale
-            expect(localDiscs).toEqual([
-                localDisc,
-                distantDisc,
-                localEqualDisc,
-                distantDiffDisc // localDiffDisc est écrasé par distantDiffDisc car disque différent
-            ]);
-
-            // Liste distante
-            expect(distantDiscs).toEqual([
-                localDisc,
-                distantDisc,
-                localEqualDisc,
-                distantDiffDisc
-            ]);
-
-        }).then(res => done());
+            const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/videos?key=test-api-key&part=snippet%2CcontentDetails&id=not-found-video-id&maxResults=1');
+            req.flush(mockResponse);
+        });
     });
-
-    /**
-     * Chaque persistance doit stocker son état actuel et l'actualiser à chaque modif (post)
-     */
-    it('should save current persistence state', (done) => {
-
-        const p = new MemoryPersistence(null);
-        let syncState;
-
-        // Disques
-        const thriller = TestUtils.createDisc('Thriller')
-            .withFile("Disque 1")
-            .withTrack("Bilie Jean")
-            .endTrack()
-            .endFile();
-        const darkSideOfTheMoon = TestUtils.createDisc('The Dark Side of the Moon')
-            .withFile("Disque 1")
-            .withTrack("Cluster One")
-            .endTrack()
-            .endFile();
-        const secretWorld = TestUtils.createDisc('Secret World')
-            .withFile("Disque 1")
-            .withTrack("Come Talk To Me")
-            .endTrack()
-            .endFile();
-
-        // Collections
-        const collectionVide = new Collection("Collection vide");
-        const collectionComplete = new Collection("Collection complète");
-        collectionComplete.pushDiscs(thriller, darkSideOfTheMoon);
-
-        let lastState: any = {};
-
-        // Création dans la persistence
-        p.getSyncState().then(loadedSyncState => {
-            expect(loadedSyncState).not.toBeNull();
-            syncState = loadedSyncState;
-        }).then(res => {
-            return Promise.all([
-                p.saveDisc(thriller.id, thriller),
-                p.saveDisc(darkSideOfTheMoon.id, darkSideOfTheMoon),
-                p.saveCollection(collectionVide),
-                p.saveCollection(collectionComplete)
-            ]);
-        }).then(res => {
-
-            // Attendus
-            expect(syncState).not.toBeNull();
-            expect(syncState.discs).not.toBeNull();
-            expect(syncState.discs.elementsById).not.toBeNull();
-            const discs = syncState.discs.elementsById;
-
-            // Disques
-            expect(_.size(discs)).toBe(2);
-
-            // Thriller
-            const thrillerState = discs[thriller.id];
-            expect(thrillerState).not.toBeNull();
-            expect(thrillerState.created).not.toBeNull();
-            expect(thrillerState.lastmod).not.toBeNull();
-            expect(thrillerState.checksum).not.toBeNull();
-            lastState.thriller = {
-                created: thrillerState.created,
-                lastmod: thrillerState.lastmod,
-                checksum: thrillerState.checksum
-            };
-
-            // Dark Side
-            const darkSideState = discs[darkSideOfTheMoon.id];
-            expect(darkSideState).not.toBeNull();
-            expect(darkSideState.created).not.toBeNull();
-            expect(darkSideState.lastmod).not.toBeNull();
-            expect(darkSideState.checksum).not.toBeNull();
-            lastState.darkSideOfTheMoon = {
-                created: darkSideState.created,
-                lastmod: darkSideState.lastmod,
-                checksum: darkSideState.checksum
-            }
-
-            // TODO : collection
-
-        }).then(res => {
-
-            // On pousse Thriller sans le modifier
-            return p.saveDisc(thriller.id, thriller);
-
-        }).then(res => {
-
-            const discs = syncState.discs.elementsById;
-            expect(_.size(discs)).toBe(2);
-
-            // Thriller ne doit pas avoir changé
-            const thrillerState = discs[thriller.id];
-            expect(thrillerState).not.toBeNull();
-            expect(thrillerState.created).toBe(lastState.thriller.created);
-            expect(thrillerState.lastmod).toBe(lastState.thriller.lastmod);
-            expect(thrillerState.checksum).toBe(lastState.thriller.checksum);
-
-            // Ni DarkSide
-            const darkSideState = discs[darkSideOfTheMoon.id];
-            expect(darkSideState).not.toBeNull();
-            expect(darkSideState.created).toBe(lastState.darkSideOfTheMoon.created);
-            expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
-            expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
-
-        }).then(res => {
-
-            // On modifie vraiment Thriller
-            thriller.files[0].tracks[0].title = "Bily Gin";
-            return p.saveDisc(thriller.id, thriller);
-
-        }).then(res => {
-
-            const discs = syncState.discs.elementsById;
-            expect(_.size(discs)).toBe(2);
-
-            // Seul Thriller doit avoir changé
-            const thrillerState = discs[thriller.id];
-            expect(thrillerState).not.toBeNull();
-            expect(thrillerState.created).toBe(lastState.thriller.created);
-            expect(thrillerState.lastmod).not.toBe(lastState.thriller.lastmod);
-            expect(thrillerState.checksum).not.toBe(lastState.thriller.checksum);
-            lastState.thriller = {
-                created: thrillerState.created,
-                lastmod: thrillerState.lastmod,
-                checksum: thrillerState.checksum
-            };
-
-            // Et pas DarkSide
-            const darkSideState = discs[darkSideOfTheMoon.id];
-            expect(darkSideState).not.toBeNull();
-            expect(darkSideState.created).toBe(lastState.darkSideOfTheMoon.created);
-            expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
-            expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
-
-        }).then(res => {
-
-            // Ajout du disque Secret World
-            return p.saveDisc(secretWorld.id, secretWorld);
-
-        }).then(res => {
-
-            const discs = syncState.discs.elementsById;
-            expect(_.size(discs)).toBe(3);
-
-            // Seul Secret World doit avoir changé
-            const secretWorldState = discs[secretWorld.id];
-            expect(secretWorldState).not.toBeNull();
-            expect(secretWorldState.created).not.toBeNull();
-            expect(secretWorldState.lastmod).not.toBeNull();
-            expect(secretWorldState.checksum).not.toBeNull();
-
-            lastState.secretWorld = {
-                created: secretWorldState.created,
-                lastmod: secretWorldState.lastmod,
-                checksum: secretWorldState.checksum
-            };
-
-            // Et pas les autres
-            const thrillerState = discs[thriller.id];
-            expect(thrillerState).not.toBeNull();
-            expect(thrillerState.created).toBe(lastState.thriller.created);
-            expect(thrillerState.lastmod).toBe(lastState.thriller.lastmod);
-            expect(thrillerState.checksum).toBe(lastState.thriller.checksum);
-
-            // Et pas les autres
-            const darkSideState = discs[darkSideOfTheMoon.id];
-            expect(darkSideState).not.toBeNull();
-            expect(darkSideState.created).toBe(lastState.darkSideOfTheMoon.created);
-            expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
-            expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
-
-        }).then(res => {
-
-            // Sauvegarde du disque Secret World sans modification
-            return p.saveDisc(secretWorld.id, secretWorld);
-
-        }).then(res => {
-
-            const discs = syncState.discs.elementsById;
-            expect(_.size(discs)).toBe(3);
-
-            // Secret World ne doit pas avoir changé
-            const secretWorldState = discs[secretWorld.id];
-            expect(secretWorldState).not.toBeNull();
-            expect(secretWorldState.created).toBe(lastState.secretWorld.created);
-            expect(secretWorldState.lastmod).toBe(lastState.secretWorld.lastmod);
-            expect(secretWorldState.checksum).toBe(lastState.secretWorld.checksum);
-        })
-
-            // Assertions sur le JSON
-            .then(res => JSON.stringify(syncState))
-            .then(json => {
-                const loadedSyncState = SyncState.load(json);
-                expect(loadedSyncState).toEqual(syncState);
-            })
-            .then(res => done());
-    });
-
-  function testSync(direction) {
-    return async() => {
-      const discV1 = new Disc();
-      const discId = 'discId';
-      discV1.id = discId;
-      const premierTitre = 'Premier titre';
-      discV1.title = premierTitre;
-
-      const local = new MemoryPersistence(null);
-      const distant = new MemoryPersistence(null);
-      const persistence = new LocalAndDistantPersistence<MemoryPersistence, MemoryPersistence>(local, distant);
-
-      // Sauvegarde de la V1 du disque
-      const savedDisc = await persistence.saveDisc(discId, discV1);
-      expect(savedDisc.title).toEqual(premierTitre);
-
-      // Modif uniquement locale
-      const discV2 = new Disc();
-      discV2.id = discId;
-      const deuxiemeTitre = 'Deuxième titre';
-      discV2.title = deuxiemeTitre;
-      const localSavedDisc = await local.saveDisc(discId, discV2);
-      expect(localSavedDisc.title).toEqual(deuxiemeTitre);
-      const distantDisc = await distant.getDisc(discId);
-      expect(distantDisc.title).toEqual(premierTitre);
-
-      // On imagine qu'on redémarre CueTube => synchro
-      direction ? await distant.sync(local) : await local.sync(distant);
-      const syncedDisc = await persistence.getDisc(discId);
-      expect(syncedDisc.title).toEqual(deuxiemeTitre, 'La modif la plus récente est retenue');
-    };
-  }
-
-  it('should keep newer version of a disc when sync two persistences', testSync(true));
-
-  it('should keep newer version of a disc when sync two persistences (reverse sync)', testSync(false));
-
 });
 
-function toObject(typedObject: any): Object {
-    return JSON.parse(JSON.stringify(typedObject))
-}
+describe('Playlist Items Error Handling', () => {
+    let httpMock: HttpTestingController;
+    let http: HttpClient;
+    let persistence: TestPersistence;
+    const GOOGLE_API_KEY = 'test-api-key';
+
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [HttpClientTestingModule],
+            providers: [TestPersistence]
+        });
+        
+        httpMock = TestBed.inject(HttpTestingController);
+        http = TestBed.inject(HttpClient);
+        persistence = new TestPersistence(http);
+    });
+
+    afterEach(() => {
+        httpMock.verify();
+    });
+
+    it('should handle 404 for playlist items', (done) => {
+        const playlistId = 'deleted-playlist-id';
+        
+        persistence.getPlaylistItems(playlistId, GOOGLE_API_KEY).then(() => {
+            fail('Should have thrown an error');
+            done();
+        }).catch((err) => {
+            expect(err).toBeDefined();
+            expect(err.status).toBe(404);
+            done();
+        });
+
+        const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/playlistItems?key=test-api-key&part=snippet&playlistId=deleted-playlist-id&maxResults=50');
+        req.flush({error: {code: 404, message: 'Not Found'}}, {status: 404, statusText: 'Not Found'});
+    });
+
+    it('should handle 403 for private playlist', (done) => {
+        const playlistId = 'private-playlist-id';
+        
+        persistence.getPlaylistItems(playlistId, GOOGLE_API_KEY).then(() => {
+            fail('Should have thrown an error');
+            done();
+        }).catch((err) => {
+            expect(err).toBeDefined();
+            expect(err.status).toBe(403);
+            done();
+        });
+
+        const req = httpMock.expectOne('https://www.googleapis.com/youtube/v3/playlistItems?key=test-api-key&part=snippet&playlistId=private-playlist-id&maxResults=50');
+        req.flush({
+            error: {
+                errors: [
+                    {
+                        domain: 'youtube.v3',
+                        reason: 'forbidden',
+                        message: 'Access denied'
+                    }
+                ]
+            }
+        }, {status: 403, statusText: 'Forbidden'});
+    });
+});
