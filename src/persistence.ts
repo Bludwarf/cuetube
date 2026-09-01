@@ -223,11 +223,53 @@ export abstract class Persistence {
                     // const data = res.data; // AngularJS
                     const data = res; // Angular5
                     if (!data.items || data.items.length !== 1) {
-                        return reject(new Error('Items not found for videoId ' + videoId));
+                        const error = new Error('Items not found for videoId ' + videoId);
+                        (error as any).status = 404;
+                        (error as any).type = 'VIDEO_DELETED';
+                        return reject(error);
                     }
                     resolve(data.items[0]);
                 }, resKO => {
-                    reject(resKO.data);
+                    // Amélioration de la gestion des erreurs
+                    let error = resKO.error || resKO.message || 'Unknown error';
+                    let status = resKO.status || (resKO.error && resKO.error.status) || 0;
+                    
+                    // Si c'est une erreur YouTube API, extraire les détails
+                    if (resKO.error && resKO.error.error && resKO.error.error.errors) {
+                        const youtubeError = resKO.error.error.errors[0];
+                        error = {
+                            message: youtubeError.message || error,
+                            reason: youtubeError.reason,
+                            domain: youtubeError.domain,
+                            status: status
+                        };
+                    }
+                    
+                    // Créer une erreur enrichie avec les informations YouTube
+                    const enrichedError = new Error(error.message || error);
+                    (enrichedError as any).status = status;
+                    (enrichedError as any).originalError = resKO;
+                    
+                    // Déterminer le type d'erreur
+                    if (status === 404 || (youtubeError && youtubeError.reason === 'videoNotFound')) {
+                        (enrichedError as any).type = 'VIDEO_DELETED';
+                    } else if (status === 410) {
+                        (enrichedError as any).type = 'VIDEO_GONE';
+                    } else if (status === 403) {
+                        if (youtubeError && (youtubeError.reason === 'rateLimitExceeded' || youtubeError.reason === 'quotaExceeded')) {
+                            (enrichedError as any).type = 'QUOTA_EXCEEDED';
+                        } else if (youtubeError && (youtubeError.reason === 'privateVideo' || youtubeError.reason === 'forbidden')) {
+                            (enrichedError as any).type = 'VIDEO_PRIVATE';
+                        } else {
+                            (enrichedError as any).type = 'VIDEO_PRIVATE';
+                        }
+                    } else if (status === 0) {
+                        (enrichedError as any).type = 'NETWORK_ERROR';
+                    } else {
+                        (enrichedError as any).type = 'UNKNOWN_ERROR';
+                    }
+                    
+                    reject(enrichedError);
                 });
         });
     }
@@ -261,12 +303,44 @@ export abstract class Persistence {
                     // const data: any = res.data; // AngularJS
                     const data = res; // Angular5
                     if (data.pageInfo && data.pageInfo.totalResults > data.pageInfo.resultsPerPage) {
-                        return reject(new Error('Too much results (> 50)'));
+                        const error = new Error('Too much results (> 50)');
+                        (error as any).status = 400;
+                        (error as any).type = 'UNKNOWN_ERROR';
+                        return reject(error);
                     }
                     // resolve(data); // AngularJS
                     resolve(data.items); // Angular5
                 }, res => {
-                    reject(res.data);
+                    // Amélioration de la gestion des erreurs pour les playlists
+                    let error = res.error || res.message || 'Unknown error';
+                    let status = res.status || (res.error && res.error.status) || 0;
+                    
+                    // Si c'est une erreur YouTube API, extraire les détails
+                    if (res.error && res.error.error && res.error.error.errors) {
+                        const youtubeError = res.error.error.errors[0];
+                        error = {
+                            message: youtubeError.message || error,
+                            reason: youtubeError.reason,
+                            domain: youtubeError.domain,
+                            status: status
+                        };
+                    }
+                    
+                    // Créer une erreur enrichie
+                    const enrichedError = new Error(error.message || error);
+                    (enrichedError as any).status = status;
+                    (enrichedError as any).originalError = res;
+                    (enrichedError as any).type = 'UNKNOWN_ERROR';
+                    
+                    if (status === 404) {
+                        (enrichedError as any).type = 'VIDEO_DELETED';
+                    } else if (status === 403) {
+                        (enrichedError as any).type = 'VIDEO_PRIVATE';
+                    } else if (status === 0) {
+                        (enrichedError as any).type = 'NETWORK_ERROR';
+                    }
+                    
+                    reject(enrichedError);
                 });
         });
     }
