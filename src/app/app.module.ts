@@ -34,7 +34,8 @@ export const imports = [
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    PlayerCollectionsComponent,
 ];
 export const providers = [
     GapiClientService,
@@ -49,7 +50,6 @@ export const providers = [
         SliderComponent,
         EditCueComponent,
         EditCueFileComponent,
-        PlayerCollectionsComponent,
         PlayerCollectionDeleteDialogComponent
     ],
     imports: [
@@ -59,9 +59,6 @@ export const providers = [
         ...imports
     ],
     providers,
-    exports: [
-        PlayerCollectionsComponent
-    ],
     bootstrap: [AppComponent]
 })
 export class AppModule {

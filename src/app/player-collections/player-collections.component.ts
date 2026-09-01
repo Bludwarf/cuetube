@@ -1,90 +1,87 @@
-import {Component, Inject, Input, OnInit} from '@angular/core';
-import {PlayerComponent} from '../player/player.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import {Component, effect, EventEmitter, input, Output} from '@angular/core';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
 
 @Component({
     selector: 'app-player-collections',
     templateUrl: './player-collections.component.html',
     styleUrls: ['./player-collections.component.css'],
-    standalone: false
+    imports: [
+        MatButtonModule,
+        MatIconModule,
+    ],
+    standalone: true
 })
-export class PlayerCollectionsComponent implements OnInit {
+export class PlayerCollectionsComponent {
 
-  @Input() player: PlayerComponent;
-  public items: Item[] = [];
+    collectionNames = input<string[]>([]);
+    currentCollectionNames = input<string[]>([]);
 
-  constructor(public dialog: MatDialog, public snackBar: MatSnackBar) {
-  }
+    @Output()
+    createCollection = new EventEmitter<string | undefined>();
 
-  ngOnInit() {
-    this.player.collectionNamesChange.subscribe(collectionNames => this.setCollections(collectionNames));
-    this.player.currentCollectionNamesChange.subscribe(collectionNames => this.setCurrentCollections(collectionNames));
-  }
+    @Output()
+    activateDefaultCollection = new EventEmitter<void>();
 
-  setCollections(collectionNames: string[]) {
-    this.items = [];
-    collectionNames.forEach(collectionName => {
-      this.items.push(new Item(this, collectionName));
-    });
-  }
+    @Output()
+    activateOnlyCollection = new EventEmitter<string>();
 
-  setCurrentCollections(collectionNames: string[]) {
-    this.items.forEach(item => {
-      if (!collectionNames.length) {
-        item.isCurrent = false;
-      } else {
-        item.isCurrent = collectionNames.find(collectionName => item.name === collectionName) !== undefined;
-      }
-    });
-  }
+    @Output()
+    toggleCollection = new EventEmitter<string>();
 
-  createCollection() {
-    return this.player.createCollection();
-  }
+    @Output()
+    removeCollection = new EventEmitter<string>();
 
-  playDefaultCollection() {
-    return this.player.playCollection();
-  }
+    public items: Item[] = [];
+
+    constructor(public dialog: MatDialog) {
+        effect(() => this.setCollections(this.collectionNames()));
+        effect(() => this.setCurrentCollections(this.currentCollectionNames()));
+    }
+
+    setCollections(collectionNames: string[]) {
+        this.items = collectionNames.map(collectionName => new Item(this, collectionName));
+    }
+
+    setCurrentCollections(collectionNames: string[]) {
+        this.items.forEach(item => {
+            if (!collectionNames.length) {
+                item.isCurrent = false;
+            } else {
+                item.isCurrent = collectionNames.find(collectionName => item.name === collectionName) !== undefined;
+            }
+        });
+    }
+
 }
 
 class Item {
-  public isCurrent = false;
+    public isCurrent = false;
 
-  constructor(public component: PlayerCollectionsComponent, public name: string) {
+    constructor(public component: PlayerCollectionsComponent, public name: string) {
 
-  }
+    }
 
-  get player() {
-    return this.component.player;
-  }
+    toggle() {
+        this.component.toggleCollection.emit(this.name);
+    }
 
-  play() {
-    return this.player.playCollection(this.name);
-  }
-
-  toggle($event: MouseEvent) {
-    this.player.toggleCollection(this.name, $event);
-  }
-
-  delete() {
-    const dialogRef = this.component.dialog.open(PlayerCollectionDeleteDialogComponent, {
-      // height: '400px',
-      // width: '600px',
-    });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.player.removeCollection(this.name).then(res => {
-          if (res) {
-            this.component.snackBar.open(`Collection "${this.name}" supprimée`, undefined, {
-              duration: 2000,
-              verticalPosition: 'top'
-            });
-          }
+    delete() {
+        const dialogRef = this.component.dialog.open(PlayerCollectionDeleteDialogComponent, {
+            // height: '400px',
+            // width: '600px',
         });
-      }
-    });
-  }
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.component.removeCollection.emit(this.name);
+            }
+        });
+    }
+
+    selectOnly() {
+        return this.component.activateOnlyCollection.emit(this.name);
+    }
 }
 
 @Component({
@@ -93,7 +90,7 @@ class Item {
 })
 export class PlayerCollectionDeleteDialogComponent {
 
-  constructor(
-    public dialogRef: MatDialogRef<PlayerCollectionDeleteDialogComponent>) {
-  }
+    constructor(
+        public dialogRef: MatDialogRef<PlayerCollectionDeleteDialogComponent>) {
+    }
 }

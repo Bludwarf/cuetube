@@ -1,4 +1,5 @@
 export const TEST_PATHS = [
+    'collections-menu',
 ] as const;
 
 export const TEST_PATHS_MAP: Record<string, string> = {};
