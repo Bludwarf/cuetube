@@ -1,31 +1,33 @@
 <div class="panel-group" id="menu">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#menu" href="#collapseOne">Collections</a>
-        <button mat-icon-button class="right-icon" (click)="createCollection()">
-          <mat-icon class="right-icon">playlist_add</mat-icon>
-        </button>
-      </h4>
-    </div>
-    <div id="collapseOne" class="panel-collapse collapse in">
-      <ul class="list-group">
-        <li class="list-group-item clickable" (click)="playDefaultCollection()"
-          [class.active]="player.currentCollectionNames.length === 0"><i>Collection par défaut</i></li>
-          @for (item of items; track item) {
-            <li class="list-group-item clickable"
-              [class.active]="item.isCurrent" (click)="item.play()"
-              title="Sélectionner uniquement cette collection comme liste de lecture"
-              >
-              <input style="margin-right: 8px;" type="checkbox"
-                [checked]="item.isCurrent"
-                (click)="item.toggle($event)"
-                [title]="(item.isCurrent ? 'Supprimer' : 'Ajouter') + ' cette collection à la liste de lecture'"
-                />{{item.name}}
-                <mat-icon (click)="item.delete()" align="end" class="right-icon">delete</mat-icon>
-              </li>
-            }
-          </ul>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#menu" href="#collapseOne">Collections</a>
+                <button mat-icon-button class="right-icon" (click)="createCollection.emit()">
+                    <mat-icon class="right-icon">playlist_add</mat-icon>
+                </button>
+            </h4>
         </div>
-      </div>
+        <div id="collapseOne" class="panel-collapse collapse in">
+            <ul class="list-group">
+                <li class="list-group-item clickable" (click)="activateDefaultCollection.emit()"
+                    [class.active]="currentCollectionNames().length === 0"><i>Collection par défaut</i></li>
+                @for (item of items; track item) {
+                    <li class="list-group-item clickable"
+                        [class.active]="item.isCurrent" (click)="item.selectOnly()"
+                        title="Sélectionner uniquement cette collection comme liste de lecture"
+                    >
+                        <input style="margin-right: 8px;" type="checkbox"
+                               [checked]="item.isCurrent"
+                               (click)="$event.stopPropagation(); item.toggle()"
+                               [title]="(item.isCurrent ? 'Supprimer' : 'Ajouter') + ' cette collection à la liste de lecture'"
+                        />{{ item.name }}
+                        <mat-icon (click)="$event.stopPropagation(); item.delete()" align="end" class="right-icon">
+                            delete
+                        </mat-icon>
+                    </li>
+                }
+            </ul>
+        </div>
     </div>
+</div>

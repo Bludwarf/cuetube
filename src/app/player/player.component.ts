@@ -19,6 +19,7 @@ import $ from 'jquery';
 import {environment} from '../../environments/environment-with-dot-env';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {formatHMSS, getParameterByName, notify, weightedRandom} from '../../utils/utils';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 const YT_STATES = [
     'ENDED',
@@ -39,6 +40,46 @@ const DEFAULT_COLLECTION = '_DEFAULT_';
 })
 export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
+    get collectionNames(): string[] {
+        return this._collectionNames;
+    }
+
+    set collectionNames(collectionNames: string[]) {
+        this._collectionNames = collectionNames;
+        this.currentCollectionNames = this.currentCollectionNames.filter(
+            collectionNameI => this._collectionNames.includes(collectionNameI)
+        );
+    }
+
+    get currentCollectionNames(): string[] {
+        return this._currentCollectionNames;
+    }
+
+    set currentCollectionNames(currentCollectionNames: string[]) {
+        this._currentCollectionNames = currentCollectionNames;
+        this.pushStateOnlyNewOnCurrentCollectionNames();
+    }
+
+    constructor(
+        public http: HttpClient,
+        private gapiClient: GapiClientService,
+        private zone: NgZone,
+        private location: AngularLocation,
+        public prefs: LocalStoragePrefsService,
+        public readonly snackBar: MatSnackBar,
+    ) {
+    }
+
+    // TODO : remonter dans app
+    get $foreground() {
+        return $('#foreground-overlay');
+    }
+
+    // TODO : remonter dans app
+    get $foregroundIcon() {
+        return $('#foreground-overlay-icon');
+    }
+
     private cueService: CueService;
 
     private localPersistence: LocalStoragePersistence;
@@ -58,18 +99,12 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     /**
      * Nom de toutes les collections disponibles
      */
-    collectionNames: string[] = [];
-
-    @Output()
-    public collectionNamesChange = new EventEmitter<string[]>();
+    _collectionNames: string[] = [];
 
     /**
      * Nom de toutes les collections en cours de lecture
      */
-    currentCollectionNames = [];
-
-    @Output()
-    public currentCollectionNamesChange = new EventEmitter<string[]>();
+    _currentCollectionNames = [];
 
     /** Utilisé par la persistance */
     public debugData: any;
@@ -140,8 +175,26 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     private locationSubscription: ISubscription;
 
-    constructor(public http: HttpClient, private gapiClient: GapiClientService, private zone: NgZone, private location: AngularLocation,
-                public prefs: LocalStoragePrefsService) {
+    protected readonly formatHMSS = formatHMSS;
+
+    private pushStateOnlyNewOnCurrentCollectionNames(): void {
+        const isDefaultCollection = this.currentCollectionNames.length === 0;
+
+        // Historique navigateur
+        const state = {
+            currentCollectionNames: this.currentCollectionNames
+        };
+        // Uniquement si le statut est différent de celui actuel
+        HistoryUtils.pushStateOnlyNew(state, stateBuilder => {
+            if (isDefaultCollection) {
+                stateBuilder.title('CueTube')
+                    .searchParam('collection', null);
+            } else {
+                stateBuilder.title('CueTube - ' + this.currentCollectionNames.join(' + '))
+                    .searchParam('collection', this.currentCollectionNames);
+            }
+            return stateBuilder;
+        });
     }
 
     ngOnInit() {
@@ -322,31 +375,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             if (state) {
                 console.log('state', state);
                 if ('currentCollectionNames' in state) {
-                    this.currentCollectionNames = state.currentCollectionNames;
-                    this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-                    this.loadDiscsFromCurrentCollections();
+                    this.setCurrentCollectionNames(state.currentCollectionNames);
                 }
             }
-        });
-
-        this.currentCollectionNamesChange.subscribe(() => {
-            const isDefaultCollection = this.currentCollectionNames.length === 0;
-
-            // Historique navigateur
-            const state = {
-                currentCollectionNames: this.currentCollectionNames
-            };
-            // Uniquement si le statut est différent de celui actuel
-            HistoryUtils.pushStateOnlyNew(state, stateBuilder => {
-                if (isDefaultCollection) {
-                    stateBuilder.title('CueTube')
-                        .searchParam('collection', null);
-                } else {
-                    stateBuilder.title('CueTube - ' + this.currentCollectionNames.join(' + '))
-                        .searchParam('collection', this.currentCollectionNames);
-                }
-                return stateBuilder;
-            });
         });
 
         // Attente de notif entre les onglets de l'appli
@@ -443,7 +474,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             }
         }
 
-        this.playCollection();
         // discIds = [
         //   "Dg0IjOzopYU",
         //   "RRtlWfi6jiM",
@@ -463,7 +493,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         try {
             collectionNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // tri alphabétique
             this.collectionNames = collectionNames;
-            this.collectionNamesChange.emit(collectionNames);
             console.log('Noms des collections chargés', collectionNames);
             return;
         } catch (e) {
@@ -492,7 +521,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             alert('Les collections suivantes n\'ont pas été trouvées : ' + unknownCollectionNames.join(', '));
         }
         this.currentCollectionNames = collectionNames;
-        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
 
         const promises = [];
         this.discIdsByCollection = {};
@@ -510,9 +538,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
                     // alert("Impossible d'ouvrir la collection : " + collectionParam + " : " + err);
                     try {
                         const collection = await this.persistence.newCollection(collectionName);
-                        this.collectionNames = this.collectionNames || [];
-                        this.collectionNames.push(collectionName);
-                        this.collectionNamesChange.emit(this.collectionNames);
+                        this.addCollection(collectionName);
                         console.log('Collection "' + collectionName + '" créée');
                         return collection;
                     } catch (e) {
@@ -562,16 +588,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     stopPropagation(e) {
         e.stopPropagation(); // pour ne pas appeler document.onclick
-    }
-
-    // TODO : remonter dans app
-    get $foreground() {
-        return $('#foreground-overlay');
-    }
-
-    // TODO : remonter dans app
-    get $foregroundIcon() {
-        return $('#foreground-overlay-icon');
     }
 
     onYouTubeIframeAPIReady() {
@@ -1160,16 +1176,17 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             }
             const collection = new Collection(name);
             this.persistence.saveCollection(collection).then(() => {
-                this.collectionNames.push(collection.name);
-                this.collectionNames = this.collectionNames.sort();
-                this.collectionNamesChange.emit(this.collectionNames);
-                this.openCollection(name);
+                this.addCollection(collection.name);
+                this.activateOnlyCollection(name);
             });
         }
     }
 
-    openCollection(name) {
-        this.playCollection(name);
+    addCollection(collectionName: string): void {
+        const collectionNames = this.collectionNames ? [...this.collectionNames] : [];
+        collectionNames.push(collectionName);
+        collectionNames.sort();
+        this.collectionNames = collectionNames;
     }
 
     /**
@@ -1313,22 +1330,31 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         });
     }
 
-    toggleCollection(collectionName, $event) {
-
-        this.hidePlayer();
-        $event.stopPropagation();
-
+    toggleCollection(collectionName: string) {
         // Coché ?
         const index = this.currentCollectionNames.indexOf(collectionName);
         const checked = index === -1;
+        const currentCollectionNames = [...this.currentCollectionNames];
         if (checked) {
-            this.currentCollectionNames.push(collectionName);
+            currentCollectionNames.push(collectionName);
         } else {
-            this.currentCollectionNames.splice(index, 1);
+            currentCollectionNames.splice(index, 1);
         }
-        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+        return this.setCurrentCollectionNames(currentCollectionNames);
+    }
 
-        this.loadDiscsFromCurrentCollections();
+    activateOnlyDefaultCollection(): Promise<Disc[]> {
+        return this.setCurrentCollectionNames([]);
+    }
+
+    activateOnlyCollection(collectionName: string): Promise<Disc[]> {
+        return this.setCurrentCollectionNames([collectionName]);
+    }
+
+    setCurrentCollectionNames(currentCollectionNames: string[]): Promise<Disc[]> {
+        this.hidePlayer();
+        this.currentCollectionNames = currentCollectionNames;
+        return this.loadDiscsFromCurrentCollections();
     }
 
     async removeCollection(collectionName: string): Promise<boolean> {
@@ -1336,10 +1362,11 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         await this.persistence.deleteCollection(collectionName);
 
         this.collectionNames = this.collectionNames.filter(collectionNameI => collectionNameI !== collectionName);
-        this.currentCollectionNames = this.currentCollectionNames.filter(collectionNameI => collectionNameI !== collectionName);
         console.log(`Collection "${collectionName}" supprimée avec succès`);
-        this.collectionNamesChange.emit(this.collectionNames);
-        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
+        this.snackBar.open(`Collection "${collectionName}" supprimée`, undefined, {
+            duration: 2000,
+            verticalPosition: 'top'
+        });
 
         return true;
     }
@@ -1368,13 +1395,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             alert('Impossible d\'ouvrir la collection : ' + collectionName + ' : ' + err);
             return [];
         }
-    }
-
-    playCollection(collectionName?): Promise<Disc[]> {
-        console.log('Lecture de la collection ' + (collectionName ? collectionName : 'par défaut'));
-        this.currentCollectionNames = collectionName ? [collectionName] : [];
-        this.currentCollectionNamesChange.emit(this.currentCollectionNames);
-        return this.loadDiscsFromCurrentCollections();
     }
 
     // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
@@ -1684,8 +1704,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         return state;
     }
-
-    protected readonly formatHMSS = formatHMSS;
 }
 
 interface State {
