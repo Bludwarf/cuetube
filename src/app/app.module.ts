@@ -8,37 +8,38 @@ import {SliderComponent} from './slider/slider.component';
 import {FormsModule} from '@angular/forms';
 import {EditCueComponent} from './edit-cue/edit-cue.component';
 import {EditCueFileComponent} from './edit-cue-file/edit-cue-file.component';
-import {
-  PlayerCollectionDeleteDialogComponent,
-  PlayerCollectionsComponent
-} from './player-collections/player-collections.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import {PlayerCollectionDeleteDialogComponent, PlayerCollectionsComponent} from './player-collections/player-collections.component';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatIconModule} from '@angular/material/icon';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {LocalStoragePrefsService} from './local-storage-prefs.service';
 import {provideHttpClient} from '@angular/common/http';
 
 const appRoutes: Routes = [
-  {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
-  {path: 'player', component: PlayerComponent},
-  {path: 'edit-cue', component: EditCueComponent}
+    {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
+    {path: 'player', component: PlayerComponent},
+    {path: 'edit-cue', component: EditCueComponent},
+    {
+        path: 'test',
+        loadChildren: () => import('./test/test.module').then(m => m.TestModule),
+    },
 ];
 
 export const imports = [
-  BrowserModule,
-  FormsModule,
-  BrowserAnimationsModule,
-  MatButtonModule,
-  MatIconModule,
-  MatDialogModule,
-  MatSnackBarModule
+    BrowserModule,
+    FormsModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatSnackBarModule
 ];
 export const providers = [
-  GapiClientService,
-  LocalStoragePrefsService,
-  provideHttpClient(),
+    GapiClientService,
+    LocalStoragePrefsService,
+    provideHttpClient(),
 ];
 
 @NgModule({
@@ -53,11 +54,14 @@ export const providers = [
     ],
     imports: [
         RouterModule.forRoot(appRoutes, {
-        // enableTracing: true // <-- debugging purposes only
+            // enableTracing: true // <-- debugging purposes only
         }),
         ...imports
     ],
     providers,
+    exports: [
+        PlayerCollectionsComponent
+    ],
     bootstrap: [AppComponent]
 })
 export class AppModule {

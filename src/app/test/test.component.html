@@ -1,0 +1,5 @@
+<ul>
+    @for (testRoute of testRoutes; track testRoute) {
+        <li><a [routerLink]="testRoute">{{ testRoute }}</a></li>
+    }
+</ul>
