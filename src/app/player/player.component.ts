@@ -80,6 +80,14 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         return $('#foreground-overlay-icon');
     }
 
+    get appVersion(): string {
+        return environment.appVersion;
+    }
+
+    get shortRevisionNumber(): string {
+        return environment.shortRevisionNumber;
+    }
+
     private cueService: CueService;
 
     private localPersistence: LocalStoragePersistence;
