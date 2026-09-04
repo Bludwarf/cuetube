@@ -5,6 +5,7 @@ export interface EnvironmentWithDotEnv {
   production: boolean;
   googleApiKey: string;
   appVersion: string;
+  shortRevisionNumber: string;
 }
 
 const partialEnvironment: Partial<EnvironmentWithDotEnv> = {};
@@ -18,6 +19,9 @@ if (partialEnvironment.googleApiKey === undefined) {
 }
 if (partialEnvironment.appVersion === undefined) {
   throw new Error(`Missing environment variable 'appVersion'`);
+}
+if (partialEnvironment.shortRevisionNumber === undefined) {
+  throw new Error(`Missing environment variable 'revisionNumber'`);
 }
 
 /**

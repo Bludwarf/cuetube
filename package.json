@@ -48,6 +48,7 @@
     "@types/jasmine": "~2.5.41",
     "@types/jasminewd2": "~2.0.2",
     "@types/jquery": "^3.5.33",
+    "@types/node": "^26.4.1",
     "@types/underscore": "^1.8.3",
     "@types/youtube": "0.0.31",
     "codelyzer": "^6.0.2",

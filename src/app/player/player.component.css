@@ -351,3 +351,7 @@ body {
 #player-track-name .track-number {
   color: #555555;
 }
+
+#version-info {
+    text-align: center;
+}
