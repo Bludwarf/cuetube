@@ -92,7 +92,7 @@
                                                                     <input type="checkbox"
                                                                            [(ngModel)]="track.enabledByUser"
                                                                            (click)="track.afterClickCheckbox($event)"/>
-                                                                    <span>{{ track.title || "Track " + track.number }}</span>
+                                                                    <span>{{ nonNullTrackTitle(track) }}</span>
                                                                 </li>
                                                             }
                                                         </div>

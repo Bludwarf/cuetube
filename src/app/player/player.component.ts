@@ -20,6 +20,7 @@ import {environment} from '../../environments/environment-with-dot-env';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {formatHMSS, getParameterByName, notify, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import Track = Disc.Track;
 
 const YT_STATES = [
     'ENDED',
@@ -275,12 +276,13 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             track.played = track.played ? track.played + 1 : 1;
 
             const disc = file.disc;
-            document.title = track.title + ' - CueTube'; // Youtube affiche : disc.title + " - m3u-YouTube"
+            const nonNullTrackTitle = this.nonNullTrackTitle(track);
+            document.title = nonNullTrackTitle + ' - CueTube'; // Youtube affiche : disc.title + " - m3u-YouTube"
 
             $('.background-overlay').css('background-image', `url(${track.file.background})`);
 
             // Notif
-            notify((track.title || 'Track ' + track.number), {
+            notify(nonNullTrackTitle, {
                 tag: 'onTrackStarted',
                 body: disc.title,
                 icon: track.file.icon
@@ -394,6 +396,10 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             this.reloadDisc(discId);
         });
 
+    }
+
+    protected nonNullTrackTitle(track: Track) {
+        return track.title ?? `Track ${track.number}`;
     }
 
     enrichWindow(window) {
