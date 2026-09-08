@@ -532,7 +532,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             }
         });
         if (unknownCollectionNames.length) {
-            alert('Les collections suivantes n\'ont pas été trouvées : ' + unknownCollectionNames.join(', '));
+            alert(`Les collections suivantes n'ont pas été trouvées : ` + unknownCollectionNames.join(', '));
         }
         this.currentCollectionNames = collectionNames;
 
