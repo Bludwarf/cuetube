@@ -12,19 +12,18 @@
             </button>
         </legend>
 
-        <!-- doc : https://getbootstrap.com/docs/5.0/components/navs-tabs/#tabs -->
-        <!-- On a dû ajouter : data-bs-toggle="tab" -->
+        <!-- Attention à ne pas utiliser l'interpolation data-target="{{...}}", mais plutôt le binding [attr.data-target]="...", sinon remplacé par target="..." -->
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <a class="nav-link active" data-bs-toggle="tab" href="#{{tracksAnchorId}}">Pistes</a>
+                <a class="nav-link active" data-toggle="tab" [attr.data-target]="'#' + tracksAnchorId">Pistes</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#{{tracklistAnchorId}}">Tracklist</a>
+                <a class="nav-link" data-toggle="tab" [attr.data-target]="'#' + tracklistAnchorId">Tracklist</a>
             </li>
         </ul>
 
         <div class="tab-content">
-            <div id="{{tracksAnchorId}}" class="tab-pane in active form-inline">
+            <div id="{{tracksAnchorId}}" class="tab-pane active form-inline">
                 @for (track of file.tracks; track track; let index = $index) {
                     <fieldset class="track">
                         <mat-icon>audiotrack</mat-icon>
