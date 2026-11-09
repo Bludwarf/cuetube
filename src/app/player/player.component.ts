@@ -21,6 +21,7 @@ import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersi
 import {formatHMSS, getParameterByName, notify, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import Track = Disc.Track;
+import {AllTracksFilter, DiscTitleCFilter, OrTrackFilter, TrackFilter, TrackTitleContainingFilter} from '../track-filter/track-filter';
 
 const YT_STATES = [
     'ENDED',
@@ -185,6 +186,26 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     private locationSubscription: ISubscription;
 
     protected readonly formatHMSS = formatHMSS;
+
+    protected readonly trackFilters = {
+        '(tout)': new AllTracksFilter(),
+        '😌 Calme': new OrTrackFilter(
+            new TrackTitleContainingFilter([
+                'Shamburger',
+                'Drizzle',
+                'T Station',
+            ]),
+            new DiscTitleCFilter([
+                'Démons et Manants',
+            ])
+        ),
+        '🏇 Épique': new TrackTitleContainingFilter([
+            'Main',
+        ]),
+        '😧 Stessant': new TrackTitleContainingFilter([
+            'Operation Monkey',
+        ]),
+    };
 
     private pushStateOnlyNewOnCurrentCollectionNames(): void {
         const isDefaultCollection = this.currentCollectionNames.length === 0;
@@ -1718,6 +1739,16 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         return state;
     }
+
+    protected applyTrackFilter(filter: TrackFilter) {
+        for (const disc of this.discs) {
+            for (const track of disc.tracks) {
+                track.enabledByUser = filter.accepts(track);
+            }
+        }
+    }
+
+    protected readonly Object = Object;
 }
 
 interface State {

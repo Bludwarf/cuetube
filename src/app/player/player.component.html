@@ -21,6 +21,9 @@
 
                     <div id="header">
                         <h1>{{ currentCollectionNames.length ? currentCollectionNames.join(' + ') : '&nbsp;' }}</h1>
+                        @for (filterTitle of Object.keys(trackFilters); track filterTitle) {
+                            <button (click)="applyTrackFilter(trackFilters[filterTitle])" class="btn btn-default" style="margin-bottom: 1em; margin-right: 1em;">{{filterTitle}}</button>
+                        }
                         <div class="buttons">
                             <!--<button (click)="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
                             <button (click)="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->

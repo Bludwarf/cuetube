@@ -654,7 +654,7 @@ export module Disc {
       this.cuesheetTrack.number = value;
     }
 
-    get title(): string {
+    get title(): string | undefined {
       return this.cuesheetTrack.title;
     }
 
