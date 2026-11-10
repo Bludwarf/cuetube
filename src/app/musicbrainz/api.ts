@@ -55,7 +55,7 @@ const oAuth2FetchWrapper = new OAuth2Fetch({
                      * The redirect URI is not actually used for any redirects, but MUST be the
                      * same as what you passed earlier to "authorizationCode"
                      */
-                    redirectUri: 'http://localhost:4203/', // TODO url paramétrée dans .env
+                    redirectUri: environment.musicBrainz.redirectUri,
 
                     /**
                      * This is optional, but if it's passed then it also MUST be the same as
@@ -77,7 +77,7 @@ const oAuth2FetchWrapper = new OAuth2Fetch({
             document.location = await oAuth2Client.authorizationCode.getAuthorizeUri({
 
                 // URL in the app that the user should get redirected to after authenticating
-                redirectUri: 'http://localhost:4203/', // TODO url paramétrée dans .env
+                redirectUri: environment.musicBrainz.redirectUri,
 
                 // Optional string that can be sent along to the auth server. This value will
                 // be sent along with the redirect back to the app verbatim.
@@ -88,8 +88,6 @@ const oAuth2FetchWrapper = new OAuth2Fetch({
                 scope: ['collection'],
 
             });
-
-            return undefined;
         }
     },
 

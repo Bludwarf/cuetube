@@ -6,6 +6,7 @@ export interface DotEnv {
     musicBrainz: {
         clientId: string;
         clientSecret: string;
+        redirectUri: string;
     };
     appVersion: string;
     shortRevisionNumber: string;

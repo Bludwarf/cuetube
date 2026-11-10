@@ -21,8 +21,10 @@ const exec = promisify(execCb);
     const envConfigFile = JSON.stringify({
         googleApiKey: process.env.GOOGLE_API_KEY,
         musicBrainz: {
-            clientId: process.env.MUSIC_BRAINZ_CLIENT_ID, // https://beta.musicbrainz.org/account/applications
-            clientSecret: process.env.MUSIC_BRAINZ_CLIENT_SECRET, // https://beta.musicbrainz.org/account/applications
+            // https://beta.musicbrainz.org/account/applications
+            clientId: process.env.MUSIC_BRAINZ_CLIENT_ID,
+            clientSecret: process.env.MUSIC_BRAINZ_CLIENT_SECRET,
+            redirectUri: process.env.MUSIC_BRAINZ_REDIRECT_URI,
         },
         appVersion,
         shortRevisionNumber: (await exec('git rev-parse --short HEAD')).stdout.toString().trim(),
