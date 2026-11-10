@@ -1,10 +1,9 @@
 import {Repository} from './repository';
-import {MBID} from './types';
 import {MusicBrainzTrackFilter} from '../track-filter/track-filter';
 
-export class CollectionRepository extends Repository<MusicBrainzTrackFilter, MBID[]> {
+export class CollectionRepository extends Repository<MusicBrainzTrackFilter, string[]> {
 
-    protected search(filter: MusicBrainzTrackFilter): MBID[] | undefined {
+    protected async search(filter: MusicBrainzTrackFilter): Promise<string[] | undefined> {
         // TODO democker https://beta.musicbrainz.org/collection/0f312d6c-56f6-4548-8e51-0a99a062a99f
         if (filter.mbid === CALME_COLLECTION_MBID) {
             return [

@@ -21,10 +21,11 @@ import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersi
 import {formatHMSS, getParameterByName, notify, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {AllTracksFilter, MusicBrainzTrackFilter, TrackFilter, TrackTitleContainingFilter} from '../track-filter/track-filter';
-import {ReleaseRepository} from '../musicbrainz/release-repository';
+import {ReleaseIdRepository} from '../musicbrainz/release-id-repository';
 import {RecordingRepository} from '../musicbrainz/recording-repository';
 import {CollectionRepository} from '../musicbrainz/collection-repository';
 import Track = Disc.Track;
+import {ReleaseRepository} from '../musicbrainz/release-repository';
 
 const YT_STATES = [
     'ENDED',
@@ -190,8 +191,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     protected readonly formatHMSS = formatHMSS;
 
+    private readonly releaseIdRepository = new ReleaseIdRepository('Disque');
     private readonly releaseRepository = new ReleaseRepository('Disque');
-    private readonly recordingRepository = new RecordingRepository('Piste', this.releaseRepository);
+    private readonly recordingRepository = new RecordingRepository('Piste', this.releaseIdRepository, this.releaseRepository);
     private readonly collectionRepository = new CollectionRepository('Collection');
 
     protected readonly trackFilters = {
@@ -1743,10 +1745,10 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         return state;
     }
 
-    protected applyTrackFilter(filter: TrackFilter) {
+    protected async applyTrackFilter(filter: TrackFilter) {
         for (const disc of this.discs) {
             for (const track of disc.tracks) {
-                track.enabledByUser = filter.accepts(track);
+                track.enabledByUser = await filter.accepts(track);
             }
         }
     }

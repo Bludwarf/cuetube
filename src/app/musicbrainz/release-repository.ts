@@ -1,25 +1,21 @@
-import {Disc} from '../../disc';
 import {Repository} from './repository';
-import {MBID} from './types';
+import {mbApi} from './api';
+import {IRelease} from 'musicbrainz-api';
 
-export class ReleaseRepository extends Repository<Disc> {
+export class ReleaseRepository extends Repository<string, IRelease> {
 
-    protected search(disc: Disc): MBID | undefined {
-        // TODO mock : on renvoie la seule parution qui correspond au nombre de piste trouvé sur YouTube
-        if (disc.title.match(/Age of Empires (II|2)/i)) {
-            return AGE_OF_KINGS_RELEASE_MBID; // https://beta.musicbrainz.org/release/baf88928-1c13-449d-9ebd-669155869fc1
-        }
-        return undefined;
+    protected search(mbid: string): Promise<IRelease | undefined> {
+        return mbApi.lookup('release', mbid, [
+            'recordings',
+        ]);
     }
 
-    protected getInputTitle(disc: Disc): string {
-        return disc.title;
+    protected getInputTitle(mbid: string): string {
+        return mbid;
     }
 
-    protected computeHash(disc: Disc): string {
-        return disc.id;
+    protected computeHash(mbid: string): string {
+        return mbid;
     }
 
 }
-
-export const AGE_OF_KINGS_RELEASE_MBID = 'baf88928-1c13-449d-9ebd-669155869fc1';
