@@ -20,8 +20,11 @@ import {environment} from '../../environments/environment-with-dot-env';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {formatHMSS, getParameterByName, notify, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {AllTracksFilter, MusicBrainzTrackFilter, TrackFilter, TrackTitleContainingFilter} from '../track-filter/track-filter';
+import {ReleaseRepository} from '../musicbrainz/release-repository';
+import {RecordingRepository} from '../musicbrainz/recording-repository';
+import {CollectionRepository} from '../musicbrainz/collection-repository';
 import Track = Disc.Track;
-import {AllTracksFilter, DiscTitleCFilter, OrTrackFilter, TrackFilter, TrackTitleContainingFilter} from '../track-filter/track-filter';
 
 const YT_STATES = [
     'ENDED',
@@ -187,17 +190,17 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     protected readonly formatHMSS = formatHMSS;
 
+    private readonly releaseRepository = new ReleaseRepository('Disque');
+    private readonly recordingRepository = new RecordingRepository('Piste', this.releaseRepository);
+    private readonly collectionRepository = new CollectionRepository('Collection');
+
     protected readonly trackFilters = {
         '(tout)': new AllTracksFilter(),
-        '😌 Calme': new OrTrackFilter(
-            new TrackTitleContainingFilter([
-                'Shamburger',
-                'Drizzle',
-                'T Station',
-            ]),
-            new DiscTitleCFilter([
-                'Démons et Manants',
-            ])
+        '😌 Calme': new MusicBrainzTrackFilter(
+            '0f312d6c-56f6-4548-8e51-0a99a062a99f',
+            '😌 Calme',
+            this.collectionRepository,
+            this.recordingRepository,
         ),
         '🏇 Épique': new TrackTitleContainingFilter([
             'Main',
