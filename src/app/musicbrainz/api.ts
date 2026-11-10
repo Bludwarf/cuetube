@@ -41,6 +41,8 @@ const oAuth2Client = new OAuth2Client({
     // first, and otherwise default to /authorize
     authorizationEndpoint: '/oauth2/authorize',
 
+    authenticationMethod: 'client_secret_post', // encode in POST body => obligatoire pour l'API MusicBrainz sinon blocage CORS
+
 });
 
 const oAuth2FetchWrapper = new OAuth2Fetch({
