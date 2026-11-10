@@ -6,7 +6,7 @@ import packageJson from '../../package.json';
 import dotenv from 'dotenv';
 import {promisify} from 'node:util';
 import {exec as execCb} from 'node:child_process';
-import {EnvironmentWithDotEnv} from './environment-with-dot-env';
+import {DotEnv} from './environment-with-dot-env';
 
 const exec = promisify(execCb);
 
@@ -26,7 +26,7 @@ const exec = promisify(execCb);
         },
         appVersion,
         shortRevisionNumber: (await exec('git rev-parse --short HEAD')).stdout.toString().trim(),
-    } as EnvironmentWithDotEnv, undefined, 2);
+    } satisfies DotEnv, undefined, 2);
     console.log(colors.magenta(`The file '${targetPath}' will be written with the following content: \n`));
     writeFile(targetPath, envConfigFile, (err: Error) => {
         if (err) {

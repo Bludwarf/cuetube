@@ -1,8 +1,7 @@
 import {environment as angularEnvironment} from './environment';
 import dotEnvEnvironment from './.env.json'; // Généré par le script generate-dot-env.ts via `npm run generate-dot-env` (cf. README.md)
 
-export interface EnvironmentWithDotEnv {
-    production: boolean;
+export interface DotEnv {
     googleApiKey: string;
     musicBrainz: {
         clientId: string;
@@ -10,6 +9,10 @@ export interface EnvironmentWithDotEnv {
     };
     appVersion: string;
     shortRevisionNumber: string;
+}
+
+export interface EnvironmentWithDotEnv extends DotEnv {
+    production: boolean;
 }
 
 const partialEnvironment: Partial<EnvironmentWithDotEnv> = {};
@@ -26,6 +29,15 @@ if (partialEnvironment.appVersion === undefined) {
 }
 if (partialEnvironment.shortRevisionNumber === undefined) {
     throw new Error(`Missing environment variable 'revisionNumber'`);
+}
+if (partialEnvironment.musicBrainz?.clientId === undefined) {
+    throw new Error(`Missing environment variable 'musicBrainz.clientId'`);
+}
+if (partialEnvironment.musicBrainz?.clientSecret === undefined) {
+    throw new Error(`Missing environment variable 'musicBrainz.clientSecret'`);
+}
+if (partialEnvironment.musicBrainz?.redirectUri === undefined) {
+    throw new Error(`Missing environment variable 'musicBrainz.redirectUri'`);
 }
 
 /**
