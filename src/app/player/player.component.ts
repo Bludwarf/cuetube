@@ -211,6 +211,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             'Operation Monkey',
         ]),
     };
+    trackFiltersDisabled = false;
+
+    protected readonly Object = Object;
 
     private pushStateOnlyNewOnCurrentCollectionNames(): void {
         const isDefaultCollection = this.currentCollectionNames.length === 0;
@@ -1746,14 +1749,22 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     protected async applyTrackFilter(filter: TrackFilter) {
+        this.trackFiltersDisabled = true;
         for (const disc of this.discs) {
             for (const track of disc.tracks) {
                 track.enabledByUser = await filter.accepts(track);
             }
         }
+        this.trackFiltersDisabled = false;
+
+        this.checkIfCurrentTrackIsEnabled();
     }
 
-    protected readonly Object = Object;
+    private checkIfCurrentTrackIsEnabled() {
+        if (!this.currentTrack.enabledByUser) {
+            this.next();
+        }
+    }
 }
 
 interface State {
