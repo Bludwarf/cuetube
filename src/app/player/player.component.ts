@@ -1750,12 +1750,15 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     protected async applyTrackFilter(filter: TrackFilter) {
         this.trackFiltersDisabled = true;
-        for (const disc of this.discs) {
-            for (const track of disc.tracks) {
-                track.enabledByUser = await filter.accepts(track);
+        try {
+            for (const disc of this.discs) {
+                for (const track of disc.tracks) {
+                    track.enabledByUser = await filter.accepts(track);
+                }
             }
+        } finally {
+            this.trackFiltersDisabled = false;
         }
-        this.trackFiltersDisabled = false;
 
         this.checkIfCurrentTrackIsEnabled();
     }
