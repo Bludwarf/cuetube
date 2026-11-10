@@ -194,7 +194,7 @@ body {
 }
 
 #remain-div {
-  padding: 1em 1em 1em 0;
+  padding: 1em 0;
 }
 
 /** ajouts thumb disc */
@@ -276,20 +276,24 @@ body {
 }
 
 #header {
-  /* position: relative; */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1em;
 }
 
-#header > h1 {
+#header .header-line {
+    display: flex;
+}
+
+#header h1 {
+    flex: 1;
   margin-top: 0;
 }
 
-.buttons {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  text-align: right;
-  margin: 1em;
+#header .buttons {
+    display: flex;
+    gap: 1em;
+    align-items: flex-start;
 }
 
 .track-controls {

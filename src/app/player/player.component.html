@@ -20,30 +20,34 @@
                 <div id="remain-div">
 
                     <div id="header">
-                        <h1>{{ currentCollectionNames.length ? currentCollectionNames.join(' + ') : '&nbsp;' }}</h1>
-                        <div id="track-filers">
-                        @for (filterTitle of Object.keys(trackFilters); track filterTitle) {
-                            <button (click)="applyTrackFilter(trackFilters[filterTitle])" [disabled]="trackFiltersDisabled" class="btn btn-default" style="margin-bottom: 1em; margin-right: 1em;">{{filterTitle}}</button>
-                        }
+                        <div class="header-line">
+                            <h1>{{ currentCollectionNames.length ? currentCollectionNames.join(' + ') : '&nbsp;' }}</h1>
+                            <div class="buttons">
+                                <!--<button (click)="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
+                                <button (click)="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
+                                <button id="createNewDisc" class="btn btn-default"
+                                        (click)="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist
+                                </button>
+                                <!--<div class="g-signin2" data-theme="dark" style="display: inline-block; vertical-align: middle" data-onsuccess="onSignIn">></div>-->
+                                <!--<button id="signin2-button" class="btn btn-default">Connexion</button>-->
+                                @if (!connectedToGoogleDrive) {
+                                    <button id="login-btn" class="btn btn-default" (click)="connectGoogleDrive()">Google
+                                        Drive
+                                    </button>
+                                }
+                                @if (connectedToGoogleDrive) {
+                                    <button id="logout-btn" class="btn btn-default" (click)="disconnectGoogleDrive()">
+                                        Déconnexion
+                                    </button>
+                                }
+                            </div>
                         </div>
-                        <div class="buttons">
-                            <!--<button (click)="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
-                            <button (click)="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
-                            <button id="createNewDisc" class="btn btn-default"
-                                    (click)="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist
-                            </button>
-                            <!--<div class="g-signin2" data-theme="dark" style="display: inline-block; vertical-align: middle" data-onsuccess="onSignIn">></div>-->
-                            <!--<button id="signin2-button" class="btn btn-default">Connexion</button>-->
-                            @if (!connectedToGoogleDrive) {
-                                <button id="login-btn" class="btn btn-default" (click)="connectGoogleDrive()">Google
-                                    Drive
-                                </button>
-                            }
-                            @if (connectedToGoogleDrive) {
-                                <button id="logout-btn" class="btn btn-default" (click)="disconnectGoogleDrive()">
-                                    Déconnexion
-                                </button>
-                            }
+                        <div class="header-line">
+                            <div id="track-filers" class="buttons">
+                                @for (filterTitle of Object.keys(trackFilters); track filterTitle) {
+                                    <button (click)="applyTrackFilter(trackFilters[filterTitle])" [disabled]="trackFiltersDisabled" class="btn btn-default">{{filterTitle}}</button>
+                                }
+                            </div>
                         </div>
                     </div>
 
