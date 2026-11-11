@@ -1756,6 +1756,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
                     track.enabledByUser = await filter.accepts(track);
                 }
             }
+        } catch (e) {
+            this.error(e);
         } finally {
             this.trackFiltersDisabled = false;
         }
@@ -1767,6 +1769,10 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!this.currentTrack.enabledByUser) {
             this.next();
         }
+    }
+
+    private error(e: Error) {
+        alert(`Erreur : ${e.message}`);
     }
 }
 
