@@ -5,7 +5,7 @@ import {IRelease} from 'musicbrainz-api';
 export class ReleaseRepository extends Repository<string, IRelease> {
 
     constructor() {
-        super('Disque');
+        super('Disque', 'releaseRepository.cache');
     }
 
     protected search(mbid: string): Promise<IRelease | undefined> {
