@@ -6,7 +6,7 @@ import {mbApi} from './api';
 export class ReleaseIdRepository extends Repository<Disc, string> {
 
     constructor() {
-        super('Disque', 'releaseIdRepository.cache');
+        super('Disque');
     }
 
     protected async search(disc: Disc): Promise<string | undefined> {

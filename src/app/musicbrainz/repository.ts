@@ -1,13 +1,10 @@
 export abstract class Repository<I, T> {
 
-    private readonly cache: Record<string, T>;
+    private readonly cache: Record<string, T> = {};
 
     protected constructor(
         private readonly inputTypeTitle: string,
-        /** Si on souhaite stocker le cache */
-        private readonly storageKey?: string,
     ) {
-        this.cache = this.restoreCache() ?? {};
     }
 
     public async get(input: I): Promise<T | undefined> {
@@ -28,7 +25,6 @@ export abstract class Repository<I, T> {
         console.groupEnd();
 
         this.cache[hash] = found;
-        this.storeCache();
         return found;
     }
 
@@ -38,27 +34,4 @@ export abstract class Repository<I, T> {
 
     protected abstract search(input: I): Promise<T | undefined>;
 
-    private storeCache(): void {
-        if (!this.storageKey) {
-            return;
-        }
-        if (this.cache) {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.cache));
-        } else {
-            localStorage.removeItem(this.storageKey);
-        }
-    }
-
-    private restoreCache(): typeof this.cache | null {
-        if (!this.storageKey) {
-            return null;
-        }
-        const jsonCache = localStorage.getItem(this.storageKey);
-        if (!jsonCache) {
-            return null;
-        }
-        const cache = JSON.parse(jsonCache);
-        console.debug(`Cache ${this.storageKey} à restaurer`, cache);
-        return cache;
-    }
 }
