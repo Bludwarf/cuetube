@@ -1,6 +1,7 @@
 import {Disc} from '../../disc';
 import {RecordingRepository} from '../musicbrainz/recording-repository';
 import {CollectionRepository} from '../musicbrainz/collection-repository';
+import {pad2} from '../../utils/utils';
 import Track = Disc.Track;
 
 export interface TrackFilter {
@@ -83,4 +84,24 @@ export class MusicBrainzTrackFilter implements TrackFilter {
         return this.recordingRepository.get(track);
     }
 
+}
+
+// "<videoId>:<trackNumber>"
+type TrackHash = string;
+
+export class HashTrackFilter implements TrackFilter {
+
+    constructor(
+        private readonly hashes: TrackHash[],
+    ) {
+    }
+
+    static computeHash(track: Disc.Track): TrackHash {
+        return track.disc.videoId + ':' + pad2(track.number);
+    }
+
+    async accepts(track: Disc.Track): Promise<boolean> {
+        const trackHash = HashTrackFilter.computeHash(track);
+        return this.hashes.includes(trackHash);
+    }
 }

@@ -20,12 +20,18 @@ import {environment} from '../../environments/environment-with-dot-env';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {formatHMSS, getParameterByName, notify, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {AllTracksFilter, MusicBrainzTrackFilter, TrackFilter, TrackTitleContainingFilter} from '../track-filter/track-filter';
+import {
+    AllTracksFilter,
+    HashTrackFilter,
+    MusicBrainzTrackFilter,
+    TrackFilter,
+    TrackTitleContainingFilter
+} from '../track-filter/track-filter';
 import {ReleaseIdRepository} from '../musicbrainz/release-id-repository';
 import {RecordingRepository} from '../musicbrainz/recording-repository';
 import {CALME_COLLECTION_MBID, CollectionRepository} from '../musicbrainz/collection-repository';
-import Track = Disc.Track;
 import {ReleaseRepository} from '../musicbrainz/release-repository';
+import Track = Disc.Track;
 
 const YT_STATES = [
     'ENDED',
@@ -171,6 +177,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     /** prochain appel */
     private checkCurrentTimeTimeout;
     private deletedVideoTimeout;
+    protected dontDisableSkippedTrack = false;
 
     /** @see YT_STATES */
     private lastPlayerStates: number[] = [];
@@ -198,7 +205,38 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     protected readonly trackFilters = {
         '(tout)': new AllTracksFilter(),
-        '😌 Calme': new MusicBrainzTrackFilter(
+        '😌 Calme (local)': new HashTrackFilter([
+            // Loddlenaut
+            'Ng-mSbF-kd8:01',
+            'Ng-mSbF-kd8:02',
+            'Ng-mSbF-kd8:03',
+            'Ng-mSbF-kd8:04',
+            'Ng-mSbF-kd8:05',
+            'Ng-mSbF-kd8:06',
+            // Age2
+            'RRtlWfi6jiM:02',
+            'RRtlWfi6jiM:04',
+            'RRtlWfi6jiM:06',
+            // Sims
+            'Bs5QGN-zhwM:01',
+            'Bs5QGN-zhwM:02',
+            'Bs5QGN-zhwM:03',
+            'Bs5QGN-zhwM:04',
+            'Bs5QGN-zhwM:05',
+            'Bs5QGN-zhwM:06',
+            'Bs5QGN-zhwM:07',
+            'Bs5QGN-zhwM:08',
+            'Bs5QGN-zhwM:09',
+            'Bs5QGN-zhwM:10',
+            'Bs5QGN-zhwM:11',
+            'Bs5QGN-zhwM:12',
+            'Bs5QGN-zhwM:13',
+            'Bs5QGN-zhwM:14',
+            'Bs5QGN-zhwM:15',
+            'Bs5QGN-zhwM:16',
+            'Bs5QGN-zhwM:17',
+        ]),
+        '😌 Calme (MB)': new MusicBrainzTrackFilter(
             CALME_COLLECTION_MBID,
             '😌 Calme',
             this.collectionRepository,
@@ -865,6 +903,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
         if (track) {
+            if (!this.dontDisableSkippedTrack) {
+                this.currentTrack.enabledByUser = false;
+            }
             this.loadTrack(track);
         } else {
             alert('Aucun disque à lire !');
@@ -1763,6 +1804,42 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         this.checkIfCurrentTrackIsEnabled();
+    }
+
+    protected addCurrentTrackFilter() {
+        const hashes: string[] = [];
+        for (const disc of this.discs) {
+            for (const track of disc.tracks) {
+                if (track.enabledByUser) {
+                    hashes.push(HashTrackFilter.computeHash(track));
+                }
+            }
+        }
+        const filter = new HashTrackFilter(hashes);
+        this.addTrackFilter(filter);
+    }
+
+    protected importTrackFilter() {
+        const filterJson = prompt(`Copier le JSON du HashTrackFilter`);
+        if (!filterJson) {
+            return;
+        }
+
+        const parsed = JSON.parse(filterJson);
+        const hashes = parsed?.hashes;
+        if (!hashes) {
+            return;
+        }
+
+        const filter = new HashTrackFilter(hashes);
+        this.addTrackFilter(filter);
+        this.applyTrackFilter(filter);
+    }
+
+    protected addTrackFilter(filter: TrackFilter) {
+        const filterName = `#${Object.keys(this.trackFilters).length + 1}`;
+        this.trackFilters[filterName] = filter;
+        console.log('Filtre ajouté', filter);
     }
 
     private checkIfCurrentTrackIsEnabled() {

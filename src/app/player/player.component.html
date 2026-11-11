@@ -43,10 +43,12 @@
                             </div>
                         </div>
                         <div class="header-line">
-                            <div id="track-filers" class="buttons">
+                            <div class="buttons">
                                 @for (filterTitle of Object.keys(trackFilters); track filterTitle) {
                                     <button (click)="applyTrackFilter(trackFilters[filterTitle])" [disabled]="trackFiltersDisabled" class="btn btn-default">{{filterTitle}}</button>
                                 }
+                                <button (click)="addCurrentTrackFilter()" class="btn">Ajouter filtre actuel</button>
+                                <button (click)="importTrackFilter()" class="btn">Importer</button>
                             </div>
                         </div>
                     </div>
@@ -174,6 +176,7 @@
                               [class.active]="repeatMode === 'track'" (click)="toggleRepeatMode()"
                               title="Lit en boucle la piste actuelle."></span>
                     }
+                    <input style="height: 32px; width: 32px" type="checkbox" title="Action à effectuer quand on passe une piste : décoché = la désactiver ; coché = ne pas la désactiver" [ngModel]="dontDisableSkippedTrack" />
                 </div>
             </form>
         </div>
