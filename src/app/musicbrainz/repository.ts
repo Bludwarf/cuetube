@@ -2,7 +2,7 @@ export abstract class Repository<I, T> {
 
     private readonly cache: Record<string, T> = {};
 
-    constructor(
+    protected constructor(
         private readonly inputTypeTitle: string,
     ) {
     }
@@ -12,9 +12,7 @@ export abstract class Repository<I, T> {
 
         const hash = this.computeHash(input);
         if (hash in this.cache) {
-            const cached = this.cache[hash];
-            // console.debug(`Cache réutilisé pour ${this.inputTypeTitle.toLowerCase()} "${inputTitle}" [${hash}] => ${cached}`);
-            return cached;
+            return this.cache[hash];
         }
 
         console.group(`Recherche ${this.inputTypeTitle.toLowerCase()} "${inputTitle}" dans MusicBrainz...`);
@@ -35,4 +33,5 @@ export abstract class Repository<I, T> {
     protected abstract computeHash(input: I): string;
 
     protected abstract search(input: I): Promise<T | undefined>;
+
 }

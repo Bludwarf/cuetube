@@ -8,11 +8,10 @@ import Track = Disc.Track;
 export class RecordingRepository extends Repository<Track, string> {
 
     constructor(
-        inputTypeTitle: string,
         private readonly releaseIdRepository: ReleaseIdRepository,
         private readonly releaseRepository: ReleaseRepository,
     ) {
-        super(inputTypeTitle);
+        super('Piste');
     }
 
     protected async search(track: Track): Promise<string | undefined> {

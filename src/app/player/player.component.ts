@@ -23,7 +23,7 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {AllTracksFilter, MusicBrainzTrackFilter, TrackFilter, TrackTitleContainingFilter} from '../track-filter/track-filter';
 import {ReleaseIdRepository} from '../musicbrainz/release-id-repository';
 import {RecordingRepository} from '../musicbrainz/recording-repository';
-import {CollectionRepository} from '../musicbrainz/collection-repository';
+import {CALME_COLLECTION_MBID, CollectionRepository} from '../musicbrainz/collection-repository';
 import Track = Disc.Track;
 import {ReleaseRepository} from '../musicbrainz/release-repository';
 
@@ -191,15 +191,15 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     protected readonly formatHMSS = formatHMSS;
 
-    private readonly releaseIdRepository = new ReleaseIdRepository('Disque');
-    private readonly releaseRepository = new ReleaseRepository('Disque');
-    private readonly recordingRepository = new RecordingRepository('Piste', this.releaseIdRepository, this.releaseRepository);
-    private readonly collectionRepository = new CollectionRepository('Collection');
+    private readonly releaseIdRepository = new ReleaseIdRepository();
+    private readonly releaseRepository = new ReleaseRepository();
+    private readonly recordingRepository = new RecordingRepository(this.releaseIdRepository, this.releaseRepository);
+    private readonly collectionRepository = new CollectionRepository();
 
     protected readonly trackFilters = {
         '(tout)': new AllTracksFilter(),
         '😌 Calme': new MusicBrainzTrackFilter(
-            '0f312d6c-56f6-4548-8e51-0a99a062a99f',
+            CALME_COLLECTION_MBID,
             '😌 Calme',
             this.collectionRepository,
             this.recordingRepository,

@@ -4,6 +4,10 @@ import {getAuthenticatedMbApi} from './api';
 
 export class CollectionRepository extends Repository<MusicBrainzTrackFilter, string[]> {
 
+    constructor() {
+        super('Collection');
+    }
+
     protected async search(filter: MusicBrainzTrackFilter): Promise<string[] | undefined> {
         const authenticatedMbApi = await getAuthenticatedMbApi();
         const collectionRecordings = await authenticatedMbApi.browse('recording', {collection: filter.mbid});

@@ -4,6 +4,10 @@ import {IRelease} from 'musicbrainz-api';
 
 export class ReleaseRepository extends Repository<string, IRelease> {
 
+    constructor() {
+        super('Disque');
+    }
+
     protected search(mbid: string): Promise<IRelease | undefined> {
         return mbApi.lookup('release', mbid, [
             'recordings',

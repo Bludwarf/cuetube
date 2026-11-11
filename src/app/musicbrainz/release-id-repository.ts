@@ -5,6 +5,10 @@ import {mbApi} from './api';
 
 export class ReleaseIdRepository extends Repository<Disc, string> {
 
+    constructor() {
+        super('Disque');
+    }
+
     protected async search(disc: Disc): Promise<string | undefined> {
 
         // TODO test pour retrouver https://beta.musicbrainz.org/release/7b0e54f9-db6e-4bf2-9028-8cac7961e61d
