@@ -402,7 +402,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.videoEnded.subscribe(() => {
             console.log('on video ended"');
-            this.next();
+            this.next(true);
         });
 
         this.videoManualSeeked.subscribe(() => {
@@ -439,7 +439,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             console.error(`La vidéo ${file.videoId} du disque "${file.disc.title}" n'existe plus sur YouTube.`
                 + ` On la désactive et on passe à la suivante...`);
             file.disabledByYouTube = true;
-            this.next();
+            this.next(true);
         });
 
         // FIXME Contournement pour : Perte du history.state suite à plusieurs aller-retour #171
@@ -687,7 +687,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             if (!disc) {
                 console.warn(`Disque anciennement joué d'id ${current.discId} non retrouvé. On lance un disque aléatoirement`);
                 this.repeatMode = null;
-                this.next(); // FIXME que faire si aucun disque n'est trouvé ?
+                this.next(true); // FIXME que faire si aucun disque n'est trouvé ?
                 return;
             } else {
                 console.log('Chargement de la précédente lecture...', current);
@@ -855,7 +855,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     /**
      * Prochaine piste (si disponible, sinon aucune action mais aucune erreur)
      */
-    next() {
+    next(automatic = false) {
         const discs = this.discs;
         let track = this.currentTrack;
         let disc = track && track.disc;
@@ -903,7 +903,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
         if (track) {
-            if (!this.dontDisableSkippedTrack) {
+            if (!automatic && !this.dontDisableSkippedTrack) {
                 this.currentTrack.enabledByUser = false;
             }
             this.loadTrack(track);
@@ -1844,7 +1844,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     private checkIfCurrentTrackIsEnabled() {
         if (!this.currentTrack.enabledByUser) {
-            this.next();
+            this.next(true);
         }
     }
 
