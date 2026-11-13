@@ -14,8 +14,8 @@ jobs:
     - uses: actions/setup-node@v4
       with:
           node-version: '20'
-    - name: Generate .env
-      run: npm install && npm run generate-dot-env
+    - name: Install and generate .env
+      run: npm ci && npm run generate-dot-env
       env:
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         MUSIC_BRAINZ_CLIENT_ID: ${{ secrets.MUSIC_BRAINZ_CLIENT_ID }}
