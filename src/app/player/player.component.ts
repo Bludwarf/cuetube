@@ -713,7 +713,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             return;
         }
 
-        this.next();
+        this.next(true);
     }
 
 
