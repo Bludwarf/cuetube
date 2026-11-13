@@ -904,6 +904,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
         if (track) {
             if (!automatic && !this.dontDisableSkippedTrack) {
+                console.log('automatic', automatic);
+                console.log('this.dontDisableSkippedTrack', this.dontDisableSkippedTrack);
+                console.log(new Error('stack trace'));
                 this.currentTrack.enabledByUser = false;
             }
             this.loadTrack(track);
