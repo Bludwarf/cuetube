@@ -176,7 +176,7 @@
                               [class.active]="repeatMode === 'track'" (click)="toggleRepeatMode()"
                               title="Lit en boucle la piste actuelle."></span>
                     }
-                    <input style="height: 32px; width: 32px" type="checkbox" title="Action à effectuer quand on passe une piste : décoché = la désactiver ; coché = ne pas la désactiver" [ngModel]="dontDisableSkippedTrack" />
+                    <input style="height: 32px; width: 32px" type="checkbox" title="Action à effectuer quand on passe une piste : décoché = la désactiver ; coché = ne pas la désactiver" [(ngModel)]="dontDisableSkippedTrack" name="dontDisableSkippedTrack" />
                 </div>
             </form>
         </div>
