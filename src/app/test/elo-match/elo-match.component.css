@@ -1,0 +1,57 @@
+:host {
+    display: block;
+    margin: auto auto;
+    width: fit-content;
+    text-align: center;
+}
+
+#lines {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+#columns {
+    display: flex;
+    gap: 1em;
+
+    & > * {
+        flex: 1;
+    }
+
+    #middle {
+        flex: none;
+    }
+}
+
+.opponent {
+    .disc-image {
+        img {
+            /*width: 100%;*/
+        }
+    }
+}
+
+.elo-axis-line {
+    .vote {
+        display: flex;
+        align-items: center;
+
+        & > * {
+            flex: 1;
+        }
+
+        & > button {
+            flex: none;
+        }
+    }
+}
+
+#bottom-buttons {
+    display: flex;
+    gap: 1em;
+
+    & > * {
+        flex: 1;
+    }
+}

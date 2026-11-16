@@ -55,6 +55,7 @@ export const providers = [
     imports: [
         RouterModule.forRoot(appRoutes, {
             // enableTracing: true // <-- debugging purposes only
+            bindToComponentInputs: true,
         }),
         ...imports
     ],

@@ -3,6 +3,7 @@ import {NgModule} from '@angular/core';
 import {TestComponent} from './test.component';
 import {TEST_PATHS_MAP} from './test-paths';
 import {CollectionsMenuComponent} from './collections-menu/collections-menu.component';
+import {EloMatchComponent} from './elo-match/elo-match.component';
 
 const routes: Routes = [
     {
@@ -12,6 +13,10 @@ const routes: Routes = [
     {
         path: TEST_PATHS_MAP['collections-menu'],
         component: CollectionsMenuComponent,
+    },
+    {
+        path: TEST_PATHS_MAP['elo-match'],
+        component: EloMatchComponent,
     },
 ];
 

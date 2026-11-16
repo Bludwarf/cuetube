@@ -1854,6 +1854,16 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     private error(e: Error) {
         alert(`Erreur : ${e.message}`);
     }
+
+    protected eloMatch(previousTrack: Track, currentTrack: Track) {
+        const params = new URLSearchParams({
+            ad: previousTrack.disc.id,
+            at: String(previousTrack.number),
+            bd: currentTrack.disc.id,
+            bt: String(this.currentTrack.number),
+        });
+        window.open(`test/elo-match?${params}`, '_blank');
+    }
 }
 
 interface State {
