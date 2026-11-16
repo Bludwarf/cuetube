@@ -1,5 +1,6 @@
 export const TEST_PATHS = [
     'collections-menu',
+    'elo-match',
 ] as const;
 
 export const TEST_PATHS_MAP: Record<string, string> = {};

@@ -55,6 +55,10 @@ export const providers = [
     imports: [
         RouterModule.forRoot(appRoutes, {
             // enableTracing: true // <-- debugging purposes only
+
+            // Attention : les inputs seront toujours de type "string" quelque-soit le type déclaré
+            // Sauf si on utilise (exemple pour un number) : input<number, string>(0, {transform: Number})
+            bindToComponentInputs: true,
         }),
         ...imports
     ],

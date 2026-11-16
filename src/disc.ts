@@ -429,6 +429,14 @@ export class Disc {
     }
   }
 
+    getTrackByNumber(trackNumber: number): Disc.Track {
+        // TODO cache
+        const found = this.tracks.find(track => track.number === Number(trackNumber));
+        if (!found) {
+            throw new Error(`Piste #${trackNumber} introuvable dans le disque ${this.title}`);
+        }
+        return found;
+    }
 }
 
 export module Disc {

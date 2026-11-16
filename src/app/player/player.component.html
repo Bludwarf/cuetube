@@ -49,6 +49,9 @@
                                 }
                                 <button (click)="addCurrentTrackFilter()" class="btn">Ajouter filtre actuel</button>
                                 <button (click)="importTrackFilter()" class="btn">Importer</button>
+                                @if (this.currentTrack && this.previousTrack) {
+                                <button (click)="eloMatch(this.previousTrack,this.currentTrack)" class="btn">elo-match</button>
+                                }
                             </div>
                         </div>
                     </div>
