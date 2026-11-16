@@ -1,6 +1,10 @@
-import {Component, computed, input, OnInit} from '@angular/core';
+import {Component, computed, input, OnInit, resource} from '@angular/core';
 import {pad2} from '../../../utils/utils';
 import {FormsModule} from '@angular/forms';
+import {LocalStoragePersistence} from '../../../persistence/LocalStoragePersistence';
+import {HttpClient} from '@angular/common/http';
+import {Disc} from '../../../disc';
+import Track = Disc.Track;
 
 @Component({
     selector: 'app-elo-match',
@@ -11,24 +15,40 @@ import {FormsModule} from '@angular/forms';
     styleUrl: './elo-match.component.css',
 })
 export class EloMatchComponent implements OnInit {
+
     aDiscId = input<string>(undefined, {alias: 'ad'});
     aTrackNumber = input<number>(undefined, {alias: 'at'});
+
     bDiscId = input<string>(undefined, {alias: 'bd'});
     bTrackNumber = input<number>(undefined, {alias: 'bt'});
 
-    opponents = computed<Opponent[]>(() => {
-        return [
-            // A
-            {
-                discId: this.aDiscId(),
-                trackNumber: this.aTrackNumber(),
-            },
-            // B
-            {
-                discId: this.bDiscId(),
-                trackNumber: this.bTrackNumber(),
-            }
-        ];
+    aTrack = resource({
+        params: () => ({
+            discId: this.aDiscId(),
+            trackNumber: this.aTrackNumber(),
+        }),
+        loader: async ({params}) => {
+            const disc = await this.persistence.getDisc(params.discId);
+            return disc.tracks[params.trackNumber];
+        }
+    });
+
+    bTrack = resource({
+        params: () => ({
+            discId: this.bDiscId(),
+            trackNumber: this.bTrackNumber(),
+        }),
+        loader: async ({params}) => {
+            const disc = await this.persistence.getDisc(params.discId);
+            return disc.tracks[params.trackNumber];
+        }
+    });
+
+    tracks = computed<Track[]>(() => {
+        if (!this.aTrack.hasValue() || !this.bTrack.hasValue()) {
+            return [];
+        }
+        return [this.aTrack.value(), this.bTrack.value()];
     });
 
     eloAxisList: EloAxis[] = [
@@ -54,6 +74,14 @@ export class EloMatchComponent implements OnInit {
         }
     ];
 
+    private readonly persistence: LocalStoragePersistence;
+
+    constructor(
+        readonly http: HttpClient,
+    ) {
+        this.persistence = new LocalStoragePersistence(http);
+    }
+
     // TODO : remonter dans app
     get $foreground() {
         return $('#foreground-overlay');
@@ -63,7 +91,7 @@ export class EloMatchComponent implements OnInit {
         this.$foreground.hide();
     }
 
-    protected clickEloButton(a: Opponent, button: EloComparisonButton, axis: EloAxis, b: Opponent): void {
+    protected clickEloButton(a: Track, button: EloComparisonButton, axis: EloAxis, b: Track): void {
         const operator = button.operator;
         if (this.eloComparisons.get(axis)?.operator === operator) {
             this.eloComparisons.delete(axis);
@@ -101,9 +129,9 @@ export class EloMatchComponent implements OnInit {
     }
 
     protected export() {
-        const opponents = this.opponents();
-        const aKey = this.opponentKey(opponents[0]);
-        const bKey = this.opponentKey(opponents[1]);
+        const opponents = this.tracks();
+        const aKey = this.trackKey(opponents[0]);
+        const bKey = this.trackKey(opponents[1]);
         const lines: string[] = [];
         for (const axis of this.eloAxisList) {
             const comparison = this.eloComparisons.get(axis);
@@ -114,8 +142,8 @@ export class EloMatchComponent implements OnInit {
         this.eloComparisonsText = lines.join('\r\n');
     }
 
-    protected opponentKey(o: Opponent): TrackKey {
-        return `${o.discId}:${pad2(o.trackNumber)}`;
+    protected trackKey(track: Track): TrackKey {
+        return `${track.disc.id}:${pad2(track.number)}`;
     }
 
     protected async uploadFile(event) {
@@ -124,11 +152,11 @@ export class EloMatchComponent implements OnInit {
         const eloLogLines = parser.parse(await files.item(0).text());
         console.log(eloLogLines);
 
-        const opponents = this.opponents();
+        const opponents = this.tracks();
         const a = opponents[0];
-        const aKey = this.opponentKey(a);
+        const aKey = this.trackKey(a);
         const b = opponents[1];
-        const bKey = this.opponentKey(b);
+        const bKey = this.trackKey(b);
 
         const comparisons = eloLogLines
             .map(line => this.map(line, aKey, a, bKey, b))
@@ -140,7 +168,7 @@ export class EloMatchComponent implements OnInit {
         }
     }
 
-    protected map(line: EloLogLine, aKey: string, a: Opponent, bKey: string, b: Opponent): EloComparison | undefined {
+    protected map(line: EloLogLine, aKey: string, a: Track, bKey: string, b: Track): EloComparison | undefined {
         if (line.aTrackKey === aKey && line.bTrackKey === bKey) {
             return {
                 a,
@@ -185,6 +213,8 @@ type TrackKey = `${string}:${string}`;
 
 interface Opponent {
     discId: string;
+    /** Utilisé pour l'image du disque */
+    fileId: string;
     trackNumber: number;
 }
 
@@ -213,10 +243,10 @@ const VALENCE: EloAxis = {
 
 // TODO dans le contexte de ce composant on pourrait supprimer a et b
 interface EloComparison {
-    a: Opponent;
+    a: Track;
     operator: EloOperator;
     axis: EloAxis;
-    b: Opponent;
+    b: Track;
 }
 
 type EloOperator = '<' | '=' | '>';

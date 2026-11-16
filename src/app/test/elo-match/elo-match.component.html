@@ -1,12 +1,12 @@
 <div id="lines">
     <div id="columns">
-        @for (opponent of opponents(); track opponent) {
+        @for (track of tracks(); track track) {
             <div class="opponent">
                 <div class="disc-image">
-                    <img src="https://img.youtube.com/vi/{{opponent.discId}}/default.jpg" alt="Pochette de l'album"/>
+                    <img src="https://img.youtube.com/vi/{{track.disc.videoId}}/default.jpg" alt="Pochette de l'album"/>
                 </div>
-                <div class="disc-title">Disque {{ opponent.discId }}</div>
-                <div class="track-number">Piste {{ opponent.trackNumber }}</div>
+                <div class="disc-title">{{ track.disc.title }}</div>
+                <div class="track-number">{{ track.number }}. {{ track.title }}</div>
             </div>
             @if (!$last) {
                 <div id="middle">VS</div>
@@ -14,8 +14,8 @@
         }
     </div>
 
-    @let a = opponents()[0];
-    @let b = opponents()[1];
+    @let a = tracks()[0];
+    @let b = tracks()[1];
     @for (axis of eloAxisList; track axis) {
         @let comparison = eloComparisons.get(axis);
         <div class="elo-axis-line">
