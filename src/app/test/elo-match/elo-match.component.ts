@@ -159,7 +159,7 @@ export class EloMatchComponent implements OnInit {
                     axisId: comparison.axis.id,
                     bTrackKey: bKey,
                 };
-                if (aKey > bKey) {
+                if (aKey.toLowerCase() > bKey.toLowerCase()) {
                     line = reverseLine(line);
                 }
                 lines.push(formatLine(line));
