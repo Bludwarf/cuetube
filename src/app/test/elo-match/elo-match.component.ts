@@ -19,6 +19,30 @@ function trackResource(persistence: LocalStoragePersistence, discId: Signal<stri
     });
 }
 
+function reverseOperator(op: EloOperator): EloOperator {
+    switch (op) {
+        case '<':
+            return '>';
+        case '=':
+            return '=';
+        case '>':
+            return '<';
+    }
+}
+
+function reverseLine(line: EloLogLine): EloLogLine {
+    return {
+        aTrackKey: line.bTrackKey,
+        op: reverseOperator(line.op),
+        axisId: line.axisId,
+        bTrackKey: line.aTrackKey,
+    };
+}
+
+function formatLine(line: EloLogLine): string {
+    return `${line.aTrackKey} ${line.op}${line.axisId} ${line.bTrackKey}`;
+}
+
 @Component({
     selector: 'app-elo-match',
     imports: [
@@ -129,7 +153,16 @@ export class EloMatchComponent implements OnInit {
         for (const axis of this.eloAxisList) {
             const comparison = this.eloComparisons.get(axis);
             if (comparison) {
-                lines.push(`${aKey} ${comparison.operator}${comparison.axis.id} ${bKey}`);
+                let line: EloLogLine = {
+                    aTrackKey: aKey,
+                    op: comparison.operator,
+                    axisId: comparison.axis.id,
+                    bTrackKey: bKey,
+                };
+                if (aKey > bKey) {
+                    line = reverseLine(line);
+                }
+                lines.push(formatLine(line));
             }
         }
         this.eloComparisonsText = lines.join('\r\n');
@@ -173,7 +206,7 @@ export class EloMatchComponent implements OnInit {
         if (line.aTrackKey === bKey && line.bTrackKey === aKey) {
             return {
                 a,
-                operator: this.reverseOperator(line.op),
+                operator: reverseOperator(line.op),
                 axis: this.getAxis(line.axisId),
                 b,
             };
@@ -189,16 +222,6 @@ export class EloMatchComponent implements OnInit {
         return eloAxis;
     }
 
-    private reverseOperator(op: EloOperator): EloOperator {
-        switch (op) {
-            case '<':
-                return '>';
-            case '=':
-                return '=';
-            case '>':
-                return '<';
-        }
-    }
 }
 
 // TODO à renommer en TrackHash ?
