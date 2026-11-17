@@ -1,10 +1,23 @@
-import {Component, computed, input, OnInit, resource} from '@angular/core';
+import {Component, computed, input, OnInit, resource, ResourceRef, Signal} from '@angular/core';
 import {pad2} from '../../../utils/utils';
 import {FormsModule} from '@angular/forms';
 import {LocalStoragePersistence} from '../../../persistence/LocalStoragePersistence';
 import {HttpClient} from '@angular/common/http';
 import {Disc} from '../../../disc';
 import Track = Disc.Track;
+
+function trackResource(persistence: LocalStoragePersistence, discId: Signal<string>, trackNumber: Signal<number>) {
+    return resource({
+        params: () => ({
+            discId: discId(),
+            trackNumber: trackNumber(),
+        }),
+        loader: async ({params}) => {
+            const disc = await persistence.getDisc(params.discId);
+            return disc.getTrackByNumber(params.trackNumber);
+        },
+    });
+}
 
 @Component({
     selector: 'app-elo-match',
@@ -17,32 +30,12 @@ import Track = Disc.Track;
 export class EloMatchComponent implements OnInit {
 
     aDiscId = input<string>(undefined, {alias: 'ad'});
-    aTrackNumber = input<number>(undefined, {alias: 'at'});
+    aTrackNumber = input<number, string>(0, {alias: 'at', transform: Number});
+    aTrack: ResourceRef<Track>;
 
     bDiscId = input<string>(undefined, {alias: 'bd'});
-    bTrackNumber = input<number>(undefined, {alias: 'bt'});
-
-    aTrack = resource({
-        params: () => ({
-            discId: this.aDiscId(),
-            trackNumber: this.aTrackNumber(),
-        }),
-        loader: async ({params}) => {
-            const disc = await this.persistence.getDisc(params.discId);
-            return disc.tracks[params.trackNumber];
-        }
-    });
-
-    bTrack = resource({
-        params: () => ({
-            discId: this.bDiscId(),
-            trackNumber: this.bTrackNumber(),
-        }),
-        loader: async ({params}) => {
-            const disc = await this.persistence.getDisc(params.discId);
-            return disc.tracks[params.trackNumber];
-        }
-    });
+    bTrackNumber = input<number, string>(0, {alias: 'bt', transform: Number});
+    bTrack: ResourceRef<Track>;
 
     tracks = computed<Track[]>(() => {
         if (!this.aTrack.hasValue() || !this.bTrack.hasValue()) {
@@ -74,12 +67,12 @@ export class EloMatchComponent implements OnInit {
         }
     ];
 
-    private readonly persistence: LocalStoragePersistence;
-
     constructor(
         readonly http: HttpClient,
     ) {
-        this.persistence = new LocalStoragePersistence(http);
+        const persistence = new LocalStoragePersistence(http);
+        this.aTrack = trackResource(persistence, this.aDiscId, this.aTrackNumber);
+        this.bTrack = trackResource(persistence, this.bDiscId, this.bTrackNumber);
     }
 
     // TODO : remonter dans app
