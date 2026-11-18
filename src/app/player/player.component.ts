@@ -830,10 +830,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /**
      * Charge une piste de la vidéo (file) déjà en cours de lecture
-     * @param track {Disc.Track} piste à charger
+     * @param track piste à charger
      */
-    seekToTrack(track) {
-        track = track || this.currentTrack;
+    seekToTrack(track = this.currentTrack) {
         this.trackIsLoading = true;
         const start = getYouTubeStartSeconds(track); // YouTube n'accèpte que des entiers
         this.seekTo(start ? start : 0); // start undefined quand video non multitrack
@@ -904,9 +903,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
         if (track) {
             if (!automatic && !this.dontDisableSkippedTrack) {
-                console.log('automatic', automatic);
-                console.log('this.dontDisableSkippedTrack', this.dontDisableSkippedTrack);
-                console.log(new Error('stack trace'));
                 this.currentTrack.enabledByUser = false;
             }
             this.loadTrack(track);
@@ -1725,15 +1721,13 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
-    onTrackEnded(event?) {
-        const scope = event ? event.currentScope : this;
-
-        if (scope.repeatMode === 'track') {
-            scope.seekToTrack();
-        } else if (scope.shuffle) {
-            scope.next();
+    onTrackEnded() {
+        if (this.repeatMode === 'track') {
+            this.seekToTrack();
+        } else if (this.shuffle) {
+            this.next(true);
         } else {
-            scope.checkCurrentTrack();
+            this.checkCurrentTrack();
         }
     }
 
