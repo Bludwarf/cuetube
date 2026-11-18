@@ -10,9 +10,9 @@ import {PlayerComponent} from '../player/player.component';
 export class SliderComponent implements OnInit {
 
   @Input() player: PlayerComponent;
-  value;
-  min;
-  max;
+  value: number;
+  min: number;
+  max: number;
 
   constructor() { }
 

@@ -32,6 +32,7 @@ import {RecordingRepository} from '../musicbrainz/recording-repository';
 import {CALME_COLLECTION_MBID, CollectionRepository} from '../musicbrainz/collection-repository';
 import {ReleaseRepository} from '../musicbrainz/release-repository';
 import Track = Disc.Track;
+import {GoogleApiYouTubeVideoResource} from '../../GoogleApiYouTubePatch';
 
 const YT_STATES = [
     'ENDED',
@@ -175,8 +176,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     private lastCheckedTime: number;
     private nextCheckCurrentTime: number;
     /** prochain appel */
-    private checkCurrentTimeTimeout;
-    private deletedVideoTimeout;
+    private checkCurrentTimeTimeout: number;
+    private deletedVideoTimeout: number;
     protected dontDisableSkippedTrack = false;
 
     /** @see YT_STATES */
@@ -184,7 +185,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     public connectedToGoogleDrive = false;
 
-    private lastToggledTracklist;
+    private lastToggledTracklist: HTMLElement;
 
     // FIXME : à remettre dans le constructeur
     private cuetubeConf = {
@@ -378,7 +379,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             // Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant
             // const slider = document.getElementById("player-controls-form").trackPosition;
             const slider = this.slider;
-            if (slider && (!slider.max || slider.max === undefined)) {
+            if (slider && (!slider.max)) {
                 console.log('Pour les vidéos à une seule piste on ne connaissait pas la durée de la vidéo avant');
                 slider.max = file.duration;
             }
@@ -469,9 +470,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         return track.title ?? `Track ${track.number}`;
     }
 
-    enrichWindow(window) {
+    enrichWindow(window: Window) {
         const component = this;
-        window.$scope = component;
+        window['$scope'] = component;
 
         // Avant fermeture de la page
         window.onbeforeunload = function () {
@@ -507,7 +508,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             event.preventDefault();
         };
 
-        window.toggleDiscList = function (discListElement) {
+        window['toggleDiscList'] = function (discListElement: HTMLElement) {
             $(discListElement).toggle();
         };
 
@@ -631,7 +632,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
         });
 
-        return Promise.all(promises.map(p => p.catch(e => e)))
+        return Promise.all(promises.map(p => p.catch((e: Error) => e)))
             .then(collections => {
                 // Liste des disques pour chaque collection
                 collectionNames.forEach((collectionName, i) => {
@@ -743,9 +744,10 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     /**
-     * @param track {Disc.Track} piste à charger TODO devrait être remplacé par file pour éviter des désynchro
+     * @param track piste à charger TODO devrait être remplacé par file pour éviter des désynchro
+     * @param time temps sur lequel se positionner
      */
-    loadTrack(track: Disc.Track, time?) {
+    loadTrack(track: Disc.Track, time?: number) {
 
         clearTimeout(this.checkCurrentTimeTimeout); // suppression de tous les timers
 
@@ -838,7 +840,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         this.seekTo(start ? start : 0); // start undefined quand video non multitrack
     }
 
-    seekTo(time) {
+    seekTo(time: number) {
         if (isNaN(time)) {
             return false;
         }
@@ -884,7 +886,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.repeatMode === 'track') {
             console.log('On répète la même piste comme demandé');
         } else if (this.shuffle) {
-            disc = weightedRandom(possibleDiscs, discI => discI.tracks.length);
+            disc = weightedRandom(possibleDiscs, (discI: Disc) => discI.tracks.length);
             track = disc.nextTrack(this.shuffle, this.currentTrack); // FIXME : arrêter la lecture si plus aucune piste
         } else {
 
@@ -932,11 +934,11 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         this.history.pop(); // suppression du previous (ajouté par loadTrack)
     }
 
-    showOnlyPlaylist(discIndex) {
+    showOnlyPlaylist(discIndex: number) {
         const discs = $('#playlist .disc');
         discs.each(function () {
             const list = $('.disc-list', this);
-            if (this.dataset.index === discIndex) {
+            if (Number(this.dataset.index) === discIndex) {
                 list.show();
             } else {
                 list.hide();
@@ -944,12 +946,12 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         });
     }
 
-    getVideoUrlFromId(id) {
+    getVideoUrlFromId(id: string) {
         return 'https://www.youtube.com/watch?v=' + id;
     }
 
     /** @return Promise https://developers.google.com/youtube/v3/docs/videos#resource */
-    getVideoSnippet(videoId, cb) {
+    getVideoSnippet(videoId: string, cb: (err: Error, videoSnippet?) => any) {
         // TODO comment recréer une Promise par dessus le promise de getVideo .
         this.persistence.getVideo(videoId, environment.googleApiKey).then(video => {
             cb(null, video.snippet);
@@ -1028,7 +1030,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
     // TODO : convertir en promise
-    getPlaylistItems(playlistId, cb) {
+    getPlaylistItems(playlistId: string, cb: (err: Error, data?: GoogleApiYouTubePlaylistItemResource[]) => any) {
         this.persistence.getPlaylistItems(playlistId, environment.googleApiKey).then(data => {
             cb(null, data);
         }).catch(err => {
@@ -1079,7 +1081,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
-    createNewDiscFromPlaylist(playlistIdOrUrl, url, cb) {
+    createNewDiscFromPlaylist(playlistIdOrUrl: string, url: string, cb: (error: string) => any) {
         const playlistId = getIdOrUrl(playlistIdOrUrl, 'Id ou URL de la playlist YouTube', 'list');
         if (!playlistId) {
             return cb('Aucun id de playlist');
@@ -1090,7 +1092,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
                 return cb('Erreur createNewDiscFromPlaylist : ' + err.message);
             }
 
-            playlistItems = playlistItems.items || playlistItems;
             const disc = ytparser.newDiscFromPlaylistItems(playlistItems, prompt('Nom du disque', playlistItems[0].snippet.title));
             disc.src = url;
             this.importDisc(disc, cb);
@@ -1098,7 +1099,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // TODO : cb => Promise
-    createNewDiscFromVideoId(videoId, srcUrl, cb) {
+    createNewDiscFromVideoId(videoId: string, srcUrl: string, cb) {
         if (!videoId) {
             return cb(new Error(`ID de la vidéo YouTube non reconnue dans l'URL ${srcUrl}`));
         }
@@ -1131,7 +1132,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     }
 
-    importDisc(disc, cb) {
+    importDisc(disc: Disc, cb) {
         enrichDisc(disc, this);
 
         console.log('Création du disc...', disc);
@@ -1151,19 +1152,18 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /**
      * Création d'un nouveau disque à partir d'une vidéo ou d'une playlist YouTube
-     * @param {string} url? URL de la vidéo/playlist, si vide alors on demande à l'utilisateur
-     * @param cb? callback
+     * @param url URL de la vidéo/playlist, si vide alors, on demande à l'utilisateur
      */
-    async createNewDiscFromVideoOrPlaylist(url?: string, cb?: { (collection: Collection) }) {
+    async createNewDiscFromVideoOrPlaylist(url?: string) {
 
         url = url || prompt('URL de la vidéo/playlist YouTube');
-        cb = cb || (err => {
+        const cb = (err: string) => {
             console.log('this.$apply(); createNewDiscFromVideoOrPlaylist');
             if (err) {
                 console.error(err);
                 alert(err);
             }
-        });
+        };
         if (!url) {
             return;
         }
@@ -1247,7 +1247,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /**
      * Création d'une nouvelle collection vide
-     * @param {string} name? nom de la collection, si vide alors on demande à l'utilisateur
+     * @param name nom de la collection, si vide alors on demande à l'utilisateur
      */
     createCollection(name?: string) {
         name = name || prompt('Nom de la collection à créer');
@@ -1298,7 +1298,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
      * 3  YT.PlayerState.BUFFERING
      * 5  YT.PlayerState.CUED
      */
-    onPlayerStateChange(event) {
+    onPlayerStateChange(event: YT.OnStateChangeEvent) {
         // const player = event.target;
         const state = event.data;
 
@@ -1318,7 +1318,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         // Fin de la vidéo
-        // on vérifie lastPlayedVideoIndex car cet évènement est souvent appelé deux fois
+        // On vérifie lastPlayedVideoIndex car cet évènement est souvent appelé deux fois
         // Détail des évènements : 2, 0 => next, -1, 0, -1, 3
         // Quand l'utilisateur scroll après la fin de la cue courante => YT.PlayerState.PAUSED
         if (state === YT.PlayerState.ENDED && (!this.trackIsLoading ||
@@ -1465,7 +1465,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     async getDiscsIds(collectionName): Promise<string[]> {
 
         // Recherche d'abord dans la mémoire
-        let discIds = await this.discIdsByCollection[collectionName];
+        let discIds = this.discIdsByCollection[collectionName];
         if (discIds) {
             return discIds;
         }
@@ -1488,7 +1488,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         // this.hidePlayer();
 
         if ('requestStorageAccess' in document) {
-            document.requestStorageAccess().catch(err => {
+            document.requestStorageAccess().catch(() => {
                 alert('requestStorageAccess refusé');
             }).then(() => {
                 this.connectGoogleDrive2();
@@ -1651,7 +1651,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     indexOf(disc: Disc): number {
         return this.discs
-            .map(disc => disc.id)
+            .map((disc: Disc) => disc.id)
             .indexOf(disc.id);
     }
 
@@ -1701,7 +1701,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         function scheduleNextCheckCurrentTime() {
             // on actualise qu'au prochain changement de seconde
             component.nextCheckCurrentTime = (1 - (component.player.getCurrentTime() % 1)) * 1000;
-            component.checkCurrentTimeTimeout = setTimeout(component.checkCurrentTime.bind(component), component.nextCheckCurrentTime); // boucle
+            component.checkCurrentTimeTimeout =
+                window.setTimeout(component.checkCurrentTime.bind(component), component.nextCheckCurrentTime); // boucle
         }
 
         // changement de secondes ?
@@ -1732,7 +1733,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
 
-    toggleTracklist(tracklist, disc) {
+    toggleTracklist(tracklist: HTMLElement, disc: Disc) {
         const lastToggledTracklist = this.lastToggledTracklist;
         if (lastToggledTracklist !== null && lastToggledTracklist !== tracklist) {
             $(lastToggledTracklist).hide();
@@ -1752,9 +1753,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     /**
      * L'heure actuelle
      * @param offset décalage en secondes
-     * @return {string} exemple "12:48"
+     * @return exemple "12:48"
      */
-    getTime(offset = 0) {
+    getTime(offset = 0): string {
         const d = new Date();
         if (offset) {
             d.setTime(d.getTime() + offset * 1000);
@@ -1865,7 +1866,7 @@ interface State {
 }
 
 // TODO à déplacer dans yt-helper
-function getYouTubeStartSeconds(track, time = track.startSeconds) {
+function getYouTubeStartSeconds(track: Track, time = track.startSeconds) {
     const file = track.file;
     const multiTrack = file.tracks.length > 1;
     let start = multiTrack ? Math.floor(time) : time; // YouTube n'accèpte que des entiers, on met undefined si !multitrack et pas de time
@@ -1879,11 +1880,12 @@ function getYouTubeStartSeconds(track, time = track.startSeconds) {
 }
 
 /**
+ * @param idOrUrl
  * @param promptMessage message à afficher si on doit demander d'entrer une valeur pour idOrUrl
  * @param urlParam nom du paramètre contenant l'id à récupérer dans le cas d'une URL passée en argument
  * @return l'id à partir d'un ID ou d'une URL
  */
-function getIdOrUrl(idOrUrl, promptMessage, urlParam) {
+function getIdOrUrl(idOrUrl: string, promptMessage: string, urlParam: string) {
     idOrUrl = idOrUrl || prompt(promptMessage);
     if (!idOrUrl) {
         return undefined;
@@ -1900,13 +1902,13 @@ function getIdOrUrl(idOrUrl, promptMessage, urlParam) {
     }
 }
 
-function openInNewTab(url) {
+function openInNewTab(url: string | URL) {
     const win = window.open(url, '_blank');
     win.focus();
     return win;
 }
 
-function enrichDisc(disc, player: PlayerComponent) {
+function enrichDisc(disc: Disc, player: PlayerComponent) {
 
     disc.player = player;
 
