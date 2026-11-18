@@ -1,7 +1,7 @@
 // TODO : clean
 import _ from 'underscore';
 
-export function getParameterByName(name, url) {
+export function getParameterByName(name, url): string | null {
     if (!url) {
         url = window.location.href;
     }

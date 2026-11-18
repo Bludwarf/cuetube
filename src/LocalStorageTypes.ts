@@ -1,3 +1,5 @@
+import {SliderComponent} from './app/slider/slider.component';
+
 export interface SavedDiscPrefs {
   /** rétrocompa enabledByUser avant #160 */
   enabled?: boolean;
@@ -29,5 +31,5 @@ export interface CurrentPlayerState {
   trackIndex?: number;
 
   /** cf Slider.value */
-  time?;
+  time?: SliderComponent['value'];
 }
