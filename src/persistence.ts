@@ -144,15 +144,19 @@ export abstract class Persistence {
         return Promise.all(collections.map(collection => this.saveCollection(collection)));
     }
 
-    public async getCollectionDiscIds(collectionName: string): Promise<string[]> {
+    public async getOrCreateCollection(collectionName: string): Promise<Collection> {
         if (!collectionName) {
             collectionName = Persistence.DEFAULT_COLLECTION;
         }
         let collection: Collection = await this.getCollection(collectionName);
         if (!collection) {
-            collection = new Collection(collectionName);
-            await this.saveCollection(collection);
+            collection = await this.newCollection(collectionName);
         }
+        return collection;
+    }
+
+    public async getCollectionDiscIds(collectionName: string): Promise<string[]> {
+        const collection = await this.getOrCreateCollection(collectionName);
         return collection.discIds;
     }
 
@@ -179,7 +183,9 @@ export abstract class Persistence {
     public async newCollection(collectionName: string): Promise<Collection> {
         const collection = new Collection(collectionName);
         collection.discIds = [];
-        return this.saveCollection(collection);
+        const savedCollection = await this.saveCollection(collection);
+        console.log('Collection "' + collectionName + '" créée');
+        return savedCollection;
     }
 
     public abstract getDisc(discId: string): Promise<Disc>;

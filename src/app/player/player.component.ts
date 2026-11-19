@@ -18,7 +18,7 @@ import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import $ from 'jquery';
 import {environment} from '../../environments/environment-with-dot-env';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
-import {formatHMSS, getParameterByName, notify, weightedRandom} from '../../utils/utils';
+import {formatHMSS, getParameterByName, notify, stopPropagation, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {
     AllTracksFilter,
@@ -253,6 +253,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     trackFiltersDisabled = false;
 
     protected readonly Object = Object;
+    protected readonly stopPropagation = stopPropagation;
 
     private pushStateOnlyNewOnCurrentCollectionNames(): void {
         const isDefaultCollection = this.currentCollectionNames.length === 0;
@@ -666,10 +667,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         } else {
             this.repeatMode = '';
         }
-    }
-
-    stopPropagation(e) {
-        e.stopPropagation(); // pour ne pas appeler document.onclick
     }
 
     onYouTubeIframeAPIReady() {
