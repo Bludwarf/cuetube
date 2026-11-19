@@ -670,6 +670,10 @@ export module Disc {
       this.cuesheetTrack.title = value;
     }
 
+    get nonNullTrackTitle() {
+      return this.title ?? `Track ${this.number}`;
+    }
+
     get indexes(): cuesheet.Index[] {
       if (!this.cuesheetTrack.indexes) {
         const index = new cuesheet.Index(); // FIXME : prendre le temps de début de la piste précédente
@@ -779,6 +783,7 @@ export module Disc {
       }
     }
 
+    // FIXME : à sortir du modèle !
     /**
      * Quand coché + alt click =>   coche tous
      *  si décoché + alt click => décoche tous

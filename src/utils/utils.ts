@@ -156,3 +156,7 @@ export function pad2(i: number): string {
     }
     return (i < 10 ? '0' : '') + i;
 }
+
+export function stopPropagation(e: Event): void {
+    e.stopPropagation(); // pour ne pas appeler document.onclick
+}

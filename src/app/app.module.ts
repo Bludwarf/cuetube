@@ -16,11 +16,23 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {LocalStoragePrefsService} from './local-storage-prefs.service';
 import {provideHttpClient} from '@angular/common/http';
+import {CollectionComponent} from './collection/collection.component';
+import {collectionResolver} from './collection/collection.resolver';
 
 const appRoutes: Routes = [
     {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
     {path: 'player', component: PlayerComponent},
     {path: 'edit-cue', component: EditCueComponent},
+    {
+        path: 'collection/:name',
+        component: CollectionComponent,
+        resolve: {
+            collection: collectionResolver,
+        },
+        // providers: [
+        //     ...COLLECTION_PROVIDERS, // TODO essayer de l'utiliser sans provoquer collection() => undefined
+        // ],
+    },
     {
         path: 'test',
         loadChildren: () => import('./test/test.module').then(m => m.TestModule),
