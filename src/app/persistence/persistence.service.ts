@@ -117,8 +117,7 @@ export class PersistenceService {
     }
 
     get connectedToGoogleDrive(): boolean {
-        const title = this.getCurrentPersistence().title;
-        return title === GoogleDrivePersistence.TITLE;
+        return this.getCurrentPersistence().connectedToGoogleDrive;
     }
 
     disconnectFromGoogleDrive() {
