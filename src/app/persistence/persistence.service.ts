@@ -8,6 +8,9 @@ import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersi
 import {getParameterByName, notify} from '../../utils/utils';
 import {GapiClientService} from '../gapi-client.service';
 
+// TODO pour l'instant la correction du chargement de LocalAndDistantPersistence provoque une erreur "IllegalUsage"
+const persitenceFixFeatureFlag = false;
+
 @Injectable({providedIn: 'root'})
 export class PersistenceService {
     private readonly httpClient = inject(HttpClient);
@@ -42,7 +45,7 @@ export class PersistenceService {
         if (persistenceName === LocalServerPersistence.TITLE) {
             return new LocalServerPersistence(http);
         }
-        if (persistenceName && persistenceName.startsWith(LocalAndDistantPersistence.TITLE)) {
+        if (persitenceFixFeatureFlag && persistenceName && persistenceName.startsWith(LocalAndDistantPersistence.TITLE)) {
             const {localName, distantName} = LocalAndDistantPersistence.persistenceNames(persistenceName);
             const local = this.getPersistence(localName);
             const distant = this.getPersistence(distantName);
