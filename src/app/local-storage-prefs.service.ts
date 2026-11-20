@@ -149,7 +149,7 @@ export class LocalStoragePrefsService {
       };
       this.set('current', current);
     }
-    localStorage.setItem('connectedToGoogleDrive', JSON.stringify(player.connectedToGoogleDrive));
+    localStorage.setItem('connectedToGoogleDrive', JSON.stringify(player.connectedToGoogleDrive)); // TODO extraire une méthode publique appelée par PersistenceService.connectToGoogleDrive
   }
 
   getCurrentPlayerState(): CurrentPlayerState {

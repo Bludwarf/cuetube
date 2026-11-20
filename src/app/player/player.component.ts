@@ -184,6 +184,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     /** @see YT_STATES */
     private lastPlayerStates: number[] = [];
 
+    // TODO utiliser plutôt app-google-drive-button
     public connectedToGoogleDrive = false;
 
     private lastToggledTracklist: HTMLElement;
@@ -1479,6 +1480,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
+    // TODO utiliser plutôt app-google-drive-button
     connectGoogleDrive() {
 
         const loginBtn = document.getElementById('login-btn');
@@ -1494,6 +1496,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
+    // TODO utiliser plutôt app-google-drive-button
     connectGoogleDrive2() {
         const loginBtn = document.getElementById('login-btn');
         loginBtn.innerText = 'Connexion...';
@@ -1507,7 +1510,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
                 notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
                 loginBtn.innerText = 'Connecté·e';
                 this.connectedToGoogleDrive = true;
-                localStorage.setItem('connectedToGoogleDrive', 'true');
+                localStorage.setItem('connectedToGoogleDrive', 'true');  // TODO pas en double avec prefs ?
 
                 // synchro avec l'ancienne persistance pour ne rien perdre
                 oldPersistence.sync(googleDrivePersistence).then(syncResult => {
@@ -1521,7 +1524,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
                     // TODO : attention on crée avec this.persistence et pas localStorage
                     this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
                     const newPersistenceName = `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`;
-                    console.log('Player:localStorage.setItem(persistence)', newPersistenceName);
                     localStorage.setItem('persistence', newPersistenceName);
 
                     this.init();
@@ -1543,6 +1545,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         });
     }
 
+    // TODO utiliser plutôt app-google-drive-button
     disconnectGoogleDrive() {
         // TODO
         this.connectedToGoogleDrive = false;
@@ -1554,7 +1557,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         loginBtn.innerText = 'Google Drive';
     }
 
-    // TODO : remonter dans app
     getPersistence(): Persistence {
         const persistence = this.persistenceService.getCurrentPersistence();
         console.log('getPersistence() => ' + persistence.title);

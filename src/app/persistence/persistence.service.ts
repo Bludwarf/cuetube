@@ -15,7 +15,10 @@ export class PersistenceService {
     private readonly googleDrivePersistence = new GoogleDrivePersistence(this.httpClient);
     private readonly gapiClient = inject(GapiClientService);
 
+    // TODO revoir la gestion du stockage persistenceName, il faudrait supprimer localStorage.setItem('persistence'
     private persistenceName: string | undefined;
+
+    // TODO pour l'instant, la reconnexion automatique à GoogleDrive se fait uniquement dans PlayerComponent.ngAfterViewInit
 
     getCurrentPersistence() {
         return this.getPersistence();
@@ -70,7 +73,7 @@ export class PersistenceService {
 
         if (isInit) {
             notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
-            localStorage.setItem('connectedToGoogleDrive', 'true');
+            localStorage.setItem('connectedToGoogleDrive', 'true'); // TODO utiliser plutôt local-storage-prefs pour sauvegarder le statut de la connexion
 
             // synchro avec l'ancienne persistance pour ne rien perdre
             try {
@@ -113,7 +116,9 @@ export class PersistenceService {
         return this.getCurrentPersistence().connectedToGoogleDrive;
     }
 
+    // TODO ajouter un connectingCb comme connectToGoogleDrive
     disconnectFromGoogleDrive() {
-        localStorage.removeItem('persistence');
+        delete this.persistenceName;
+        // TODO utiliser local-storage-prefs pour sauvegarder le statut de la déconnexion
     }
 }
