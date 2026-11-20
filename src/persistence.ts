@@ -461,7 +461,7 @@ export abstract class Persistence {
     public getAllDiscs(): Promise<Disc[]> {
         return this.getDiscIds().then(discIds => this.getDiscs(discIds));
     }
-    
+
     abstract get connectedToGoogleDrive(): boolean;
 }
 
@@ -702,4 +702,8 @@ function pushOnlyOnce<T>(array: T[], item: T) {
     if (!array.includes(item)) {
         array.push(item);
     }
+}
+
+export interface PersistenceWithPublicFields  {
+    loadSyncState(): Promise<SyncState>;
 }

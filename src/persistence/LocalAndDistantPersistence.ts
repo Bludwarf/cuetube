@@ -1,4 +1,4 @@
-import {Persistence, SyncState} from '../persistence';
+import {Persistence, PersistenceWithPublicFields, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {Collection} from '../Collection';
 
@@ -7,7 +7,8 @@ import {Collection} from '../Collection';
  * Tout est lu localement.
  * Tout est écrit localement d'abord puis à distance en parallèle.
  */
-export class LocalAndDistantPersistence<L extends Persistence, D extends Persistence> extends Persistence {
+export class LocalAndDistantPersistence<L extends Persistence & PersistenceWithPublicFields,
+    D extends Persistence & PersistenceWithPublicFields> extends Persistence {
 
     constructor(public local: L, public distant: D) {
         super(local.$http);
@@ -61,31 +62,32 @@ export class LocalAndDistantPersistence<L extends Persistence, D extends Persist
         throw new Error('IllegalUsage');
     }
 
-    deleteCollection(collectionName: string): Promise<void> {
-        return this.distant.deleteCollection(collectionName)
-            .then(() => this.local.deleteCollection(collectionName));
+    async deleteCollection(collectionName: string): Promise<void> {
+        await this.distant.deleteCollection(collectionName);
+        return await this.local.deleteCollection(collectionName);
     }
 
     protected _deleteCollection(collectionName: string): Promise<void> {
         throw new Error('IllegalUsage');
     }
 
-    public saveDisc(discId: string, disc): Promise<Disc> {
-        return this.distant.saveDisc(discId, disc)
-            .then(savedDisc => this.local.saveDisc(discId, disc));
+    public async saveDisc(discId: string, disc): Promise<Disc> {
+        await this.distant.saveDisc(discId, disc);
+        return await this.local.saveDisc(discId, disc);
     }
 
     postDisc(discId: string, disc): Promise<Disc> {
         throw new Error('IllegalUsage');
     }
 
-    setCollectionNames(collectionsNames: string[]): Promise<string[]> {
-        return this.distant.setCollectionNames(collectionsNames)
-            .then(setNames => this.local.setCollectionNames(collectionsNames));
+    async setCollectionNames(collectionsNames: string[]): Promise<string[]> {
+        const setNames = await this.distant.setCollectionNames(collectionsNames);
+        return await this.local.setCollectionNames(collectionsNames);
     }
 
-    protected loadSyncState(): Promise<SyncState> {
-        throw new Error('IllegalUsage');
+    protected async loadSyncState(): Promise<SyncState> {
+        await this.distant.loadSyncState();
+        return this.local.loadSyncState();
     }
 
     public saveSyncState(): Promise<SyncState> {
