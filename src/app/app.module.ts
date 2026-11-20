@@ -29,9 +29,6 @@ const appRoutes: Routes = [
         resolve: {
             collection: collectionResolver,
         },
-        // providers: [
-        //     provideCollection(), // TODO essayer de l'utiliser sans provoquer collection() => undefined
-        // ],
     },
     {
         path: 'test',

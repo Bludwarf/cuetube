@@ -8,8 +8,9 @@ import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence
 import {AppComponent} from '../app.component';
 import {from} from 'rxjs';
 import {stopPropagation} from '../../utils/utils';
-import {injectCollection, provideCollection} from './collection.providers';
-import {filter, switchMap, tap} from 'rxjs/internal/operators';
+import {switchMap} from 'rxjs/internal/operators';
+import {RouterLink} from '@angular/router';
+import {injectCollection} from './collection.resolver';
 import Track = Disc.Track;
 
 @Component({
@@ -17,9 +18,8 @@ import Track = Disc.Track;
     imports: [
         ReactiveFormsModule,
         FormsModule
-    ],
-    providers: [
-        provideCollection(), // TODO essayer de le déplacer sans provoquer collection() => undefined
+        FormsModule,
+        RouterLink
     ],
     templateUrl: './collection.component.html',
     styleUrl: './collection.component.css',
@@ -50,9 +50,6 @@ export class CollectionComponent implements OnInit {
 
         this.discs = toSignal(
             toObservable(this.collection).pipe(
-                tap(collection => console.log('collection1', collection)),
-                filter(collection => collection !== undefined),
-                tap(collection => console.log('collection2', collection)),
                 switchMap(collection =>
                     from(Promise.all(collection.discIds.map(id => persistence.getDisc(id))))
                 )
