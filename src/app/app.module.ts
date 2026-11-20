@@ -30,7 +30,7 @@ const appRoutes: Routes = [
             collection: collectionResolver,
         },
         // providers: [
-        //     ...COLLECTION_PROVIDERS, // TODO essayer de l'utiliser sans provoquer collection() => undefined
+        //     provideCollection(), // TODO essayer de l'utiliser sans provoquer collection() => undefined
         // ],
     },
     {

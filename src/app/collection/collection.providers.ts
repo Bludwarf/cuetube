@@ -9,12 +9,12 @@ const COLLECTION = new InjectionToken<Signal<Collection>>(
     'Collection courante'
 );
 
-export const COLLECTION_PROVIDERS: Provider[] = [
-    {
+export function provideCollection(): Provider {
+    return {
         provide: COLLECTION,
         useFactory: collectionFactory,
-    },
-];
+    };
+}
 
 function collectionFactory(): Signal<Collection> {
     const route = inject(ActivatedRoute);

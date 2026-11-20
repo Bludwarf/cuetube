@@ -8,7 +8,7 @@ import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence
 import {AppComponent} from '../app.component';
 import {from} from 'rxjs';
 import {stopPropagation} from '../../utils/utils';
-import {COLLECTION_PROVIDERS, injectCollection} from './collection.providers';
+import {injectCollection, provideCollection} from './collection.providers';
 import {filter, switchMap, tap} from 'rxjs/internal/operators';
 import Track = Disc.Track;
 
@@ -19,7 +19,7 @@ import Track = Disc.Track;
         FormsModule
     ],
     providers: [
-        ...COLLECTION_PROVIDERS, // TODO essayer de le déplacer sans provoquer collection() => undefined
+        provideCollection(), // TODO essayer de le déplacer sans provoquer collection() => undefined
     ],
     templateUrl: './collection.component.html',
     styleUrl: './collection.component.css',
