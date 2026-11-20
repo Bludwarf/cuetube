@@ -15,6 +15,8 @@ export class LocalAndDistantPersistence<L extends Persistence,
 
     constructor(local: L, distant: D) {
         super(local.$http);
+        this.local = local as L & PersistenceWithPublicFields;
+        this.distant = distant as D & PersistenceWithPublicFields;
     }
 
     get title(): string {
