@@ -27,10 +27,8 @@ export class PersistenceService {
     private getPersistence(
         persistenceName = localStorage.getItem('persistence')
     ): Persistence {
-
         const http = this.httpClient;
         const localPersistence = this.localPersistence;
-        console.log('persistenceName', persistenceName);
 
         if (persistenceName === GoogleDrivePersistence.TITLE) {
             if (!GoogleDrivePersistence) {
@@ -45,17 +43,14 @@ export class PersistenceService {
             return new LocalServerPersistence(http);
         }
         if (persistenceName && persistenceName.startsWith(LocalAndDistantPersistence.TITLE)) {
-            const m = /LocalAndDistant\('(\w+)', '(\w+)'\)/.exec(persistenceName);
-            if (m) {
-                const local = this.getPersistence(m[1]);
-                const distant = this.getPersistence(m[2]);
-                if (local !== distant) {
-                    return new LocalAndDistantPersistence(local, distant);
-                } else {
-                    return local;
-                }
+            const {localName, distantName} = LocalAndDistantPersistence.persistenceNames(persistenceName);
+            const local = this.getPersistence(localName);
+            const distant = this.getPersistence(distantName);
+            if (local !== distant) {
+                return new LocalAndDistantPersistence(local, distant);
+            } else {
+                return local;
             }
-            return localPersistence;
         }
 
         // Prod

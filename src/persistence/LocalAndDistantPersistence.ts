@@ -9,14 +9,31 @@ import {Collection} from '../Collection';
  */
 export class LocalAndDistantPersistence<L extends Persistence, D extends Persistence> extends Persistence {
 
-    public static readonly TITLE = 'LocalAndDistant';
-
     constructor(public local: L, public distant: D) {
         super(local.$http);
     }
 
     get title(): string {
         return LocalAndDistantPersistence.TITLE;
+    }
+
+    get connectedToGoogleDrive(): boolean {
+        return this.local.connectedToGoogleDrive || this.distant.connectedToGoogleDrive;
+    }
+
+    public static readonly TITLE = 'LocalAndDistant';
+
+    static persistenceNames(persistenceName: string): { localName: string, distantName: string } {
+        const m = /LocalAndDistant\((.+)\)/.exec(persistenceName);
+        if (m) {
+            const params = m[1].trim().split(/\s*,\s*/);
+            return {
+                localName: params[1].slice(1, -1),
+                distantName: params[2].slice(1, -1),
+            };
+        } else {
+            throw new Error(`Nom de persistence invalide : ${persistenceName}`);
+        }
     }
 
     getCollection(collectionName: string): Promise<Collection> {
@@ -73,9 +90,5 @@ export class LocalAndDistantPersistence<L extends Persistence, D extends Persist
 
     public saveSyncState(): Promise<SyncState> {
         return this.distant.saveSyncState();
-    }
-
-    get connectedToGoogleDrive(): boolean {
-        return this.local.connectedToGoogleDrive || this.distant.connectedToGoogleDrive;
     }
 }
