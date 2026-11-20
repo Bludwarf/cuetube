@@ -15,6 +15,8 @@ export class PersistenceService {
     private readonly googleDrivePersistence = new GoogleDrivePersistence(this.httpClient);
     private readonly gapiClient = inject(GapiClientService);
 
+    private persistenceName: string | undefined;
+
     getCurrentPersistence() {
         return this.getPersistence();
     }
@@ -24,9 +26,7 @@ export class PersistenceService {
      *
      * @return {Persistence}
      */
-    private getPersistence(
-        persistenceName = localStorage.getItem('persistence')
-    ): Persistence {
+    private getPersistence(persistenceName = this.persistenceName): Persistence {
         const http = this.httpClient;
         const localPersistence = this.localPersistence;
 
@@ -85,8 +85,8 @@ export class PersistenceService {
                 // puisse qu'on synchronise à chaque démarrage
                 const newPersistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
                 const newPersistenceName = `${newPersistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`;
-                console.log('SersistenceService:localStorage.setItem(persistence)', newPersistenceName);
-                localStorage.setItem('persistence', newPersistenceName);
+                console.log('PersistenceService:persistence', newPersistenceName);
+                this.persistenceName = newPersistenceName;
             } catch (err) {
                 console.error(err);
                 alert(`Erreur de synchro entre la persistance actuelle et Google Drive. L'appli va être rechargée pour éviter des appels inutiles à Google Drive.`);
