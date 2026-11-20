@@ -48,9 +48,9 @@ export class CollectionComponent implements OnInit {
             toObservable(this.collection).pipe(
                 switchMap(collection =>
                     from(Promise.all(collection.discIds
-                        .map(id => {
+                        .map(async id => {
                             try {
-                                return persistence.getDisc(id);
+                                return await persistence.getDisc(id);
                             } catch (e) {
                                 console.error(`On ignore le disque suivant, car il est introuvable : ${id}`);
                                 return undefined;
