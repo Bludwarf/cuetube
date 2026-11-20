@@ -9,69 +9,73 @@ import {Collection} from '../Collection';
  */
 export class LocalAndDistantPersistence<L extends Persistence, D extends Persistence> extends Persistence {
 
-  public static readonly TITLE = 'LocalAndDistant';
+    public static readonly TITLE = 'LocalAndDistant';
 
-  constructor(public local: L, public distant: D) {
-    super(local.$http);
-  }
+    constructor(public local: L, public distant: D) {
+        super(local.$http);
+    }
 
-  get title(): string {
-    return LocalAndDistantPersistence.TITLE;
-  }
+    get title(): string {
+        return LocalAndDistantPersistence.TITLE;
+    }
 
-  getCollection(collectionName: string): Promise<Collection> {
-    return this.local.getCollection(collectionName);
-  }
+    getCollection(collectionName: string): Promise<Collection> {
+        return this.local.getCollection(collectionName);
+    }
 
-  getCollectionNames(): Promise<string[]> {
-    return this.local.getCollectionNames();
-  }
+    getCollectionNames(): Promise<string[]> {
+        return this.local.getCollectionNames();
+    }
 
-  getDiscIds(): Promise<string[]> {
-    return this.local.getDiscIds();
-  }
+    getDiscIds(): Promise<string[]> {
+        return this.local.getDiscIds();
+    }
 
-  getDisc(discId: string): Promise<Disc> {
-    return this.local.getDisc(discId);
-  }
+    getDisc(discId: string): Promise<Disc> {
+        return this.local.getDisc(discId);
+    }
 
-  public saveCollection(collection: Collection): Promise<Collection> {
-    return this.distant.saveCollection(collection)
-      .then(savedCollection => this.local.saveCollection(collection));
-  }
+    public saveCollection(collection: Collection): Promise<Collection> {
+        return this.distant.saveCollection(collection)
+            .then(savedCollection => this.local.saveCollection(collection));
+    }
 
-  postCollection(collection: Collection): Promise<Collection> {
-    throw new Error('IllegalUsage');
-  }
+    postCollection(collection: Collection): Promise<Collection> {
+        throw new Error('IllegalUsage');
+    }
 
-  deleteCollection(collectionName: string): Promise<void> {
-    return this.distant.deleteCollection(collectionName)
-      .then(() => this.local.deleteCollection(collectionName));
-  }
+    deleteCollection(collectionName: string): Promise<void> {
+        return this.distant.deleteCollection(collectionName)
+            .then(() => this.local.deleteCollection(collectionName));
+    }
 
-  protected _deleteCollection(collectionName: string): Promise<void> {
-    throw new Error('IllegalUsage');
-  }
+    protected _deleteCollection(collectionName: string): Promise<void> {
+        throw new Error('IllegalUsage');
+    }
 
-  public saveDisc(discId: string, disc): Promise<Disc> {
-    return this.distant.saveDisc(discId, disc)
-      .then(savedDisc => this.local.saveDisc(discId, disc));
-  }
+    public saveDisc(discId: string, disc): Promise<Disc> {
+        return this.distant.saveDisc(discId, disc)
+            .then(savedDisc => this.local.saveDisc(discId, disc));
+    }
 
-  postDisc(discId: string, disc): Promise<Disc> {
-    throw new Error('IllegalUsage');
-  }
+    postDisc(discId: string, disc): Promise<Disc> {
+        throw new Error('IllegalUsage');
+    }
 
-  setCollectionNames(collectionsNames: string[]): Promise<string[]> {
-    return this.distant.setCollectionNames(collectionsNames)
-      .then(setNames => this.local.setCollectionNames(collectionsNames));
-  }
+    setCollectionNames(collectionsNames: string[]): Promise<string[]> {
+        return this.distant.setCollectionNames(collectionsNames)
+            .then(setNames => this.local.setCollectionNames(collectionsNames));
+    }
 
-  protected loadSyncState(): Promise<SyncState> {
-    throw new Error('IllegalUsage');
-  }
+    protected loadSyncState(): Promise<SyncState> {
+        throw new Error('IllegalUsage');
+    }
 
-  public saveSyncState(): Promise<SyncState> {
-    return this.distant.saveSyncState();
-  }
+    public saveSyncState(): Promise<SyncState> {
+        return this.distant.saveSyncState();
+    }
+
+    get connectedToGoogleDrive(): boolean {
+        return this.local.connectedToGoogleDrive || this.distant.connectedToGoogleDrive;
+    }
 }

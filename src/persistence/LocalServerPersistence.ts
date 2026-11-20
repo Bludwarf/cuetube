@@ -101,4 +101,8 @@ export class LocalServerPersistence extends Persistence {
         // FIXME implement
         throw new Error("LocalServerPersistence.saveSyncState TO IMPLEMENT");
     }
+
+    get connectedToGoogleDrive(): boolean {
+        return false;
+    }
 }

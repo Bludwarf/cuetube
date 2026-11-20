@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, EventEmitter, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, inject, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
 import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
@@ -10,7 +10,6 @@ import * as _ from 'underscore';
 import {GapiClientService} from '../gapi-client.service';
 import {SliderComponent} from '../slider/slider.component';
 import {ytparser} from '../../yt-parser';
-import {AppComponent} from '../app.component';
 import {HistoryUtils} from '../../HistoryUtils';
 import {Location as AngularLocation} from '@angular/common';
 import {SubscriptionLike as ISubscription} from 'rxjs';
@@ -31,8 +30,8 @@ import {ReleaseIdRepository} from '../musicbrainz/release-id-repository';
 import {RecordingRepository} from '../musicbrainz/recording-repository';
 import {CALME_COLLECTION_MBID, CollectionRepository} from '../musicbrainz/collection-repository';
 import {ReleaseRepository} from '../musicbrainz/release-repository';
+import {PersistenceService} from '../persistence/persistence.service';
 import Track = Disc.Track;
-import {GoogleApiYouTubeVideoResource} from '../../GoogleApiYouTubePatch';
 
 const YT_STATES = [
     'ENDED',
@@ -72,6 +71,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         this._currentCollectionNames = currentCollectionNames;
         this.pushStateOnlyNewOnCurrentCollectionNames();
     }
+
+    private readonly persistenceService = inject(PersistenceService);
 
     constructor(
         public http: HttpClient,
@@ -1553,7 +1554,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // TODO : remonter dans app
     getPersistence(): Persistence {
-        const persistence = AppComponent.getPersistence(this.localPersistence, this.http);
+        const persistence = this.persistenceService.getCurrentPersistence();
         console.log('getPersistence() => ' + persistence.title);
         return persistence;
     }

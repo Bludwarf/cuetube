@@ -461,6 +461,8 @@ export abstract class Persistence {
     public getAllDiscs(): Promise<Disc[]> {
         return this.getDiscIds().then(discIds => this.getDiscs(discIds));
     }
+    
+    abstract get connectedToGoogleDrive(): boolean;
 }
 
 

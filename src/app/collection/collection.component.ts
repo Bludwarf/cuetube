@@ -9,16 +9,18 @@ import {AppComponent} from '../app.component';
 import {from} from 'rxjs';
 import {stopPropagation} from '../../utils/utils';
 import {switchMap} from 'rxjs/internal/operators';
+import {GoogleDriveButtonComponent} from '../google-drive/google-drive-button/google-drive-button.component';
 import {RouterLink} from '@angular/router';
 import {injectCollection} from './collection.resolver';
 import Track = Disc.Track;
+import {PersistenceService} from '../persistence/persistence.service';
 
 @Component({
     selector: 'app-collection',
     imports: [
         ReactiveFormsModule,
-        FormsModule
         FormsModule,
+        GoogleDriveButtonComponent,
         RouterLink
     ],
     templateUrl: './collection.component.html',
@@ -26,6 +28,7 @@ import Track = Disc.Track;
 })
 export class CollectionComponent implements OnInit {
 
+    private readonly persistenceService = inject(PersistenceService);
     protected readonly collection = injectCollection();
     discs: Signal<Disc[]>;
     currentTrackInput = input<Track>();
@@ -43,11 +46,7 @@ export class CollectionComponent implements OnInit {
     }
 
     constructor() {
-        // FIXME il faudrait plutôt passer la persistence de l'extérieur
-        const httpClient = inject(HttpClient);
-        const localPersistence = new LocalStoragePersistence(httpClient);
-        const persistence = AppComponent.getPersistence(localPersistence, httpClient);
-
+        const persistence = this.persistenceService.getCurrentPersistence();
         this.discs = toSignal(
             toObservable(this.collection).pipe(
                 switchMap(collection =>
