@@ -28,8 +28,8 @@ export class LocalAndDistantPersistence<L extends Persistence, D extends Persist
         if (m) {
             const params = m[1].trim().split(/\s*,\s*/);
             return {
-                localName: params[1].slice(1, -1),
-                distantName: params[2].slice(1, -1),
+                localName: params[0].slice(1, -1),
+                distantName: params[1].slice(1, -1),
             };
         } else {
             throw new Error(`Nom de persistence invalide : ${persistenceName}`);
