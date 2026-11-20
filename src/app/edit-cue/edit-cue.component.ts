@@ -1,4 +1,4 @@
-import {Component, NgZone, OnInit} from '@angular/core';
+import {Component, inject, NgZone, OnInit} from '@angular/core';
 import {Disc} from '../../disc';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
 import {HttpClient} from '@angular/common/http';
@@ -6,10 +6,10 @@ import {GapiClientService} from '../gapi-client.service';
 import {Persistence} from '../../persistence';
 import * as _ from 'underscore';
 import $ from 'jquery';
-import {AppComponent} from '../app.component';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
-import Track = Disc.Track;
 import {getParameterByName} from '../../utils/utils';
+import {PersistenceService} from '../persistence/persistence.service';
+import Track = Disc.Track;
 
 @Component({
     selector: 'app-edit-cue',
@@ -20,6 +20,7 @@ import {getParameterByName} from '../../utils/utils';
 export class EditCueComponent implements OnInit {
 
     private localPersistence: LocalStoragePersistence;
+    private readonly persistenceService = inject(PersistenceService);
     private persistence: Persistence;
     disc: Disc;
     /** true si a commencé la création du disque depuis une autre page */
@@ -91,9 +92,8 @@ export class EditCueComponent implements OnInit {
         file.newTrack();
     }
 
-    // TODO : remonter dans app
     getPersistence(): Persistence {
-        return AppComponent.getPersistence(this.localPersistence, this.http);
+        return this.persistenceService.getCurrentPersistence();
     }
 
     save() {

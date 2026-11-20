@@ -38,18 +38,18 @@ export class GoogleDrivePersistence extends Persistence {
      *
      * Exemple :
      * {
- "error": {
-  "errors": [
-   {
-    "domain": "usageLimits",
-    "reason": "userRateLimitExceeded",
-    "message": "User Rate Limit Exceeded"
-   }
-  ],
-  "code": 403,
-  "message": "User Rate Limit Exceeded"
- }
-}
+     "error": {
+     "errors": [
+     {
+     "domain": "usageLimits",
+     "reason": "userRateLimitExceeded",
+     "message": "User Rate Limit Exceeded"
+     }
+     ],
+     "code": 403,
+     "message": "User Rate Limit Exceeded"
+     }
+     }
 
      */
     private apiCall: {
@@ -113,13 +113,13 @@ export class GoogleDrivePersistence extends Persistence {
                 return this.getGoogleFolder('PL', folders.cuesFolder.id, 'plCuesFolder').then(plCuesFolder => {
                     folders.plCuesFolder = plCuesFolder;
                     return folders;
-                })
+                });
             });
         }, e => {
-            const err : GoogleDriveError = e;
+            const err: GoogleDriveError = e;
             if (errorContains(err, {reason: 'notFound', location: 'fileId'})) {
                 if (confirm('Tu dois créér un dossier "CueTube" dans ton Drive mon gars sinon CueTube pourra pas l\'utiliser. ' +
-                    + 'Appuie sur OK quand c\'est fait...')) {
+                    +'Appuie sur OK quand c\'est fait...')) {
                     return this.getFolders();
                 } else {
                     throw err;
@@ -139,7 +139,7 @@ export class GoogleDrivePersistence extends Persistence {
      * @param fieldObject
      * @return {Promise<gapi.client.drive.File>}
      */
-    private getGoogleFolder(name: string, parentId: string, field: any, fieldObject : any = this): Promise<gapi.client.drive.File> {
+    private getGoogleFolder(name: string, parentId: string, field: any, fieldObject: any = this): Promise<gapi.client.drive.File> {
         return Promise.resolve(fieldObject[field]).then(file => {
             if (file) {
                 return file;
@@ -226,8 +226,8 @@ export class GoogleDrivePersistence extends Persistence {
      */
     public findGoogleFiles(pattern: RegExp, folderGoogleId: string): Promise<gapi.client.drive.File[]> {
         return this.gapiCall(gapi.client.drive.files.list({ // Step 5: Assemble the API request
-                q: `'${folderGoogleId}' in parents and trashed != true` // https://developers.google.com/drive/v3/web/search-parameters
-            }), `findGoogleFiles(${pattern}, "${folderGoogleId}")`)
+            q: `'${folderGoogleId}' in parents and trashed != true` // https://developers.google.com/drive/v3/web/search-parameters
+        }), `findGoogleFiles(${pattern}, "${folderGoogleId}")`)
             .then(res => res.result.files) // Extraction des noms de fichiers dans le dossier
             .then(files => files.filter(file => file.name.match(pattern)));
     }
@@ -238,9 +238,9 @@ export class GoogleDrivePersistence extends Persistence {
 
     private getFileContent(fileId: string): Promise<string> {
         return this.gapiCall(gapi.client.drive.files.get({ // Step 5: Assemble the API request
-                fileId: fileId,
-                alt: 'media'
-            }), `getFileContent("${fileId}")`)
+            fileId: fileId,
+            alt: 'media'
+        }), `getFileContent("${fileId}")`)
             .then(res => res.body)
             .then(body => StringUtils.utf8Decode(body));
     }
@@ -326,11 +326,11 @@ export class GoogleDrivePersistence extends Persistence {
             });
     }
 
-  protected _deleteCollection(collectionName: string): Promise<void> {
-    throw new Error('Not Implemented'); // FIXME
-  }
+    protected _deleteCollection(collectionName: string): Promise<void> {
+        throw new Error('Not Implemented'); // FIXME
+    }
 
-  /**
+    /**
      * Création ou modification si metadata.id
      * @param {string} metadata https://developers.google.com/drive/v3/reference/files (par exemple {name: 'fichier.cue'})
      * @param {string} data
@@ -411,7 +411,7 @@ export class GoogleDrivePersistence extends Persistence {
             if (discId.startsWith('PL')) {
                 return folders.plCuesFolder;
             } else {
-                return folders.cuesFolder
+                return folders.cuesFolder;
             }
         });
     }
@@ -423,7 +423,7 @@ export class GoogleDrivePersistence extends Persistence {
      */
     private getDiscFolder3Levels(discId: string): Promise<gapi.client.drive.File> {
         return this.getFolders()
-        // Recherche des sous-dossiers
+            // Recherche des sous-dossiers
             .then(folders => this.getGoogleFolders([
                 discId[0].toUpperCase(),
                 discId[1].toUpperCase(),
@@ -463,8 +463,8 @@ export class GoogleDrivePersistence extends Persistence {
             q += ` and '${folderGoogleId}' in parents`;
         }
         return this.gapiCall(gapi.client.drive.files.list({
-                q: q
-            }), `findGoogleFile("${name}", "${folderGoogleId}")`)
+            q: q
+        }), `findGoogleFile("${name}", "${folderGoogleId}")`)
             .then(res => res.result.files)
             // Fichier trouvé ?
             .then(files => {
@@ -483,7 +483,9 @@ export class GoogleDrivePersistence extends Persistence {
                         }).then(res => res.result);
                     }
                 }
-                if (files.length > 1) { throw new Error(`Plusieurs disques ${name} trouvés dans Google Drive : ${files.length}`); }
+                if (files.length > 1) {
+                    throw new Error(`Plusieurs disques ${name} trouvés dans Google Drive : ${files.length}`);
+                }
                 return files[0];
             });
     }
@@ -497,14 +499,14 @@ export class GoogleDrivePersistence extends Persistence {
     public gapiCall<T>(req: gapi.client.Request<T>, msg?: string): Promise<gapi.client.Response<T>> {
 
         const consoleStyle = `background: no-repeat left center url(https://cdn.iconscout.com/public/images/icon/free/png-128/` +
-          `google-drive-social-media-logo-3e5f787c082474e3-128x128.png);
+            `google-drive-social-media-logo-3e5f787c082474e3-128x128.png);
                     background-size: 16px;
                     padding-left: 20px;`;
         console.log(`%c Appel à GoogleDrive` + (msg ? ' : ' + msg : ''), consoleStyle);
         return this.apiCall.queue.add(() => req).then((res) => {
             return res;
         }).catch(err => {
-            console.error("Erreur gapiCall:", err)
+            console.error('Erreur gapiCall:', err);
             throw err;
         });
     }
@@ -539,7 +541,7 @@ export class GoogleDrivePersistence extends Persistence {
         return Promise.resolve(this.syncStateFile).then(syncStateFile => {
             if (!syncStateFile) {
                 return this.getRootFolder()
-                    .then(rootFolder => this.findGoogleFile('syncState.json', rootFolder.id))
+                    .then(rootFolder => this.findGoogleFile('syncState.json', rootFolder.id));
             } else {
                 return syncStateFile;
             }
@@ -560,7 +562,7 @@ export class GoogleDrivePersistence extends Persistence {
             content = JSON.stringify(syncState);
             return res;
         })
-        // Fichier existant ?
+            // Fichier existant ?
             .then(res => {
                 return this.findGoogleFile(filename, rootFolder.id); // TODO cache comme les collection ou les disques
             })
@@ -580,6 +582,10 @@ export class GoogleDrivePersistence extends Persistence {
                 console.log(`SyncState sauvegardé dans Google Drive`, file);
                 return syncState;
             });
+    }
+
+    get connectedToGoogleDrive(): boolean {
+        return true;
     }
 
 }
@@ -616,7 +622,7 @@ interface GoogleDriveErrorDetail {
     'location'?: string;
 }
 
-function errorContains(error : GoogleDriveError, errorDetail : GoogleDriveErrorDetail) {
+function errorContains(error: GoogleDriveError, errorDetail: GoogleDriveErrorDetail) {
     if (!error || !error.result || !error.result.error || !error.result.error.errors) {
         return false;
     }

@@ -6,6 +6,8 @@ import {Collection} from './Collection';
 import {md5} from './md5';
 import {cloneWithout} from './json-utils';
 
+// TODO ce serait mieux d'afficher des notifs quand une action longue est terminée, comme supprimer ou ajouter un disque ou une collection
+
 export abstract class Persistence {
 
     static DEFAULT_COLLECTION = '_default_';
@@ -461,6 +463,8 @@ export abstract class Persistence {
     public getAllDiscs(): Promise<Disc[]> {
         return this.getDiscIds().then(discIds => this.getDiscs(discIds));
     }
+
+    abstract get connectedToGoogleDrive(): boolean;
 }
 
 
@@ -700,4 +704,12 @@ function pushOnlyOnce<T>(array: T[], item: T) {
     if (!array.includes(item)) {
         array.push(item);
     }
+}
+
+// Pour permettre à LocalAndDistantPersistence d'appeler des méthodes protected
+export interface PersistenceWithPublicFields  {
+    loadSyncState(): Promise<SyncState>;
+    postCollection(collection: Collection): Promise<Collection>;
+    _deleteCollection(collectionName: string): Promise<void>;
+    postDisc(discId: string, disc: Disc): Promise<Disc>;
 }
