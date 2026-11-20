@@ -7,10 +7,13 @@ import {Collection} from '../Collection';
  * Tout est lu localement.
  * Tout est écrit localement d'abord puis à distance en parallèle.
  */
-export class LocalAndDistantPersistence<L extends Persistence & PersistenceWithPublicFields,
-    D extends Persistence & PersistenceWithPublicFields> extends Persistence {
+export class LocalAndDistantPersistence<L extends Persistence,
+    D extends Persistence> extends Persistence {
 
-    constructor(public local: L, public distant: D) {
+    public readonly local: L & PersistenceWithPublicFields;
+    public readonly distant: D & PersistenceWithPublicFields;
+
+    constructor(local: L, distant: D) {
         super(local.$http);
     }
 
