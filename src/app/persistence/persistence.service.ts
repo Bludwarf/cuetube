@@ -30,6 +30,7 @@ export class PersistenceService {
 
         const http = this.httpClient;
         const localPersistence = this.localPersistence;
+        console.log('persistenceName', persistenceName);
 
         if (persistenceName === GoogleDrivePersistence.TITLE) {
             if (!GoogleDrivePersistence) {
@@ -118,5 +119,9 @@ export class PersistenceService {
     get connectedToGoogleDrive(): boolean {
         const title = this.getCurrentPersistence().title;
         return title === GoogleDrivePersistence.TITLE;
+    }
+
+    disconnectFromGoogleDrive() {
+        localStorage.removeItem('persistence');
     }
 }

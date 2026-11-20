@@ -48,7 +48,7 @@ export class GoogleDriveButtonComponent {
     }
 
     disconnectGoogleDrive() {
-        this.ngZone.run(() => localStorage.removeItem('persistence'));
+        this.ngZone.run(() => this.persistenceService.disconnectFromGoogleDrive());
     }
 
 }
