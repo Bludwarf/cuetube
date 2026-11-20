@@ -5,15 +5,24 @@ import {Collection} from '../Collection';
 
 export class LocalStoragePersistence extends Persistence {
 
-    public static readonly TITLE = 'LocalStorage';
-    static DEFAULT_COLLECTION = '_DEFAULT_'; // FIXME utiliser la constante de player.component
-
     constructor($http: HttpClient) {
         super($http);
     }
 
     get title(): string {
         return LocalStoragePersistence.TITLE;
+    }
+
+    get connectedToGoogleDrive(): boolean {
+        return false;
+    }
+
+    public static readonly TITLE = 'LocalStorage';
+    static DEFAULT_COLLECTION = '_DEFAULT_'; // FIXME utiliser la constante de player.component
+
+    static getDiscId(key: string): string {
+        const m = key.match(/^disc\.([^.]+)\.cuesheet$/);
+        return m ? m[1] : undefined;
     }
 
     /**
@@ -101,7 +110,7 @@ export class LocalStoragePersistence extends Persistence {
         return collectionsNames;
     }
 
-    public async setDiscIds(discsIds: string[]): Promise<string[]> {
+    public setDiscIds(discsIds: string[]): string[] {
         this.setItem('discIds', discsIds);
         return discsIds;
     }
@@ -164,22 +173,12 @@ export class LocalStoragePersistence extends Persistence {
     }
 
     protected async loadSyncState(): Promise<SyncState> {
-        return await SyncState.load(localStorage.getItem('syncState'));
+        return SyncState.load(localStorage.getItem('syncState'));
     }
 
-    saveSyncState(): Promise<SyncState> {
-        return this.getSyncState().then(syncState => {
-            localStorage.setItem('syncState', JSON.stringify(syncState));
-            return syncState;
-        });
-    }
-
-    static getDiscId(key: string): string {
-        const m = key.match(/^disc\.([^.]+)\.cuesheet$/);
-        return m ? m[1] : undefined;
-    }
-
-    get connectedToGoogleDrive(): boolean {
-        return false;
+    async saveSyncState(): Promise<SyncState> {
+        const syncState = await this.getSyncState();
+        localStorage.setItem('syncState', JSON.stringify(syncState));
+        return syncState;
     }
 }

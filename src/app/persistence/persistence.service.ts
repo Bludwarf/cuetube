@@ -31,9 +31,6 @@ export class PersistenceService {
         const localPersistence = this.localPersistence;
 
         if (persistenceName === GoogleDrivePersistence.TITLE) {
-            if (!GoogleDrivePersistence) {
-                window.location.reload(); // FIXME bug à chaque démarrage auto en mode GoogleDrive
-            }
             return new GoogleDrivePersistence(http);
         }
         if (persistenceName === LocalStoragePersistence.TITLE) {
@@ -87,8 +84,9 @@ export class PersistenceService {
                 // On ne change pas de persistence pour accélérer les perfs
                 // puisse qu'on synchronise à chaque démarrage
                 const newPersistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
-                localStorage.setItem('persistence',
-                    `${newPersistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`);
+                const newPersistenceName = `${newPersistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`;
+                console.log('SersistenceService:localStorage.setItem(persistence)', newPersistenceName);
+                localStorage.setItem('persistence', newPersistenceName);
             } catch (err) {
                 console.error(err);
                 alert(`Erreur de synchro entre la persistance actuelle et Google Drive. L'appli va être rechargée pour éviter des appels inutiles à Google Drive.`);

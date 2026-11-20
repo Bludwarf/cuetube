@@ -1520,7 +1520,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
                     // puisse qu'on synchronise à chaque démarrage
                     // TODO : attention on crée avec this.persistence et pas localStorage
                     this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
-                    localStorage.setItem('persistence', `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`);
+                    const newPersistenceName = `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`;
+                    console.log('Player:localStorage.setItem(persistence)', newPersistenceName);
+                    localStorage.setItem('persistence', newPersistenceName);
 
                     this.init();
                 }).catch(err => {
