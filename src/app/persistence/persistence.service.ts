@@ -9,7 +9,7 @@ import {getParameterByName, notify} from '../../utils/utils';
 import {GapiClientService} from '../gapi-client.service';
 
 // TODO pour l'instant la correction du chargement de LocalAndDistantPersistence provoque une erreur "IllegalUsage"
-const persitenceFixFeatureFlag = false;
+const persitenceFixFeatureFlag = true;
 
 @Injectable({providedIn: 'root'})
 export class PersistenceService {
