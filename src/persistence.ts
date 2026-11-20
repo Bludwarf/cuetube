@@ -6,6 +6,8 @@ import {Collection} from './Collection';
 import {md5} from './md5';
 import {cloneWithout} from './json-utils';
 
+// TODO ce serait mieux d'afficher des notifs quand une action longue est terminée, comme supprimer ou ajouter un disque ou une collection
+
 export abstract class Persistence {
 
     static DEFAULT_COLLECTION = '_default_';
