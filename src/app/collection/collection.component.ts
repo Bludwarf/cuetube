@@ -3,17 +3,14 @@ import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 import Collection from '../../Collection';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Disc} from '../../disc';
-import {HttpClient} from '@angular/common/http';
-import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
-import {AppComponent} from '../app.component';
 import {from} from 'rxjs';
 import {stopPropagation} from '../../utils/utils';
 import {switchMap} from 'rxjs/internal/operators';
 import {GoogleDriveButtonComponent} from '../google-drive/google-drive-button/google-drive-button.component';
 import {RouterLink} from '@angular/router';
 import {injectCollection} from './collection.resolver';
-import Track = Disc.Track;
 import {PersistenceService} from '../persistence/persistence.service';
+import Track = Disc.Track;
 
 @Component({
     selector: 'app-collection',
@@ -50,7 +47,17 @@ export class CollectionComponent implements OnInit {
         this.discs = toSignal(
             toObservable(this.collection).pipe(
                 switchMap(collection =>
-                    from(Promise.all(collection.discIds.map(id => persistence.getDisc(id))))
+                    from(Promise.all(collection.discIds
+                        .map(id => {
+                            try {
+                                return persistence.getDisc(id);
+                            } catch (e) {
+                                console.error(`On ignore le disque suivant, car il est introuvable : ${id}`);
+                                return undefined;
+                            }
+                        })
+                        .filter(Boolean)
+                    ))
                 )
             )
         );
