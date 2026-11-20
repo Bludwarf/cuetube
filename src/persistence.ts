@@ -704,6 +704,10 @@ function pushOnlyOnce<T>(array: T[], item: T) {
     }
 }
 
+// Pour permettre à LocalAndDistantPersistence d'appeler des méthodes protected
 export interface PersistenceWithPublicFields  {
     loadSyncState(): Promise<SyncState>;
+    postCollection(collection: Collection): Promise<Collection>;
+    _deleteCollection(collectionName: string): Promise<void>;
+    postDisc(discId: string, disc: Disc): Promise<Disc>;
 }

@@ -10,9 +10,6 @@ import {Collection} from '../Collection';
 export class LocalAndDistantPersistence<L extends Persistence,
     D extends Persistence> extends Persistence {
 
-    public readonly local: L & PersistenceWithPublicFields;
-    public readonly distant: D & PersistenceWithPublicFields;
-
     constructor(local: L, distant: D) {
         super(local.$http);
         this.local = local as L & PersistenceWithPublicFields;
@@ -28,6 +25,9 @@ export class LocalAndDistantPersistence<L extends Persistence,
     }
 
     public static readonly TITLE = 'LocalAndDistant';
+
+    public readonly local: L & PersistenceWithPublicFields;
+    public readonly distant: D & PersistenceWithPublicFields;
 
     static persistenceNames(persistenceName: string): { localName: string, distantName: string } {
         const m = /LocalAndDistant\((.+)\)/.exec(persistenceName);
@@ -58,36 +58,24 @@ export class LocalAndDistantPersistence<L extends Persistence,
         return this.local.getDisc(discId);
     }
 
-    public saveCollection(collection: Collection): Promise<Collection> {
-        return this.distant.saveCollection(collection)
-            .then(savedCollection => this.local.saveCollection(collection));
+    async postCollection(collection: Collection): Promise<Collection> {
+        await this.distant.postCollection(collection);
+        return this.local.postCollection(collection);
     }
 
-    postCollection(collection: Collection): Promise<Collection> {
-        throw new Error('IllegalUsage');
+    protected async _deleteCollection(collectionName: string): Promise<void> {
+        await this.distant._deleteCollection(collectionName);
+        return this.local._deleteCollection(collectionName);
     }
 
-    async deleteCollection(collectionName: string): Promise<void> {
-        await this.distant.deleteCollection(collectionName);
-        return await this.local.deleteCollection(collectionName);
-    }
-
-    protected _deleteCollection(collectionName: string): Promise<void> {
-        throw new Error('IllegalUsage');
-    }
-
-    public async saveDisc(discId: string, disc): Promise<Disc> {
-        await this.distant.saveDisc(discId, disc);
-        return await this.local.saveDisc(discId, disc);
-    }
-
-    postDisc(discId: string, disc): Promise<Disc> {
-        throw new Error('IllegalUsage');
+    async postDisc(discId: string, disc: Disc): Promise<Disc> {
+        await this.distant.postDisc(discId, disc);
+        return this.local.postDisc(discId, disc);
     }
 
     async setCollectionNames(collectionsNames: string[]): Promise<string[]> {
-        const setNames = await this.distant.setCollectionNames(collectionsNames);
-        return await this.local.setCollectionNames(collectionsNames);
+        await this.distant.setCollectionNames(collectionsNames);
+        return this.local.setCollectionNames(collectionsNames);
     }
 
     protected async loadSyncState(): Promise<SyncState> {
