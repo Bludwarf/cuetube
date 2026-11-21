@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {AppModule} from '../../app.module';
 import {PlayerCollectionsComponent} from '../../player-collections/player-collections.component';
 
 @Component({

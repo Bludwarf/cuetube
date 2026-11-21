@@ -1,5 +1,5 @@
 import CueSheet = cuesheet.CueSheet;
-import { HttpClient } from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import * as CueParser from './scripts/CueParser';
 
 export class CueService {
@@ -28,7 +28,7 @@ export class CueService {
 
         const res = await fetch(cueUrl);
         if (res.status !== 200) {
-          throw new Error('HTTP ' + res.status);
+            throw new Error('HTTP ' + res.status);
         }
 
         const cueContent = await res.text();

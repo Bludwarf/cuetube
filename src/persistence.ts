@@ -17,26 +17,25 @@ export abstract class Persistence {
 
     private readonly notFoundDiscIds: string[] = [];
 
-    public getSyncState(): Promise<SyncState> {
-        return Promise.resolve(this._syncState)
-            .then(existingSyncState => {
-                if (!existingSyncState) {
-                    // Chargement de l'état de synchro si pas encore fait
-                    return this.loadSyncState()
-                        .catch(e => {
-                            console.warn('Impossible de charger le syncState : on le reconstruit...', e);
-                            return this.buildSyncState();
-                        })
-                        .then(loadedSyncState => {
-                            // Quelqu'un a peut-être déjà initialisé _syncState ?
-                            if (!this._syncState) {
-                                this._syncState = loadedSyncState;
-                            }
-                            return this._syncState;
-                        });
+    public async getSyncState(): Promise<SyncState> {
+        const existingSyncState = this._syncState;
+        if (!existingSyncState) {
+            // Chargement de l'état de synchro si pas encore fait
+            try {
+                const loadedSyncState = await this.loadSyncState();
+
+                // Quelqu'un a peut-être déjà initialisé _syncState ?
+                if (!this._syncState) {
+                    this._syncState = loadedSyncState;
                 }
-                return existingSyncState;
-            });
+
+                return this._syncState;
+            } catch (e) {
+                console.warn('Impossible de charger le syncState : on le reconstruit...', e);
+                return this.buildSyncState();
+            }
+        }
+        return existingSyncState;
     }
 
     /**
@@ -78,8 +77,8 @@ export abstract class Persistence {
     /**
      * @return {Promise<boolean>} true si init OK, false sinon
      */
-    public init(_params: any): Promise<boolean> {
-        return Promise.resolve(true);
+    public async init(_params: any): Promise<boolean> {
+        return true;
     }
 
     public abstract getCollectionNames(): Promise<string[]>;
@@ -99,56 +98,48 @@ export abstract class Persistence {
      */
     public abstract getCollection(collectionName: string): Promise<Collection>;
 
-    public getCollectionByNames(collectionsNames: string[]): Promise<{ [key: string]: Collection }> {
-        return Promise.all(collectionsNames.map(name => this.getCollection(name))).then(results => {
-            // conversion array => map
-            return results.reduce((map, collection) => {
-                if (collection) {
-                    map[collection.name] = collection;
-                } else {
-                    console.error(`getCollectionByNames("${collectionsNames}") : collection inconnue`);
-                }
-                return map;
-            }, {});
-        });
+    public async getCollectionByNames(collectionsNames: string[]): Promise<{ [key: string]: Collection }> {
+        const results = await Promise.all(collectionsNames.map(name => this.getCollection(name)));
+        return results.reduce((map, collection) => {
+            if (collection) {
+                map[collection.name] = collection;
+            } else {
+                console.error(`getCollectionByNames("${collectionsNames}") : collection inconnue`);
+            }
+            return map;
+        }, {});
     }
 
-    public saveCollection(collection: Collection): Promise<Collection> {
-        return this.postCollection(collection).then(savedCollection => {
-            return this.getSyncState().then(syncState => {
-                syncState.collections.push(savedCollection);
-                return savedCollection;
-            }).then(savedCollection2 => {
-                // TODO ajout d'un débrayage en cas de batch save
-                console.log('Sauvegarde de l\'état de la synchro...');
-                return this.saveSyncState().then(() => {
-                    console.log('Sauvegarde de l\'état de la synchro OK');
-                    return savedCollection2;
-                });
-            });
-        });
+    public async saveCollection(collection: Collection): Promise<Collection> {
+        const savedCollection = await this.postCollection(collection);
+        const syncState = await this.getSyncState();
+        syncState.collections.push(savedCollection);
+        const savedCollection2 = savedCollection;
+        // TODO ajout d'un débrayage en cas de batch save
+        console.log('Sauvegarde de l\'état de la synchro...');
+        await this.saveSyncState();
+        console.log('Sauvegarde de l\'état de la synchro OK');
+        return savedCollection2;
     }
 
     protected abstract postCollection(collection: Collection): Promise<Collection>;
 
-    public deleteCollection(collectionName: string): Promise<void> {
-        return this._deleteCollection(collectionName).then(() => {
-            return this.getSyncState().then(syncState => {
-                syncState.collections.removeById(collectionName);
-            }).then(() => {
-                // TODO ajout d'un débrayage en cas de batch save
-                console.log('Sauvegarde de l\'état de la synchro...');
-                return this.saveSyncState().then(() => {
-                    console.log('Sauvegarde de l\'état de la synchro OK');
-                });
-            });
-        });
+    public async deleteCollection(collectionName: string): Promise<void> {
+        await this._deleteCollection(collectionName);
+        const syncState = await this.getSyncState();
+        syncState.collections.removeById(collectionName);
+        // TODO ajout d'un débrayage en cas de batch save
+        console.log('Sauvegarde de l\'état de la synchro...');
+        await this.saveSyncState();
+        console.log('Sauvegarde de l\'état de la synchro OK');
     }
 
     protected abstract _deleteCollection(collectionName: string): Promise<void>;
 
-    saveCollections(collections: Collection[]): Promise<Collection[]> {
-        return Promise.all(collections.map(collection => this.saveCollection(collection)));
+    async saveCollections(collections: Collection[]): Promise<void> {
+        for (const collection of collections) {
+            await this.saveCollection(collection);
+        }
     }
 
     public async getOrCreateCollection(collectionName: string): Promise<Collection> {
@@ -172,19 +163,22 @@ export abstract class Persistence {
      * @param {string[]} discIds id des disques présents dans cette collection, annule et remplace les précédents
      * @return {Promise<string[]>}
      */
-    public saveCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
+    public async saveCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
         if (!collectionName) {
             collectionName = Persistence.DEFAULT_COLLECTION;
         }
-        return this.getCollection(collectionName).then(collection => {
-            if (!collection) {
-                collection = new Collection(collectionName);
-            }
-            return collection;
-        }).then(collection => {
-            collection.discIds = discIds;
-            return this.saveCollection(collection);
-        }).then(collection => collection.discIds);
+
+        let collection = await this.getCollection(collectionName);
+
+        if (!collection) {
+            collection = new Collection(collectionName);
+        }
+
+        collection.discIds = discIds;
+
+        const savedCollection = await this.saveCollection(collection);
+
+        return savedCollection.discIds;
     }
 
     public async newCollection(collectionName: string): Promise<Collection> {
@@ -227,20 +221,16 @@ export abstract class Persistence {
         );
     }
 
-    public saveDisc(discId: string, disc: Disc): Promise<Disc> {
-        return this.postDisc(discId, disc).then(savedDisc => {
-            return this.getSyncState().then(syncState => {
-                syncState.discs.push(savedDisc);
-                return savedDisc;
-            }).then(savedDisc2 => {
-                // TODO ajout d'un débrayage en cas de batch save
-                console.log('Sauvegarde de l\'état de la synchro...');
-                return this.saveSyncState().then(() => {
-                    console.log('Sauvegarde de l\'état de la synchro OK');
-                    return savedDisc2;
-                });
-            });
-        });
+    public async saveDisc(discId: string, disc: Disc): Promise<Disc> {
+        const savedDisc = await this.postDisc(discId, disc);
+        const syncState = await this.getSyncState();
+        syncState.discs.push(savedDisc);
+        const savedDisc2 = savedDisc;
+        // TODO ajout d'un débrayage en cas de batch save
+        console.log('Sauvegarde de l\'état de la synchro...');
+        await this.saveSyncState();
+        console.log('Sauvegarde de l\'état de la synchro OK');
+        return savedDisc2;
     }
 
     protected abstract postDisc(discId: string, disc: Disc): Promise<Disc>;
@@ -319,166 +309,138 @@ export abstract class Persistence {
 
         console.group('Synchro entre deux persistances en cours');
         const syncResult = new SyncResult();
-        let thisSyncState: SyncState, srcSyncState: SyncState;
 
-        // Synchro des collections
-        return Promise.all([this.getSyncState(), src.getSyncState()])
-            .then(syncStates => {
-                [thisSyncState, srcSyncState] = syncStates;
-                return syncStates;
-            })
-            .then(() => {
-                const thisCollectionNames = _.keys(thisSyncState.collections.elementsById);
-                const srcCollectionNames = _.keys(srcSyncState.collections.elementsById);
-                return [thisCollectionNames, srcCollectionNames];
-            })
-            .then(results => {
-                const [thisCollectionNames, srcCollectionNames] = results;
+        const thisSyncState = await this.getSyncState();
+        const srcSyncState = await src.getSyncState();
 
-                console.log('Début de la synchro des collections...');
+        const thisCollectionNames = _.keys(thisSyncState.collections.elementsById);
+        const srcCollectionNames = _.keys(srcSyncState.collections.elementsById);
 
-                return Promise.all([
+        console.log('Début de la synchro des collections...');
 
-                    /** Collections absentes dans this */
-                    Promise.all(srcCollectionNames.filter(name => !thisCollectionNames.includes(name))
-                        .map(srcCollectionName => {
-                            return src.getCollection(srcCollectionName).then(srcCollection => {
-                                syncResult.collections.pulled.push(srcCollection);
-                                return srcCollection;
-                            });
-                        })),
+        const missingCollectionsInThis = srcCollectionNames.filter(name => !thisCollectionNames.includes(name));
+        for (const collectionName of missingCollectionsInThis) {
+            const collection = await src.getCollection(collectionName);
+            syncResult.collections.pulled.push(collection);
+        }
 
-                    /** Collections absentes dans la source */
-                    Promise.all(thisCollectionNames.filter(name => !srcCollectionNames.includes(name))
-                        .map(thisCollectionName => {
-                            return this.getCollection(thisCollectionName).then(thisCollection => {
-                                syncResult.collections.pushed.push(thisCollection);
-                                return thisCollection;
-                            });
-                        })),
+        const missingCollectionsInSource = thisCollectionNames.filter(name => !srcCollectionNames.includes(name));
+        for (const collectionName of missingCollectionsInSource) {
+            const collection = await this.getCollection(collectionName);
+            syncResult.collections.pushed.push(collection);
+        }
 
-                    /** Collections en commun */
-                    Promise.all(thisCollectionNames.filter(name => srcCollectionNames.includes(name))
-                        .map(collectionName => {
-                            const thisChecksum = thisSyncState.collections.elementsById[collectionName].checksum;
-                            const srcChecksum = srcSyncState.collections.elementsById[collectionName].checksum;
-                            if (thisChecksum !== srcChecksum) {
-                                return Promise.all([this.getCollection(collectionName), src.getCollection(collectionName)])
-                                    .then(collections => syncCommonCollection(collections[0], collections[1], syncResult));
-                            } else {
-                                return Promise.resolve(null);
-                            }
-                        }))
-                ]);
+        // Collections en commun
+        const commonCollections = thisCollectionNames.filter(name => srcCollectionNames.includes(name));
+        for (const collectionName of commonCollections) {
+            const thisChecksum = thisSyncState.collections.elementsById[collectionName].checksum;
+            const srcChecksum = srcSyncState.collections.elementsById[collectionName].checksum;
+            if (thisChecksum !== srcChecksum) {
+                const thisCollection = await this.getCollection(collectionName);
+                const srcCollection = await src.getCollection(collectionName);
+                syncCommonCollection(thisCollection, srcCollection, syncResult);
+            }
+        }
 
-            }).then(() => {
-                const thisDiscIds = _.keys(thisSyncState.discs.elementsById);
-                const srcDiscIds = _.keys(srcSyncState.discs.elementsById);
-                return [thisDiscIds, srcDiscIds];
-            }).then(results => {
+        const thisDiscIds = _.keys(thisSyncState.discs.elementsById);
+        const srcDiscIds = _.keys(srcSyncState.discs.elementsById);
 
-                const [thisDiscIds, srcDiscIds] = results;
+        const discIdsToProcess = {
+            pull: srcDiscIds.filter(id => !thisDiscIds.includes(id)),
+            push: thisDiscIds.filter(id => !srcDiscIds.includes(id)),
+            common: thisDiscIds.filter(id => srcDiscIds.includes(id)),
+        };
+        console.log('Début de la synchro des disques...', discIdsToProcess);
 
-                const discIdsToProcess = {
-                    pull: srcDiscIds.filter(id => !thisDiscIds.includes(id)),
-                    push: thisDiscIds.filter(id => !srcDiscIds.includes(id)),
-                    common: thisDiscIds.filter(id => srcDiscIds.includes(id)),
-                };
-                console.log('Début de la synchro des disques...', discIdsToProcess);
-                return Promise.all([
+        // Disques absents dans this
+        for (const id of discIdsToProcess.pull) {
+            const srcDisc = await src.getDisc(id);
+            syncResult.discs.pulled.push(srcDisc);
+        }
 
-                    /** Disques absents dans this */
-                    Promise.all(discIdsToProcess.pull
-                        .map(async id => {
-                            const srcDisc = await src.getDisc(id);
-                            syncResult.discs.pulled.push(srcDisc);
-                            return srcDisc;
-                        })),
+        // Disques absents dans la source
+        try {
+            for (const id of discIdsToProcess.push) {
+                const thisDisc = await this.getDisc(id);
+                syncResult.discs.pushed.push(thisDisc);
+            }
+        } catch (e) {
+            console.error(`Erreur non bloquante lors de la récupération d'un disque local absent dans la source`, e);
+        }
 
-                    /** Disques absents dans la source */
-                    Promise.all(discIdsToProcess.push
-                        .map(async id => {
-                            const thisDisc = await this.getDisc(id);
-                            syncResult.discs.pushed.push(thisDisc);
-                            return thisDisc;
-                        }))
-                        .catch(e => {
-                            console.error(`Erreur non bloquante lors de la récupération d'un disque local absent dans la source`, e);
-                        }),
+        // Disques en commun
+        for (const id of discIdsToProcess.common) {
+            const thisChecksum = thisSyncState.discs.elementsById[id].checksum;
+            const srcChecksum = srcSyncState.discs.elementsById[id].checksum;
+            if (thisChecksum !== srcChecksum) {
 
-                    /** Disques en commun */
-                    Promise.all(discIdsToProcess.common
-                        .map(async id => {
-                            const thisChecksum = thisSyncState.discs.elementsById[id].checksum;
-                            const srcChecksum = srcSyncState.discs.elementsById[id].checksum;
-                            if (thisChecksum !== srcChecksum) {
+                // On prend le plus récent des deux
+                const thisLastmod = thisSyncState.discs.elementsById[id].lastmod;
+                const srcLastmod = srcSyncState.discs.elementsById[id].lastmod;
 
-                                // On prend le plus récent des deux
-                                const thisLastmod = thisSyncState.discs.elementsById[id].lastmod;
-                                const srcLastmod = srcSyncState.discs.elementsById[id].lastmod;
+                if (thisLastmod < srcLastmod) {
+                    const disc = await src.getDisc(id);
+                    console.log(`Disque ${disc.id} (${disc.title}) de la source plus récent`);
+                    pushOnlyOnce(syncResult.discs.common.pulled, disc);
+                } else if (thisLastmod > srcLastmod) {
+                    const disc = await this.getDisc(id);
+                    console.log(`Disque ${disc.id} (${disc.title}) plus récent que la source`);
+                    pushOnlyOnce(syncResult.discs.common.pushed, disc);
+                } else {
+                    const thisDisc = await this.getDisc(id);
+                    const srcDisc = await src.getDisc(id);
+                    syncCommonDisc(thisDisc, srcDisc, syncResult);
+                }
 
-                                if (thisLastmod < srcLastmod) {
-                                    const disc = await src.getDisc(id);
-                                    console.log(`Disque ${disc.id} (${disc.title}) de la source plus récent`);
-                                    pushOnlyOnce(syncResult.discs.common.pulled, disc);
-                                } else if (thisLastmod > srcLastmod) {
-                                    const disc = await this.getDisc(id);
-                                    console.log(`Disque ${disc.id} (${disc.title}) plus récent que la source`);
-                                    pushOnlyOnce(syncResult.discs.common.pushed, disc);
-                                } else {
-                                    const [thisDisc, srcDisc] = await Promise.all([this.getDisc(id), src.getDisc(id)]);
-                                    syncCommonDisc(thisDisc, srcDisc, syncResult);
-                                }
+            }
+        }
 
-                            } else {
-                                return Promise.resolve(null);
-                            }
-                        }))
-                ]);
+        // Sauvegardes dans les deux persistences
 
-            }).then(() => {
+        // Sauvegardes dans this
 
-                // Sauvegardes dans les deux persistences
-                return Promise.all([
+        // Collections créés dans this
+        for (const collection of syncResult.collections.pulled) {
+            await this.saveCollection(collection);
+        }
+        // Collections modifiées dans this
+        for (const collection of syncResult.collections.common.pulled) {
+            await this.saveCollection(collection);
+        }
+        // Disques créés dans this
+        for (const disc of syncResult.discs.pulled) {
+            await this.saveDisc(disc.id, disc);
+        }
+        // Disques modifiés dans this
+        for (const disc of syncResult.discs.common.pulled) {
+            await this.saveDisc(disc.id, disc);
+        }
 
-                    // Sauvegardes dans this
+        // Sauvegardes dans src
 
-                    // Collections créés dans this
-                    Promise.all(syncResult.collections.pulled.map(collection => this.saveCollection(collection))),
-                    // Collections modifiées dans this
-                    Promise.all(syncResult.collections.common.pulled.map(collection => this.saveCollection(collection))),
-                    // Disques créés dans this
-                    Promise.all(syncResult.discs.pulled.map(disc => this.saveDisc(disc.id, disc))),
-                    // Disques modifiés dans this
-                    Promise.all(syncResult.discs.common.pulled.map(disc => this.saveDisc(disc.id, disc))),
+        // Collections créés dans src
+        for (const collection of syncResult.collections.pushed) {
+            await src.saveCollection(collection);
+        }
+        // Collections modifiées dans src
+        for (const collection of syncResult.collections.common.pushed) {
+            await src.saveCollection(collection);
+        }
+        // Disques créés dans src
+        for (const disc of syncResult.discs.pushed) {
+            await src.saveDisc(disc.id, disc);
+        }
+        // Disques modifiés dans src
+        for (const disc of syncResult.discs.common.pushed) {
+            await src.saveDisc(disc.id, disc);
+        }
 
-                    // Sauvegardes dans src
+        console.log('Sauvegarde de l\'état de synchro dans les deux persistances...');
+        await this.saveSyncState();
+        await src.saveSyncState();
 
-                    // Collections créés dans src
-                    Promise.all(syncResult.collections.pushed.map(collection => src.saveCollection(collection))),
-                    // Collections modifiées dans src
-                    Promise.all(syncResult.collections.common.pushed.map(collection => src.saveCollection(collection))),
-                    // Disques créés dans src
-                    Promise.all(syncResult.discs.pushed.map(disc => src.saveDisc(disc.id, disc))),
-                    // Disques modifiés dans src
-                    Promise.all(syncResult.discs.common.pushed.map(disc => src.saveDisc(disc.id, disc)))
-
-                ]);
-
-            }).then(() => {
-
-                console.log('Sauvegarde de l\'état de synchro dans les deux persistances...');
-                return Promise.all([
-                    this.saveSyncState(),
-                    src.saveSyncState()
-                ]);
-
-            }).then(() => {
-
-                // TODO : post dans les deux persistences
-                return syncResult;
-
-            });
+        // TODO : post dans les deux persistences
+        return syncResult;
     }
 
     /**
@@ -612,7 +574,7 @@ export class SyncStateElement<T> {
 
     public /* readonly */ created = new Date();
     public lastmod = new Date();
-    public checksum;
+    public checksum: string;
 
     constructor(syncedElement: T, public parent: SyncStateElements<T>) {
         if (syncedElement) {

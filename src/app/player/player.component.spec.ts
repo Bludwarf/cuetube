@@ -1,4 +1,4 @@
-import {waitForAsync, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 
 import {PlayerComponent} from './player.component';
 import {AppComponent} from '../app.component';
@@ -8,33 +8,33 @@ import {PlayerCollectionsComponent} from '../player-collections/player-collectio
 import {imports, providers} from '../app.module';
 
 describe('PlayerComponent', () => {
-  let component: PlayerComponent;
-  let fixture: ComponentFixture<PlayerComponent>;
+    let component: PlayerComponent;
+    let fixture: ComponentFixture<PlayerComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [
-        AppComponent,
-        PlayerComponent,
-        SliderComponent,
-        PlayerCollectionsComponent
-      ],
-      imports: [
-        RouterTestingModule,
-        ...imports
-      ],
-      providers
-    })
-    .compileComponents();
-  }));
+    beforeEach(waitForAsync(() => {
+        TestBed.configureTestingModule({
+            declarations: [
+                AppComponent,
+                PlayerComponent,
+                SliderComponent,
+                PlayerCollectionsComponent
+            ],
+            imports: [
+                RouterTestingModule,
+                ...imports
+            ],
+            providers
+        })
+            .compileComponents();
+    }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(PlayerComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(PlayerComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

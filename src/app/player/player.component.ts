@@ -49,7 +49,7 @@ const DEFAULT_COLLECTION = '_DEFAULT_';
     styleUrls: ['./player.component.css'],
     standalone: false
 })
-export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
+export class PlayerComponent implements OnInit, OnDestroy {
 
     get collectionNames(): string[] {
         return this._collectionNames;
@@ -177,9 +177,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild(SliderComponent, {static: true})
     slider: SliderComponent;
 
-    @ViewChild(GoogleDriveButtonComponent, {static: true})
-    googleDriveButton: GoogleDriveButtonComponent;
-
     private lastCheckedTime: number;
     private nextCheckCurrentTime: number;
     /** prochain appel */
@@ -295,6 +292,11 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         const current = this.prefs.getCurrentPlayerState();
         if (current) {
             this.slider.value = current.time;
+        }
+
+        console.log('this.prefs.isConnectedToGoogleDrive()', this.prefs.isConnectedToGoogleDrive());
+        if (this.prefs.isConnectedToGoogleDrive()) {
+            await this.persistenceService.connectToGoogleDrive();
         }
 
         /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
@@ -1512,34 +1514,22 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     }
 
-    loadDisc(discId: string): Promise<Disc> {
+    async loadDisc(discId: string): Promise<Disc> {
 
         console.log(`Chargement du disque ${discId}`);
 
         // Recherche d'abord dans la mémoire
-        let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
-        return new Promise<Disc>(resolve => {
-            return resolve(this.persistence.getDisc(discId));
-        })
-            .catch(resKO => {
-                console.error(`Error lors de la récupération du disque ${discId}:`, resKO || resKO.data);
-                if (continueConfirm) {
-                    continueConfirm = prompt('Veuillez ajouter la cuesheet ' + discId, discId) !== null;
-                }
-                return <Disc>null;
-            })
-            .then(disc => {
-                if (disc) {
-                    enrichDisc(disc, this);
+        const disc = await this.persistence.findDisc(discId);
+        if (disc) {
+            enrichDisc(disc, this);
 
-                    // Reprise des paramètres sauvegardés
-                    this.prefs.restoreDisc(disc);
+            // Reprise des paramètres sauvegardés
+            this.prefs.restoreDisc(disc);
 
-                    // Ajout dans le player
-                    this.addDisc(disc);
-                    return disc;
-                }
-            });
+            // Ajout dans le player
+            this.addDisc(disc);
+            return disc;
+        }
     }
 
     /**
@@ -1682,12 +1672,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             d.setTime(d.getTime() + offset * 1000);
         }
         return d.toTimeString().substring(0, 5);
-    }
-
-    async ngAfterViewInit(): Promise<void> {
-        if (this.prefs.isConnectedToGoogleDrive()) {
-            await this.googleDriveButton.connectToGoogleDrive();
-        }
     }
 
     ngOnDestroy(): void {

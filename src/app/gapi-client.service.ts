@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 
 
 const GOOGLE_AUTH_PARAMS = {
@@ -23,7 +23,8 @@ const GOOGLE_AUTH_PARAMS = {
 @Injectable()
 export class GapiClientService {
 
-  constructor() { }
+    constructor() {
+    }
 
     // TODO : pourquoi on doit rappeler load + init même si on est connecté ?
     init(params): Promise<void> {
@@ -33,51 +34,51 @@ export class GapiClientService {
         }
 
         return Promise.resolve().then(() => {
-          if (typeof(gapi) !== 'undefined') {
-            return gapi;
-          } else {
-            // src : https://stackoverflow.com/a/31145147/1655155
-            // promise that would be resolved when gapi would be loaded
-            return new Promise((resolve, reject) => {
-              (<any>window).onLoadCallback = function() {
-                resolve(gapi);
-              };
-            });
+            if (typeof (gapi) !== 'undefined') {
+                return gapi;
+            } else {
+                // src : https://stackoverflow.com/a/31145147/1655155
+                // promise that would be resolved when gapi would be loaded
+                return new Promise((resolve, reject) => {
+                    (<any>window).onLoadCallback = function () {
+                        resolve(gapi);
+                    };
+                });
 
-            // var authInited = gapiPromise.then(function(){
-            //   gapi.auth2.init({
-            //     client_id: 'filler_text_for_client_id.apps.googleusercontent.com'
-            //   });
-            // })
+                // var authInited = gapiPromise.then(function(){
+                //   gapi.auth2.init({
+                //     client_id: 'filler_text_for_client_id.apps.googleusercontent.com'
+                //   });
+                // })
 
 
-            // $('#btn').click(function(){
-            //   gapiPromise.then(function(){
-            //     // will be executed after gapi is loaded
-            //   });
-            //
-            //   authInited.then(function(){
-            //     // will be executed after gapi is loaded, and gapi.auth2.init was called
-            //   });
-            // });
-          }
+                // $('#btn').click(function(){
+                //   gapiPromise.then(function(){
+                //     // will be executed after gapi is loaded
+                //   });
+                //
+                //   authInited.then(function(){
+                //     // will be executed after gapi is loaded, and gapi.auth2.init was called
+                //   });
+                // });
+            }
         }).then((resolvedGapi) => {
-          return new Promise((resolve, reject) => {
-            gapi.load('client', function start() {
-              gapi.client.init(params).then(() => {
-                const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
-                if (!isSignedIn) {
-                  return gapi.auth2.getAuthInstance().signIn();
-                }
-              }, reason => {
-                console.error(name, 'getConnection Google Drive error:', reason || reason.result || reason.result.error.message);
-                alert('Échec de connexion à Google Drive');
-                reject(reason);
-              }).then(() => {
-                resolve();
-              });
+            return new Promise((resolve, reject) => {
+                gapi.load('client', function start() {
+                    gapi.client.init(params).then(() => {
+                        const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+                        if (!isSignedIn) {
+                            return gapi.auth2.getAuthInstance().signIn();
+                        }
+                    }, reason => {
+                        console.error(name, 'getConnection Google Drive error:', reason || reason.result || reason.result.error.message);
+                        alert('Échec de connexion à Google Drive');
+                        reject(reason);
+                    }).then(() => {
+                        resolve();
+                    });
+                });
             });
-          });
         });
     }
 

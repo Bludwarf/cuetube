@@ -66,6 +66,7 @@ export class PersistenceService {
     }
 
     async connectToGoogleDrive(connectingCb?: (connecting: boolean) => any) {
+        notify(`Connexion à Google Drive...`);
         connectingCb?.(true);
         const persistence = this.getCurrentPersistence();
         const oldPersistence = persistence instanceof GoogleDrivePersistence ? this.localPersistence : persistence;

@@ -4,7 +4,7 @@ export abstract class CheckboxSelector<I> {
     private lastCheckedIndex: number | undefined;
 
     afterClickCheckbox(e: MouseEvent, index: number) {
-        const input  = e.currentTarget as HTMLInputElement;
+        const input = e.currentTarget as HTMLInputElement;
 
         // Alt + Click => activer/désactiver tous les autres
         if (e.altKey) {

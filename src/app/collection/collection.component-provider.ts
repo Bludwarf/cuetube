@@ -3,8 +3,6 @@ import {computed, inject, InjectionToken, Provider, Signal} from '@angular/core'
 import Collection from '../../Collection';
 import {ActivatedRoute} from '@angular/router';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {BehaviorSubject} from 'rxjs';
-import {injectActivatedRouteData} from '../../utils/angular-utils';
 
 // token to access a stream with the information you need
 const COLLECTION = new InjectionToken<Signal<Collection>>(
