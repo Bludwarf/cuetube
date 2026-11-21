@@ -17,26 +17,25 @@ export abstract class Persistence {
 
     private readonly notFoundDiscIds: string[] = [];
 
-    public getSyncState(): Promise<SyncState> {
-        return Promise.resolve(this._syncState)
-            .then(existingSyncState => {
-                if (!existingSyncState) {
-                    // Chargement de l'état de synchro si pas encore fait
-                    return this.loadSyncState()
-                        .catch(e => {
-                            console.warn('Impossible de charger le syncState : on le reconstruit...', e);
-                            return this.buildSyncState();
-                        })
-                        .then(loadedSyncState => {
-                            // Quelqu'un a peut-être déjà initialisé _syncState ?
-                            if (!this._syncState) {
-                                this._syncState = loadedSyncState;
-                            }
-                            return this._syncState;
-                        });
+    public async getSyncState(): Promise<SyncState> {
+        const existingSyncState = this._syncState;
+        if (!existingSyncState) {
+            // Chargement de l'état de synchro si pas encore fait
+            try {
+                const loadedSyncState = await this.loadSyncState();
+
+                // Quelqu'un a peut-être déjà initialisé _syncState ?
+                if (!this._syncState) {
+                    this._syncState = loadedSyncState;
                 }
-                return existingSyncState;
-            });
+
+                return this._syncState;
+            } catch (e) {
+                console.warn('Impossible de charger le syncState : on le reconstruit...', e);
+                return this.buildSyncState();
+            }
+        }
+        return existingSyncState;
     }
 
     /**
@@ -99,18 +98,16 @@ export abstract class Persistence {
      */
     public abstract getCollection(collectionName: string): Promise<Collection>;
 
-    public getCollectionByNames(collectionsNames: string[]): Promise<{ [key: string]: Collection }> {
-        return Promise.all(collectionsNames.map(name => this.getCollection(name))).then(results => {
-            // conversion array => map
-            return results.reduce((map, collection) => {
-                if (collection) {
-                    map[collection.name] = collection;
-                } else {
-                    console.error(`getCollectionByNames("${collectionsNames}") : collection inconnue`);
-                }
-                return map;
-            }, {});
-        });
+    public async getCollectionByNames(collectionsNames: string[]): Promise<{ [key: string]: Collection }> {
+        const results = await Promise.all(collectionsNames.map(name => this.getCollection(name)));
+        return results.reduce((map, collection) => {
+            if (collection) {
+                map[collection.name] = collection;
+            } else {
+                console.error(`getCollectionByNames("${collectionsNames}") : collection inconnue`);
+            }
+            return map;
+        }, {});
     }
 
     public saveCollection(collection: Collection): Promise<Collection> {
