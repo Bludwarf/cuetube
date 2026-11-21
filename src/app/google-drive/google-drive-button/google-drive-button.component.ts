@@ -23,13 +23,13 @@ export class GoogleDriveButtonComponent {
     }
 
     // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
-    async connectGoogleDrive() {
+    async connectToGoogleDrive() {
         if (await this.checkStorageAccess()) {
-            await this.connectGoogleDrive2();
+            await this.connectToGoogleDriveV2();
         }
     }
 
-    async checkStorageAccess() {
+    private async checkStorageAccess() {
         if ('requestStorageAccess' in document) {
             try {
                 await document.requestStorageAccess();
@@ -41,13 +41,13 @@ export class GoogleDriveButtonComponent {
         }
     }
 
-    async connectGoogleDrive2() {
+    private async connectToGoogleDriveV2() {
         await this.persistenceService.connectToGoogleDrive(connecting => {
             this.ngZone.run(() => this.connecting = connecting);
         });
     }
 
-    disconnectGoogleDrive() {
+    disconnectFromGoogleDrive() {
         this.ngZone.run(() => this.persistenceService.disconnectFromGoogleDrive());
     }
 

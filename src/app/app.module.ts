@@ -18,6 +18,7 @@ import {LocalStoragePrefsService} from './local-storage-prefs.service';
 import {provideHttpClient} from '@angular/common/http';
 import {CollectionComponent} from './collection/collection.component';
 import {collectionResolver} from './collection/collection.resolver';
+import {GoogleDriveButtonComponent} from './google-drive/google-drive-button/google-drive-button.component';
 
 const appRoutes: Routes = [
     {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
@@ -69,7 +70,8 @@ export const providers = [
             // Sauf si on utilise (exemple pour un number) : input<number, string>(0, {transform: Number})
             bindToComponentInputs: true,
         }),
-        ...imports
+        ...imports,
+        GoogleDriveButtonComponent
     ],
     providers,
     bootstrap: [AppComponent]

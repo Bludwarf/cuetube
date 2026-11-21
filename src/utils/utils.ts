@@ -160,3 +160,11 @@ export function pad2(i: number): string {
 export function stopPropagation(e: Event): void {
     e.stopPropagation(); // pour ne pas appeler document.onclick
 }
+
+export function stringToBoolean(booleanStringValue: string): boolean {
+    return Boolean(JSON.parse(booleanStringValue));
+}
+
+export function booleanToString(boolean: boolean): string {
+    return JSON.stringify(boolean);
+}

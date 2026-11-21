@@ -2,7 +2,7 @@
 <!--<button id="signin2-button" class="btn btn-default">Connexion</button>-->
 
 <button id="logout-btn" class="btn btn-default"
-        (click)="connected ? disconnectGoogleDrive() : connectGoogleDrive()">
+        (click)="connected ? disconnectFromGoogleDrive() : connectToGoogleDrive()">
     @if (connecting) {
         Connexion...
     } @else if (connected) {

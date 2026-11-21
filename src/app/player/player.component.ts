@@ -1,7 +1,6 @@
 import {AfterViewInit, Component, EventEmitter, inject, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
-import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
 import {Disc} from '../../disc';
 import {Collection} from '../../Collection';
 import {Persistence} from '../../persistence';
@@ -16,7 +15,6 @@ import {SubscriptionLike as ISubscription} from 'rxjs';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import $ from 'jquery';
 import {environment} from '../../environments/environment-with-dot-env';
-import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {formatHMSS, getParameterByName, notify, stopPropagation, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {
@@ -31,6 +29,7 @@ import {RecordingRepository} from '../musicbrainz/recording-repository';
 import {CALME_COLLECTION_MBID, CollectionRepository} from '../musicbrainz/collection-repository';
 import {ReleaseRepository} from '../musicbrainz/release-repository';
 import {PersistenceService} from '../persistence/persistence.service';
+import {GoogleDriveButtonComponent} from '../google-drive/google-drive-button/google-drive-button.component';
 import Track = Disc.Track;
 
 const YT_STATES = [
@@ -104,9 +103,13 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     private cueService: CueService;
 
-    private localPersistence: LocalStoragePersistence;
-    public googleDrivePersistence: GoogleDrivePersistence; // debug
-    private persistence: Persistence;
+    private get localPersistence(): LocalStoragePersistence {
+        return this.persistenceService.localPersistence;
+    }
+
+    private get persistence(): Persistence {
+        return this.persistenceService.getCurrentPersistence();
+    }
 
     private discsParam: string;
     private discIds: string[];
@@ -173,6 +176,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     };
     @ViewChild(SliderComponent, {static: true})
     slider: SliderComponent;
+
+    @ViewChild(GoogleDriveButtonComponent, {static: true})
+    googleDriveButton: GoogleDriveButtonComponent;
 
     private lastCheckedTime: number;
     private nextCheckCurrentTime: number;
@@ -277,13 +283,11 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         });
     }
 
-    ngOnInit() {
+    async ngOnInit() {
 
         // FIXME pour debugger
         this.enrichWindow((<any>window));
 
-        this.localPersistence = new LocalStoragePersistence(this.http);
-        this.persistence = this.getPersistence();
         this.discsParam = getParameterByName('discs', document.location.search);
 
         // Paramètres
@@ -321,7 +325,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
-        this.init(); // TODO : on devrait attendre l'authent Google avant d'initialiser
+        await this.init(); // TODO : on devrait attendre l'authent Google avant d'initialiser
 
         this.debugData = {
             getVideoSnippet: undefined
@@ -1479,91 +1483,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
-    // gapiClient.isSignedIn(GOOGLE_AUTH_PARAMS.clientId).then(isSignedIn => this.connectedToGoogleDrive = isSignedIn);
-    // TODO utiliser plutôt app-google-drive-button
-    connectGoogleDrive() {
-
-        const loginBtn = document.getElementById('login-btn');
-        loginBtn.innerText = 'requestStorageAccess...';
-        // this.hidePlayer();
-
-        if ('requestStorageAccess' in document) {
-            document.requestStorageAccess().catch(() => {
-                alert('requestStorageAccess refusé');
-            }).then(() => {
-                this.connectGoogleDrive2();
-            });
-        }
-    }
-
-    // TODO utiliser plutôt app-google-drive-button
-    connectGoogleDrive2() {
-        const loginBtn = document.getElementById('login-btn');
-        loginBtn.innerText = 'Connexion...';
-
-        const oldPersistence = this.persistence instanceof GoogleDrivePersistence ? this.localPersistence : this.persistence;
-        const googleDrivePersistence = new GoogleDrivePersistence(this.http);
-        this.googleDrivePersistence = googleDrivePersistence; // debug
-        googleDrivePersistence.init({gapiClient: this.gapiClient}).then(isInit => {
-
-            if (isInit) {
-                notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
-                loginBtn.innerText = 'Connecté·e';
-                this.connectedToGoogleDrive = true;
-                localStorage.setItem('connectedToGoogleDrive', 'true');  // TODO pas en double avec prefs ?
-
-                // synchro avec l'ancienne persistance pour ne rien perdre
-                oldPersistence.sync(googleDrivePersistence).then(syncResult => {
-                    const message = `Synchro terminée avec ${googleDrivePersistence.title}`;
-                    console.log(message);
-                    console.log(syncResult);
-                    notify(message);
-
-                    // On ne change pas de persistence pour accélérer les perfs
-                    // puisse qu'on synchronise à chaque démarrage
-                    // TODO : attention on crée avec this.persistence et pas localStorage
-                    this.persistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
-                    const newPersistenceName = `${this.persistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`;
-                    localStorage.setItem('persistence', newPersistenceName);
-
-                    this.init();
-                }).catch(err => {
-                    loginBtn.innerText = 'Connecté·e';
-                    console.error(err);
-                    alert(`Erreur de synchro entre la persistance actuelle et Google Drive. L'appli va être rechargée pour éviter des appels inutiles à Google Drive.`);
-                    location.reload();
-                });
-            } else {
-                loginBtn.innerText = 'Google Drive';
-                // this.showPlayer();
-            }
-        }).catch(err => {
-            loginBtn.innerText = 'Google Drive';
-            // this.showPlayer();
-            alert('Erreur de connexion à Google Drive');
-            console.error(err);
-        });
-    }
-
-    // TODO utiliser plutôt app-google-drive-button
-    disconnectGoogleDrive() {
-        // TODO
-        this.connectedToGoogleDrive = false;
-        const loginBtn = document.getElementById('login-btn');
-
-        localStorage.removeItem('persistence');
-        this.persistence = this.getPersistence();
-
-        loginBtn.innerText = 'Google Drive';
-    }
-
-    getPersistence(): Persistence {
-        const persistence = this.persistenceService.getCurrentPersistence();
-        console.log('getPersistence() => ' + persistence.title);
-        return persistence;
-    }
-
-    loadDiscs(discIdsToLoad: string[]): Promise<Disc[]> {
+    async loadDiscs(discIdsToLoad: string[]): Promise<Disc[]> {
 
         console.log('Chargement des disques :', discIdsToLoad);
         this.hidePlayer();
@@ -1571,25 +1491,24 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         this.discs = [];
         const discLoaders = discIdsToLoad.map(discId => this.loadDisc(discId));
 
-        return Promise.all(discLoaders.map(p => p.catch(e => {
-            console.error('Erreur lors du chargement du disque', e);
-            return undefined;
-        })))
-            .then(loadedAndUndefinedDiscs => {
-                const loadedDiscs = loadedAndUndefinedDiscs.filter(disc => disc);
-                console.log('Disques chargés :', loadedDiscs);
-                this.discs = loadedDiscs;
-                if (!this.isInitYT) {
-                    this.initYT(); // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
-                } else {
-                    this.showPlayer();
-                }
-                return loadedDiscs;
-            })
-            .catch(e => {
-                console.error('Erreur après le chargement des disques', e);
-                return [];
-            });
+        try {
+            const loadedAndUndefinedDiscs = await Promise.all(discLoaders.map(p => p.catch(e => {
+                console.error('Erreur lors du chargement du disque', e);
+                return undefined;
+            })));
+            const loadedDiscs = loadedAndUndefinedDiscs.filter(disc => disc);
+            console.log('Disques chargés :', loadedDiscs);
+            this.discs = loadedDiscs;
+            if (!this.isInitYT) {
+                this.initYT(); // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
+            } else {
+                this.showPlayer();
+            }
+            return loadedDiscs;
+        } catch (e_1) {
+            console.error('Erreur après le chargement des disques', e_1);
+            return [];
+        }
 
     }
 
@@ -1765,10 +1684,9 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         return d.toTimeString().substring(0, 5);
     }
 
-    ngAfterViewInit(): void {
-        console.log('ngAfterViewInit');
+    async ngAfterViewInit(): Promise<void> {
         if (this.prefs.isConnectedToGoogleDrive()) {
-            this.connectGoogleDrive();
+            await this.googleDriveButton.connectToGoogleDrive();
         }
     }
 

@@ -7,13 +7,15 @@ import {LocalServerPersistence} from '../../persistence/LocalServerPersistence';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {getParameterByName, notify} from '../../utils/utils';
 import {GapiClientService} from '../gapi-client.service';
+import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 
 @Injectable({providedIn: 'root'})
 export class PersistenceService {
     private readonly httpClient = inject(HttpClient);
-    private readonly localPersistence = new LocalStoragePersistence(this.httpClient);
+    readonly localPersistence = new LocalStoragePersistence(this.httpClient);
     private readonly googleDrivePersistence = new GoogleDrivePersistence(this.httpClient);
     private readonly gapiClient = inject(GapiClientService);
+    private readonly prefsService = inject(LocalStoragePrefsService);
 
     // TODO revoir la gestion du stockage persistenceName, il faudrait supprimer localStorage.setItem('persistence'
     private persistenceName: string | undefined;
@@ -73,7 +75,7 @@ export class PersistenceService {
 
         if (isInit) {
             notify(`Démarrage de la synchro avec ${googleDrivePersistence.title}...`);
-            localStorage.setItem('connectedToGoogleDrive', 'true'); // TODO utiliser plutôt local-storage-prefs pour sauvegarder le statut de la connexion
+            this.prefsService.connectedToGoogleDrive = true;
 
             // synchro avec l'ancienne persistance pour ne rien perdre
             try {
@@ -119,6 +121,6 @@ export class PersistenceService {
     // TODO ajouter un connectingCb comme connectToGoogleDrive
     disconnectFromGoogleDrive() {
         delete this.persistenceName;
-        // TODO utiliser local-storage-prefs pour sauvegarder le statut de la déconnexion
+        this.prefsService.connectedToGoogleDrive = false;
     }
 }
