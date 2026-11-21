@@ -294,6 +294,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
             this.slider.value = current.time;
         }
 
+        console.log('this.prefs.isConnectedToGoogleDrive()', this.prefs.isConnectedToGoogleDrive());
         if (this.prefs.isConnectedToGoogleDrive()) {
             await this.persistenceService.connectToGoogleDrive();
         }
