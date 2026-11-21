@@ -194,7 +194,7 @@ export abstract class Persistence {
 
     public async findDisc(discId: string): Promise<Disc | undefined> {
         try {
-            const disc = this.getDisc(discId);
+            const disc = await this.getDisc(discId);
             remove(discId, this.notFoundDiscIds);
             return disc;
         } catch (e) {
