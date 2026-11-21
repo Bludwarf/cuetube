@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/app.component.css"],
+  "sourcesContent": ["\n.vertical-scroll {\n    /* position: absolute; */\n    height: 100%;\n    overflow-y: scroll;\n}\n\n.fixed-row {\n    position: fixed;\n    top: 0;\n    bottom: 0;\n}\n\n/* Affichage devant tout le reste de l'\u00E9cran */\n#foreground-overlay {\n    background: #292929;\n    opacity: 0.9;\n    top: 0;\n    left: 0;\n    bottom: 0;\n    right: 0;\n    position: fixed;\n    z-index: 1000;\n}\n\n.center-parent {\n    position: relative;\n}\n\n.center {\n    text-align: center;\n    margin: auto auto;\n\n    position: absolute;\n    top: 50%; /* pouss\u00E9 de la moiti\u00E9 de hauteur du r\u00E9f\u00E9rent */\n    left: 50%;\n    transform: translateY(-50%) translateX(-50%); /* tir\u00E9 de la moiti\u00E9 de sa propre hauteur */\n}\n"],
+  "mappings": "AACA,CAAC,gBAEG,OAAQ,KACR,WAAY,MAChB,CAEA,CAAC,UACG,SAAU,MACV,IAAK,EACL,OAAQ,CACZ,CAGA,CAAC,mBACG,WAAY,QACZ,QAAS,GACT,MAAK,EAIL,SAAU,MACV,QAAS,IACb,CAEA,CAAC,cACG,SAAU,QACd,CAEA,CAAC,OACG,WAAY,OA9BhB,OA+BY,KAER,SAAU,SACV,IAAK,IACL,KAAM,IACN,UAAW,WAAW,MAAM,UAAW,KAC3C",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/test/elo-match/elo-match.component.css"],
+  "sourcesContent": [":host {\n    display: block;\n    margin: auto auto;\n    width: fit-content;\n    max-width: 100vw;\n    text-align: center;\n}\n\n#lines {\n    display: flex;\n    flex-direction: column;\n    gap: 1em;\n}\n\n#columns {\n    display: flex;\n    gap: 1em;\n\n    & > * {\n        flex: 1;\n    }\n\n    #middle {\n        flex: none;\n    }\n}\n\n.opponent {\n    .disc-image {\n        img {\n            /*width: 100%;*/\n        }\n    }\n}\n\n.elo-axis-line {\n    .vote {\n        display: flex;\n        align-items: center;\n\n        & > * {\n            flex: 1;\n        }\n\n        & > button {\n            flex: none;\n        }\n    }\n}\n\n#bottom-buttons {\n    display: flex;\n    gap: 1em;\n\n    & > * {\n        flex: 1;\n    }\n}\n"],
+  "mappings": "AAAA,MACI,QAAS,MADb,OAEY,KACR,MAAO,YACP,UAAW,MACX,WAAY,MAChB,CAEA,CAAC,MACG,QAAS,KACT,eAAgB,OAChB,IAAK,GACT,CAEA,CAAC,QACG,QAAS,KACT,IAAK,GAST,CAXA,CAAC,OAIK,CAAE,EACA,KAAM,CACV,CANJ,CAAC,QAQG,CAAC,OACG,KAAM,IACV,CAWJ,CAAC,cACG,CAAC,KACG,QAAS,KACT,YAAa,MASjB,CAZJ,CAAC,cACG,CAAC,IAIK,CAAE,EACA,KAAM,CACV,CAPR,CAAC,cACG,CAAC,IAQK,CAAE,OACA,KAAM,IACV,CAIR,CAAC,eACG,QAAS,KACT,IAAK,GAKT,CAPA,CAAC,cAIK,CAAE,EACA,KAAM,CACV",
+  "names": []
+}
