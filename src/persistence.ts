@@ -341,30 +341,28 @@ export abstract class Persistence {
 
                     /** Collections absentes dans this */
                     Promise.all(srcCollectionNames.filter(name => !thisCollectionNames.includes(name))
-                        .map(srcCollectionName => {
-                            return src.getCollection(srcCollectionName).then(srcCollection => {
-                                syncResult.collections.pulled.push(srcCollection);
-                                return srcCollection;
-                            });
+                        .map(async srcCollectionName => {
+                            const srcCollection = await src.getCollection(srcCollectionName);
+                            syncResult.collections.pulled.push(srcCollection);
+                            return srcCollection;
                         })),
 
                     /** Collections absentes dans la source */
                     Promise.all(thisCollectionNames.filter(name => !srcCollectionNames.includes(name))
-                        .map(thisCollectionName => {
-                            return this.getCollection(thisCollectionName).then(thisCollection => {
-                                syncResult.collections.pushed.push(thisCollection);
-                                return thisCollection;
-                            });
+                        .map(async thisCollectionName => {
+                            const thisCollection = await this.getCollection(thisCollectionName);
+                            syncResult.collections.pushed.push(thisCollection);
+                            return thisCollection;
                         })),
 
                     /** Collections en commun */
                     Promise.all(thisCollectionNames.filter(name => srcCollectionNames.includes(name))
-                        .map(collectionName => {
+                        .map(async collectionName => {
                             const thisChecksum = thisSyncState.collections.elementsById[collectionName].checksum;
                             const srcChecksum = srcSyncState.collections.elementsById[collectionName].checksum;
                             if (thisChecksum !== srcChecksum) {
-                                return Promise.all([this.getCollection(collectionName), src.getCollection(collectionName)])
-                                    .then(collections => syncCommonCollection(collections[0], collections[1], syncResult));
+                                const collections = await Promise.all([this.getCollection(collectionName), src.getCollection(collectionName)]);
+                                return syncCommonCollection(collections[0], collections[1], syncResult);
                             } else {
                                 return Promise.resolve(null);
                             }
