@@ -1,4 +1,4 @@
-import {waitForAsync, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {GoogleDrivePersistence} from './GoogleDrivePersistence';
 import {PlayerComponent} from '../app/player/player.component';
 import 'jquery';
@@ -9,35 +9,35 @@ import {PlayerCollectionsComponent} from '../app/player-collections/player-colle
 import {imports, providers} from '../app/app.module';
 
 describe('GoogleDrivePersistence', () => {
-  let component: PlayerComponent;
-  let fixture: ComponentFixture<PlayerComponent>;
-  let persistence: GoogleDrivePersistence;
+    let component: PlayerComponent;
+    let fixture: ComponentFixture<PlayerComponent>;
+    let persistence: GoogleDrivePersistence;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [
-        AppComponent,
-        PlayerComponent,
-        SliderComponent,
-        PlayerCollectionsComponent
-      ],
-      imports: [
-        RouterTestingModule,
-        ...imports
-      ],
-      providers
-    })
-      .compileComponents();
-  }));
+    beforeEach(waitForAsync(() => {
+        TestBed.configureTestingModule({
+            declarations: [
+                AppComponent,
+                PlayerComponent,
+                SliderComponent,
+                PlayerCollectionsComponent
+            ],
+            imports: [
+                RouterTestingModule,
+                ...imports
+            ],
+            providers
+        })
+            .compileComponents();
+    }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(PlayerComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    persistence = new GoogleDrivePersistence(component.http);
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(PlayerComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        persistence = new GoogleDrivePersistence(component.http);
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

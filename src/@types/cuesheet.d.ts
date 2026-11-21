@@ -13,7 +13,9 @@ declare module cuesheet {
         rem: string[];
 
         getCurrentFile(): File;
+
         getCurrentTrack(): Track;
+
         newFile(): CueSheet;
 
         /**

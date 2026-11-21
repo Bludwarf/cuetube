@@ -11,7 +11,7 @@ export class Collection {
      * Ajoute le ou les disques à cette collection
      * @param {Disc} discsOrIds disc ou ids
      */
-    push(... discsOrIds: (Disc|string)[]) {
+    push(...discsOrIds: (Disc | string)[]) {
         return discsOrIds.filter(discsOrId => !!discsOrId).map(discsOrId => {
             if (discsOrId instanceof Disc) {
                 return this.pushDiscs(discsOrId)[0];
@@ -26,7 +26,7 @@ export class Collection {
      * @param {Disc} discs
      * @return ids des disques ajoutés
      */
-    pushDiscs(... discs: Disc[]): string[] {
+    pushDiscs(...discs: Disc[]): string[] {
         return discs.map(disc => {
             this.discIds.push(disc.id);
             return disc.id;
@@ -38,7 +38,7 @@ export class Collection {
      * @param {string[]} discIds
      * @return ids ajoutés
      */
-    pushDiscIds(... discIds: string[]): string[] {
+    pushDiscIds(...discIds: string[]): string[] {
         return discIds.map(discId => {
             this.discIds.push(discId);
             return discId;

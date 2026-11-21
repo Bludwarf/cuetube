@@ -1,6 +1,6 @@
 import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
 
 export class LocalServerPersistence extends Persistence {
@@ -72,11 +72,11 @@ export class LocalServerPersistence extends Persistence {
         });
     }
 
-  protected _deleteCollection(collectionName: string): Promise<void> {
-    throw new Error('Not Implemented'); // FIXME
-  }
+    protected _deleteCollection(collectionName: string): Promise<void> {
+        throw new Error('Not Implemented'); // FIXME
+    }
 
-  public getDisc(discId: string): Promise<Disc> {
+    public getDisc(discId: string): Promise<Disc> {
         return new Promise((resolve, reject) => {
             this.$http.get('/' + discId + '.cue.json').toPromise().then(res => {
                 const disc = super.createDisc(discId, res);
@@ -94,12 +94,12 @@ export class LocalServerPersistence extends Persistence {
 
     protected loadSyncState(): Promise<SyncState> {
         // FIXME implement
-        throw new Error("LocalServerPersistence.loadSyncState TO IMPLEMENT");
+        throw new Error('LocalServerPersistence.loadSyncState TO IMPLEMENT');
     }
 
     saveSyncState(): Promise<SyncState> {
         // FIXME implement
-        throw new Error("LocalServerPersistence.saveSyncState TO IMPLEMENT");
+        throw new Error('LocalServerPersistence.saveSyncState TO IMPLEMENT');
     }
 
     get connectedToGoogleDrive(): boolean {

@@ -4,8 +4,8 @@ import {Disc} from '../disc';
 import {PlayerComponent} from './player/player.component';
 import {CurrentPlayerState, SavedDiscPrefs} from '../LocalStorageTypes';
 import {LocalStoragePersistence} from '../persistence/LocalStoragePersistence';
-import Track = Disc.Track;
 import {booleanToString, stringToBoolean} from '../utils/utils';
+import Track = Disc.Track;
 
 const KEY_CURRENT = 'current';
 const KEY_TIME = 'time';

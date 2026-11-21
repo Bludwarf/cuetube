@@ -8,7 +8,7 @@ export function getAssetFile(filePath: string, fileName = filePath): Promise<Fil
                 reject(new Error(`Failed to load ${filePath}: ${request.status}`));
                 return;
             }
-            const file = new File([request.response], fileName, {type: 'application/zip'})
+            const file = new File([request.response], fileName, {type: 'application/zip'});
             resolve(file);
         };
 
@@ -21,7 +21,7 @@ export function getAssetFile(filePath: string, fileName = filePath): Promise<Fil
  * @param assetPath chemin relatif au dossier <code>assets</code>, sans séparateur en préfixe
  */
 export function fetchAssetFile(assetPath: string): Promise<Response> {
-    return fetch(`${document.baseURI}assets/${assetPath}`)
+    return fetch(`${document.baseURI}assets/${assetPath}`);
 }
 
 function createAssetFileRequest(filePath: string): XMLHttpRequest {

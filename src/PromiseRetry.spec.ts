@@ -22,8 +22,11 @@ describe('promise-retry', () => {
         promiseRetry((retry, number) => {
             console.log('test2 attempt number', number);
             return new Promise((resolve, reject) => {
-                if (number === 1) throw new Error('first attempt fails');
-                else resolve('second attempt success');
+                if (number === 1) {
+                    throw new Error('first attempt fails');
+                } else {
+                    resolve('second attempt success');
+                }
             }).catch(retry);
         }, options).then(res => {
             expect(res).toBe('second attempt success');
@@ -41,8 +44,11 @@ describe('promise-retry', () => {
         promiseRetry((retry, number) => {
             console.log('test3 attempt number', number);
             return new Promise((resolve, reject) => {
-                if (number === 1) reject('first attempt fails');
-                else resolve('second attempt success');
+                if (number === 1) {
+                    reject('first attempt fails');
+                } else {
+                    resolve('second attempt success');
+                }
             }).catch(retry);
         }, options).then(res => {
             expect(res).toBe('second attempt success');
@@ -61,8 +67,11 @@ describe('promise-retry', () => {
         promiseRetry((retry, number) => {
             console.log('test4 attempt number', number);
             return new Promise((resolve, reject) => {
-                if (number <= 2) throw new Error('attempt ' + number + ' fails');
-                else resolve('third attempt success');
+                if (number <= 2) {
+                    throw new Error('attempt ' + number + ' fails');
+                } else {
+                    resolve('third attempt success');
+                }
             }).catch(retry);
         }, options).then(res => {
             fail('Should never success');

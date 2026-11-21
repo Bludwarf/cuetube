@@ -3,7 +3,7 @@
 // FIXME : comment importer utils.js dans le CuePrinter (client) quand on est dans CueService (serveur) ?
 function pad2(i: any) {
     if (!i) {
-      return '00';
+        return '00';
     }
     return (i < 10 ? '0' : '') + i;
 }
@@ -37,7 +37,9 @@ export class CuePrinter {
 
         let data = '';
 
-        if (cue.performer) { data += 'PERFORMER ' + stringValue(cue.performer) + '' + EOL; }
+        if (cue.performer) {
+            data += 'PERFORMER ' + stringValue(cue.performer) + '' + EOL;
+        }
         data += 'TITLE "' + cue.title + '"' + EOL;
         // FIXME : le format exact doit être 'REM IDENTIFIANT_SANS_ESPACE VALEUR AVEC ESPACE'
         if (cue.rem) {
@@ -93,6 +95,8 @@ export class CuePrinter {
  * @return {string} la chaîne string entre quotes si elle contient des espaces (ou assimilé)
  */
 function stringValue(string: string): string {
-    if (string.match(/\s/)) { return `"${string}"`; }
+    if (string.match(/\s/)) {
+        return `"${string}"`;
+    }
     return string;
 }

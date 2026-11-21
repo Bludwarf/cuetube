@@ -1,6 +1,6 @@
 import {GapiClientService} from '../app/gapi-client.service';
-import createSpyObj = jasmine.createSpyObj;
 import {LocalStoragePrefsService} from '../app/local-storage-prefs.service';
+import createSpyObj = jasmine.createSpyObj;
 
 export const PROVIDER_SPIES = {
     LocalStoragePrefsService: {

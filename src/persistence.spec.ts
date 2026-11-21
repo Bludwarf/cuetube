@@ -22,17 +22,17 @@ describe('persistence', () => {
         const distantDiffDisc = TestUtils.createDisc('diffDisc').withTitle('distantDiffDisc');
 
         // Collections
-        const localCollection = new Collection("localCollection");
+        const localCollection = new Collection('localCollection');
         localCollection.push(localDisc, localEqualDisc, localDiffDisc);
-        const distantCollection = new Collection("distantCollection");
+        const distantCollection = new Collection('distantCollection');
         distantCollection.push(distantDisc, distantEqualDisc, distantDiffDisc);
-        const localCommonCollection = new Collection("commonCollection");
+        const localCommonCollection = new Collection('commonCollection');
         localCommonCollection.push(localDisc, localEqualDisc, localDiffDisc);
-        const distantCommonCollection = new Collection("commonCollection");
+        const distantCommonCollection = new Collection('commonCollection');
         distantCommonCollection.push(distantDisc, localEqualDisc, localDiffDisc);
-        const localNotModCommonCollection = new Collection("commonNotModCollection");
+        const localNotModCommonCollection = new Collection('commonNotModCollection');
         localNotModCommonCollection.push(localEqualDisc);
-        const distantNotModCommonCollection = new Collection("commonNotModCollection");
+        const distantNotModCommonCollection = new Collection('commonNotModCollection');
         distantNotModCommonCollection.push(localEqualDisc);
 
         // Local
@@ -53,48 +53,47 @@ describe('persistence', () => {
             distant.saveDisc(distantEqualDisc.id, distantEqualDisc),
             distant.saveDisc(distantDiffDisc.id, distantDiffDisc),
         ]).then(res => local.sync(distant))
-        .then(syncResult => {
+            .then(syncResult => {
 
-            // Assertions sur le rapport de synchro
+                // Assertions sur le rapport de synchro
 
-            const expected: SyncResult = {
-                collections: {
-                    pulled: [
-                        distantCollection
-                    ],
-                    pushed: [
-                        localCollection
-                    ],
-                    common: {
+                const expected: SyncResult = {
+                    collections: {
                         pulled: [
-                            distantCommonCollection
+                            distantCollection
                         ],
                         pushed: [
-                            localCommonCollection
-                        ]
-                    }
-                },
-                discs: {
-                    pulled: [
-                        distantDisc,
-                    ],
-                    pushed: [
-                        localDisc
-                    ],
-                    common: {
+                            localCollection
+                        ],
+                        common: {
+                            pulled: [
+                                distantCommonCollection
+                            ],
+                            pushed: [
+                                localCommonCollection
+                            ]
+                        }
+                    },
+                    discs: {
                         pulled: [
-                            distantDiffDisc
+                            distantDisc,
                         ],
                         pushed: [
-                        ]
+                            localDisc
+                        ],
+                        common: {
+                            pulled: [
+                                distantDiffDisc
+                            ],
+                            pushed: []
+                        }
                     }
-                }
-            };
-            expect(toObject(syncResult)).toEqual(toObject(expected));
+                };
+                expect(toObject(syncResult)).toEqual(toObject(expected));
 
-            return syncResult;
+                return syncResult;
 
-        }).then(res => Promise.all([
+            }).then(res => Promise.all([
             local.getCollectionByNames([localCollection.name, localCommonCollection.name, distantCollection.name]),
             distant.getCollectionByNames([localCollection.name, localCommonCollection.name, distantCollection.name])
         ])).then(res => {
@@ -173,24 +172,24 @@ describe('persistence', () => {
 
         // Disques
         const thriller = TestUtils.createDisc('Thriller')
-            .withFile("Disque 1")
-            .withTrack("Bilie Jean")
+            .withFile('Disque 1')
+            .withTrack('Bilie Jean')
             .endTrack()
             .endFile();
         const darkSideOfTheMoon = TestUtils.createDisc('The Dark Side of the Moon')
-            .withFile("Disque 1")
-            .withTrack("Cluster One")
+            .withFile('Disque 1')
+            .withTrack('Cluster One')
             .endTrack()
             .endFile();
         const secretWorld = TestUtils.createDisc('Secret World')
-            .withFile("Disque 1")
-            .withTrack("Come Talk To Me")
+            .withFile('Disque 1')
+            .withTrack('Come Talk To Me')
             .endTrack()
             .endFile();
 
         // Collections
-        const collectionVide = new Collection("Collection vide");
-        const collectionComplete = new Collection("Collection complète");
+        const collectionVide = new Collection('Collection vide');
+        const collectionComplete = new Collection('Collection complète');
         collectionComplete.pushDiscs(thriller, darkSideOfTheMoon);
 
         let lastState: any = {};
@@ -239,7 +238,7 @@ describe('persistence', () => {
                 created: darkSideState.created,
                 lastmod: darkSideState.lastmod,
                 checksum: darkSideState.checksum
-            }
+            };
 
             // TODO : collection
 
@@ -270,7 +269,7 @@ describe('persistence', () => {
         }).then(res => {
 
             // On modifie vraiment Thriller
-            thriller.files[0].tracks[0].title = "Bily Gin";
+            thriller.files[0].tracks[0].title = 'Bily Gin';
             return p.saveDisc(thriller.id, thriller);
 
         }).then(res => {
@@ -361,45 +360,45 @@ describe('persistence', () => {
             .then(res => done());
     });
 
-  function testSync(direction) {
-    return async() => {
-      const discV1 = new Disc();
-      const discId = 'discId';
-      discV1.id = discId;
-      const premierTitre = 'Premier titre';
-      discV1.title = premierTitre;
+    function testSync(direction) {
+        return async () => {
+            const discV1 = new Disc();
+            const discId = 'discId';
+            discV1.id = discId;
+            const premierTitre = 'Premier titre';
+            discV1.title = premierTitre;
 
-      const local = new MemoryPersistence(null);
-      const distant = new MemoryPersistence(null);
-      const persistence = new LocalAndDistantPersistence<MemoryPersistence, MemoryPersistence>(local, distant);
+            const local = new MemoryPersistence(null);
+            const distant = new MemoryPersistence(null);
+            const persistence = new LocalAndDistantPersistence<MemoryPersistence, MemoryPersistence>(local, distant);
 
-      // Sauvegarde de la V1 du disque
-      const savedDisc = await persistence.saveDisc(discId, discV1);
-      expect(savedDisc.title).toEqual(premierTitre);
+            // Sauvegarde de la V1 du disque
+            const savedDisc = await persistence.saveDisc(discId, discV1);
+            expect(savedDisc.title).toEqual(premierTitre);
 
-      // Modif uniquement locale
-      const discV2 = new Disc();
-      discV2.id = discId;
-      const deuxiemeTitre = 'Deuxième titre';
-      discV2.title = deuxiemeTitre;
-      const localSavedDisc = await local.saveDisc(discId, discV2);
-      expect(localSavedDisc.title).toEqual(deuxiemeTitre);
-      const distantDisc = await distant.getDisc(discId);
-      expect(distantDisc.title).toEqual(premierTitre);
+            // Modif uniquement locale
+            const discV2 = new Disc();
+            discV2.id = discId;
+            const deuxiemeTitre = 'Deuxième titre';
+            discV2.title = deuxiemeTitre;
+            const localSavedDisc = await local.saveDisc(discId, discV2);
+            expect(localSavedDisc.title).toEqual(deuxiemeTitre);
+            const distantDisc = await distant.getDisc(discId);
+            expect(distantDisc.title).toEqual(premierTitre);
 
-      // On imagine qu'on redémarre CueTube => synchro
-      direction ? await distant.sync(local) : await local.sync(distant);
-      const syncedDisc = await persistence.getDisc(discId);
-      expect(syncedDisc.title).toEqual(deuxiemeTitre, 'La modif la plus récente est retenue');
-    };
-  }
+            // On imagine qu'on redémarre CueTube => synchro
+            direction ? await distant.sync(local) : await local.sync(distant);
+            const syncedDisc = await persistence.getDisc(discId);
+            expect(syncedDisc.title).toEqual(deuxiemeTitre, 'La modif la plus récente est retenue');
+        };
+    }
 
-  it('should keep newer version of a disc when sync two persistences', testSync(true));
+    it('should keep newer version of a disc when sync two persistences', testSync(true));
 
-  it('should keep newer version of a disc when sync two persistences (reverse sync)', testSync(false));
+    it('should keep newer version of a disc when sync two persistences (reverse sync)', testSync(false));
 
 });
 
 function toObject(typedObject: any): Object {
-    return JSON.parse(JSON.stringify(typedObject))
+    return JSON.parse(JSON.stringify(typedObject));
 }
