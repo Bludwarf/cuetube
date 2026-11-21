@@ -319,164 +319,148 @@ export abstract class Persistence {
 
         console.group('Synchro entre deux persistances en cours');
         const syncResult = new SyncResult();
-        let thisSyncState: SyncState, srcSyncState: SyncState;
 
-        // Synchro des collections
-        return Promise.all([this.getSyncState(), src.getSyncState()])
-            .then(syncStates => {
-                [thisSyncState, srcSyncState] = syncStates;
-                return syncStates;
-            })
-            .then(() => {
-                const thisCollectionNames = _.keys(thisSyncState.collections.elementsById);
-                const srcCollectionNames = _.keys(srcSyncState.collections.elementsById);
-                return [thisCollectionNames, srcCollectionNames];
-            })
-            .then(results => {
-                const [thisCollectionNames, srcCollectionNames] = results;
+        const [thisSyncState, srcSyncState] = await Promise.all([this.getSyncState(), src.getSyncState()]);
 
-                console.log('Début de la synchro des collections...');
+        const thisCollectionNames = _.keys(thisSyncState.collections.elementsById);
+        const srcCollectionNames = _.keys(srcSyncState.collections.elementsById);
 
-                return Promise.all([
+        console.log('Début de la synchro des collections...');
 
-                    /** Collections absentes dans this */
-                    Promise.all(srcCollectionNames.filter(name => !thisCollectionNames.includes(name))
-                        .map(async srcCollectionName => {
-                            const srcCollection = await src.getCollection(srcCollectionName);
-                            syncResult.collections.pulled.push(srcCollection);
-                            return srcCollection;
-                        })),
+        await Promise.all([
 
-                    /** Collections absentes dans la source */
-                    Promise.all(thisCollectionNames.filter(name => !srcCollectionNames.includes(name))
-                        .map(async thisCollectionName => {
-                            const thisCollection = await this.getCollection(thisCollectionName);
-                            syncResult.collections.pushed.push(thisCollection);
-                            return thisCollection;
-                        })),
+            /** Collections absentes dans this */
+            ...(srcCollectionNames
+                .filter(name => !thisCollectionNames.includes(name))
+                .map(async collectionName => {
+                    const collection = await src.getCollection(collectionName);
+                    syncResult.collections.pulled.push(collection);
+                    return collection;
+                })),
 
-                    /** Collections en commun */
-                    Promise.all(thisCollectionNames.filter(name => srcCollectionNames.includes(name))
-                        .map(async collectionName => {
-                            const thisChecksum = thisSyncState.collections.elementsById[collectionName].checksum;
-                            const srcChecksum = srcSyncState.collections.elementsById[collectionName].checksum;
-                            if (thisChecksum !== srcChecksum) {
-                                const collections = await Promise.all([this.getCollection(collectionName), src.getCollection(collectionName)]);
-                                return syncCommonCollection(collections[0], collections[1], syncResult);
-                            } else {
-                                return Promise.resolve(null);
-                            }
-                        }))
-                ]);
+            /** Collections absentes dans la source */
+            ...(thisCollectionNames
+                .filter(name => !srcCollectionNames.includes(name))
+                .map(async collectionName => {
+                    const collection = await this.getCollection(collectionName);
+                    syncResult.collections.pushed.push(collection);
+                    return collection;
+                })),
 
-            }).then(() => {
-                const thisDiscIds = _.keys(thisSyncState.discs.elementsById);
-                const srcDiscIds = _.keys(srcSyncState.discs.elementsById);
-                return [thisDiscIds, srcDiscIds];
-            }).then(results => {
+            /** Collections en commun */
+            ...thisCollectionNames
+                .filter(name => srcCollectionNames.includes(name))
+                .map(async collectionName => {
+                    const thisChecksum = thisSyncState.collections.elementsById[collectionName].checksum;
+                    const srcChecksum = srcSyncState.collections.elementsById[collectionName].checksum;
+                    if (thisChecksum !== srcChecksum) {
+                        const collections = await Promise.all([
+                            this.getCollection(collectionName),
+                            src.getCollection(collectionName)
+                        ]);
+                        return syncCommonCollection(collections[0], collections[1], syncResult);
+                    } else {
+                        return null;
+                    }
+                })
+        ]);
 
-                const [thisDiscIds, srcDiscIds] = results;
+        const thisDiscIds = _.keys(thisSyncState.discs.elementsById);
+        const srcDiscIds = _.keys(srcSyncState.discs.elementsById);
 
-                const discIdsToProcess = {
-                    pull: srcDiscIds.filter(id => !thisDiscIds.includes(id)),
-                    push: thisDiscIds.filter(id => !srcDiscIds.includes(id)),
-                    common: thisDiscIds.filter(id => srcDiscIds.includes(id)),
-                };
-                console.log('Début de la synchro des disques...', discIdsToProcess);
-                return Promise.all([
+        const discIdsToProcess = {
+            pull: srcDiscIds.filter(id => !thisDiscIds.includes(id)),
+            push: thisDiscIds.filter(id => !srcDiscIds.includes(id)),
+            common: thisDiscIds.filter(id => srcDiscIds.includes(id)),
+        };
+        console.log('Début de la synchro des disques...', discIdsToProcess);
 
-                    /** Disques absents dans this */
-                    Promise.all(discIdsToProcess.pull
-                        .map(async id => {
-                            const srcDisc = await src.getDisc(id);
-                            syncResult.discs.pulled.push(srcDisc);
-                            return srcDisc;
-                        })),
+        await Promise.all([
 
-                    /** Disques absents dans la source */
-                    Promise.all(discIdsToProcess.push
-                        .map(async id => {
-                            const thisDisc = await this.getDisc(id);
-                            syncResult.discs.pushed.push(thisDisc);
-                            return thisDisc;
-                        }))
-                        .catch(e => {
-                            console.error(`Erreur non bloquante lors de la récupération d'un disque local absent dans la source`, e);
-                        }),
+            /** Disques absents dans this */
+            ...discIdsToProcess.pull
+                .map(async id => {
+                    const srcDisc = await src.getDisc(id);
+                    syncResult.discs.pulled.push(srcDisc);
+                    return srcDisc;
+                }),
 
-                    /** Disques en commun */
-                    Promise.all(discIdsToProcess.common
-                        .map(async id => {
-                            const thisChecksum = thisSyncState.discs.elementsById[id].checksum;
-                            const srcChecksum = srcSyncState.discs.elementsById[id].checksum;
-                            if (thisChecksum !== srcChecksum) {
+            /** Disques absents dans la source */
+            Promise.all(discIdsToProcess.push
+                .map(async id => {
+                    const thisDisc = await this.getDisc(id);
+                    syncResult.discs.pushed.push(thisDisc);
+                    return thisDisc;
+                }))
+                .catch(e => {
+                    console.error(`Erreur non bloquante lors de la récupération d'un disque local absent dans la source`, e);
+                }),
 
-                                // On prend le plus récent des deux
-                                const thisLastmod = thisSyncState.discs.elementsById[id].lastmod;
-                                const srcLastmod = srcSyncState.discs.elementsById[id].lastmod;
+            /** Disques en commun */
+            ...discIdsToProcess.common
+                .map(async id => {
+                    const thisChecksum = thisSyncState.discs.elementsById[id].checksum;
+                    const srcChecksum = srcSyncState.discs.elementsById[id].checksum;
+                    if (thisChecksum !== srcChecksum) {
 
-                                if (thisLastmod < srcLastmod) {
-                                    const disc = await src.getDisc(id);
-                                    console.log(`Disque ${disc.id} (${disc.title}) de la source plus récent`);
-                                    pushOnlyOnce(syncResult.discs.common.pulled, disc);
-                                } else if (thisLastmod > srcLastmod) {
-                                    const disc = await this.getDisc(id);
-                                    console.log(`Disque ${disc.id} (${disc.title}) plus récent que la source`);
-                                    pushOnlyOnce(syncResult.discs.common.pushed, disc);
-                                } else {
-                                    const [thisDisc, srcDisc] = await Promise.all([this.getDisc(id), src.getDisc(id)]);
-                                    syncCommonDisc(thisDisc, srcDisc, syncResult);
-                                }
+                        // On prend le plus récent des deux
+                        const thisLastmod = thisSyncState.discs.elementsById[id].lastmod;
+                        const srcLastmod = srcSyncState.discs.elementsById[id].lastmod;
 
-                            } else {
-                                return Promise.resolve(null);
-                            }
-                        }))
-                ]);
+                        if (thisLastmod < srcLastmod) {
+                            const disc = await src.getDisc(id);
+                            console.log(`Disque ${disc.id} (${disc.title}) de la source plus récent`);
+                            pushOnlyOnce(syncResult.discs.common.pulled, disc);
+                        } else if (thisLastmod > srcLastmod) {
+                            const disc = await this.getDisc(id);
+                            console.log(`Disque ${disc.id} (${disc.title}) plus récent que la source`);
+                            pushOnlyOnce(syncResult.discs.common.pushed, disc);
+                        } else {
+                            const [thisDisc, srcDisc] = await Promise.all([this.getDisc(id), src.getDisc(id)]);
+                            syncCommonDisc(thisDisc, srcDisc, syncResult);
+                        }
 
-            }).then(() => {
+                    } else {
+                        return Promise.resolve(null);
+                    }
+                })
+        ]);
 
-                // Sauvegardes dans les deux persistences
-                return Promise.all([
+        // Sauvegardes dans les deux persistences
+        await Promise.all([
 
-                    // Sauvegardes dans this
+            // Sauvegardes dans this
 
-                    // Collections créés dans this
-                    Promise.all(syncResult.collections.pulled.map(collection => this.saveCollection(collection))),
-                    // Collections modifiées dans this
-                    Promise.all(syncResult.collections.common.pulled.map(collection => this.saveCollection(collection))),
-                    // Disques créés dans this
-                    Promise.all(syncResult.discs.pulled.map(disc => this.saveDisc(disc.id, disc))),
-                    // Disques modifiés dans this
-                    Promise.all(syncResult.discs.common.pulled.map(disc => this.saveDisc(disc.id, disc))),
+            // Collections créés dans this
+            ...syncResult.collections.pulled.map(collection => this.saveCollection(collection)),
+            // Collections modifiées dans this
+            ...syncResult.collections.common.pulled.map(collection => this.saveCollection(collection)),
+            // Disques créés dans this
+            ...syncResult.discs.pulled.map(disc => this.saveDisc(disc.id, disc)),
+            // Disques modifiés dans this
+            ...syncResult.discs.common.pulled.map(disc => this.saveDisc(disc.id, disc)),
 
-                    // Sauvegardes dans src
+            // Sauvegardes dans src
 
-                    // Collections créés dans src
-                    Promise.all(syncResult.collections.pushed.map(collection => src.saveCollection(collection))),
-                    // Collections modifiées dans src
-                    Promise.all(syncResult.collections.common.pushed.map(collection => src.saveCollection(collection))),
-                    // Disques créés dans src
-                    Promise.all(syncResult.discs.pushed.map(disc => src.saveDisc(disc.id, disc))),
-                    // Disques modifiés dans src
-                    Promise.all(syncResult.discs.common.pushed.map(disc => src.saveDisc(disc.id, disc)))
+            // Collections créés dans src
+            ...syncResult.collections.pushed.map(collection => src.saveCollection(collection)),
+            // Collections modifiées dans src
+            ...syncResult.collections.common.pushed.map(collection => src.saveCollection(collection)),
+            // Disques créés dans src
+            ...syncResult.discs.pushed.map(disc => src.saveDisc(disc.id, disc)),
+            // Disques modifiés dans src
+            ...syncResult.discs.common.pushed.map(disc => src.saveDisc(disc.id, disc)),
 
-                ]);
+        ]);
 
-            }).then(() => {
+        console.log('Sauvegarde de l\'état de synchro dans les deux persistances...');
+        await Promise.all([
+            this.saveSyncState(),
+            src.saveSyncState()
+        ]);
 
-                console.log('Sauvegarde de l\'état de synchro dans les deux persistances...');
-                return Promise.all([
-                    this.saveSyncState(),
-                    src.saveSyncState()
-                ]);
-
-            }).then(() => {
-
-                // TODO : post dans les deux persistences
-                return syncResult;
-
-            });
+        // TODO : post dans les deux persistences
+        return syncResult;
     }
 
     /**
