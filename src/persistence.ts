@@ -5,6 +5,7 @@ import {HttpClient} from '@angular/common/http';
 import {Collection} from './Collection';
 import {md5} from './md5';
 import {cloneWithout} from './json-utils';
+import {remove} from './utils/utils';
 
 // TODO ce serait mieux d'afficher des notifs quand une action longue est terminée, comme supprimer ou ajouter un disque ou une collection
 
@@ -13,6 +14,8 @@ export abstract class Persistence {
     static DEFAULT_COLLECTION = '_default_';
 
     private _syncState: SyncState;
+
+    private readonly notFoundDiscIds: string[] = [];
 
     public getSyncState(): Promise<SyncState> {
         return Promise.resolve(this._syncState)
@@ -40,23 +43,25 @@ export abstract class Persistence {
      * Construit pour la fois 1ère l'état de synchro s'il n'a jamais été calculé
      * @return {Promise<SyncState>}
      */
-    private buildSyncState(): Promise<SyncState> {
+    private async buildSyncState(): Promise<SyncState> {
         // On doit chercher toutes les collections et tous les disques
-        return Promise.all([
-            this.getAllCollectionsByNames(),
-            this.getAllDiscs()
-        ])
-            .catch(e => {
-                console.error('Erreur lors du buildSyncState', e);
-                throw e;
-            })
-            .then(res => {
-                const [collectionsByNames, discs] = res;
-                const syncState = new SyncState();
-                _.each(collectionsByNames, collection => syncState.collections.push(collection));
-                _.each(discs, disc => syncState.discs.push(disc));
-                return syncState;
-            });
+        const [collectionsByNames, discs] = await this.getAllCollectionsAndAllDiscs();
+        const syncState = new SyncState();
+        _.each(collectionsByNames, collection => syncState.collections.push(collection));
+        _.each(discs, disc => syncState.discs.push(disc));
+        return syncState;
+    }
+
+    private async getAllCollectionsAndAllDiscs(): Promise<[Record<string, Collection>, Disc[]]> {
+        try {
+            return await Promise.all([
+                this.getAllCollectionsByNames(),
+                this.getAllDiscs()
+            ]);
+        } catch (e) {
+            console.error('Erreur lors du buildSyncState', e);
+            throw e;
+        }
     }
 
     public abstract saveSyncState(): Promise<SyncState>;
@@ -190,10 +195,36 @@ export abstract class Persistence {
         return savedCollection;
     }
 
+    /** Préférer {@link #findDisc} pour éviter de lancer une erreur tout en historisant tous les disques introuvables */
     public abstract getDisc(discId: string): Promise<Disc>;
 
+    public async findDisc(discId: string): Promise<Disc | undefined> {
+        try {
+            const disc = this.getDisc(discId);
+            remove(discId, this.notFoundDiscIds);
+            return disc;
+        } catch (e) {
+            console.error(`On ignore le disque suivant, car il est introuvable : ${discId} => on l'ajout dans la liste des disques introuvables`);
+            this.notFoundDiscIds.push(discId);
+            return undefined;
+        }
+    }
+
+    /** Préférer {@link #findDiscs} pour éviter de lancer des erreurs tout en historisant tous les disques introuvables */
     public getDiscs(discIds: string[]): Promise<Disc[]> {
         return Promise.all(discIds.map(discId => this.getDisc(discId)));
+    }
+
+    /**
+     * Équivalent de {@link #getDiscs} mais en filtrant uniquement les disques qui ont été trouvés,
+     * sans lancer d'erreur, mais historisant
+     */
+    public findDiscs(discIds: string[]): Promise<Disc[]> {
+        return Promise.all(
+            discIds
+                .map(discId => this.findDisc(discId))
+                .filter(Boolean)
+        );
     }
 
     public saveDisc(discId: string, disc: Disc): Promise<Disc> {
@@ -456,12 +487,14 @@ export abstract class Persistence {
      */
     protected abstract loadSyncState(): Promise<SyncState>;
 
-    public getAllCollectionsByNames(): Promise<{ [key: string]: Collection }> {
-        return this.getCollectionNames().then(collectionNames => this.getCollectionByNames(collectionNames));
+    public async getAllCollectionsByNames(): Promise<Record<string, Collection>> {
+        const collectionNames = await this.getCollectionNames();
+        return this.getCollectionByNames(collectionNames);
     }
 
-    public getAllDiscs(): Promise<Disc[]> {
-        return this.getDiscIds().then(discIds => this.getDiscs(discIds));
+    public async getAllDiscs(): Promise<Disc[]> {
+        const discIds = await this.getDiscIds();
+        return this.getDiscs(discIds);
     }
 
     abstract get connectedToGoogleDrive(): boolean;
@@ -707,9 +740,12 @@ function pushOnlyOnce<T>(array: T[], item: T) {
 }
 
 // Pour permettre à LocalAndDistantPersistence d'appeler des méthodes protected
-export interface PersistenceWithPublicFields  {
+export interface PersistenceWithPublicFields {
     loadSyncState(): Promise<SyncState>;
+
     postCollection(collection: Collection): Promise<Collection>;
+
     _deleteCollection(collectionName: string): Promise<void>;
+
     postDisc(discId: string, disc: Disc): Promise<Disc>;
 }
