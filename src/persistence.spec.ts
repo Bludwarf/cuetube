@@ -35,22 +35,22 @@ describe('persistence', () => {
         distantNotModCommonCollection.push(localEqualDisc);
 
         // Local
-        const local = new MemoryPersistence(null);
+        const local = new MemoryPersistence();
 
         // Distant
-        const distant = new MemoryPersistence(null);
+        const distant = new MemoryPersistence();
 
         Promise.all([
             // Collections
             local.saveCollections([localCollection, localCommonCollection, localNotModCommonCollection]),
             distant.saveCollections([distantCollection, distantCommonCollection, distantNotModCommonCollection]),
             // Disques
-            local.saveDisc(localDisc.id, localDisc),
-            local.saveDisc(localEqualDisc.id, localEqualDisc),
-            local.saveDisc(localDiffDisc.id, localDiffDisc),
-            distant.saveDisc(distantDisc.id, distantDisc),
-            distant.saveDisc(distantEqualDisc.id, distantEqualDisc),
-            distant.saveDisc(distantDiffDisc.id, distantDiffDisc),
+            local.saveDisc(localDisc),
+            local.saveDisc(localEqualDisc),
+            local.saveDisc(localDiffDisc),
+            distant.saveDisc(distantDisc),
+            distant.saveDisc(distantEqualDisc),
+            distant.saveDisc(distantDiffDisc),
         ]).then(() => local.sync(distant))
             .then(syncResult => {
 
@@ -166,7 +166,7 @@ describe('persistence', () => {
      */
     it('should save current persistence state', (done) => {
 
-        const p = new MemoryPersistence(null);
+        const p = new MemoryPersistence();
         let syncState;
 
         // Disques
@@ -199,8 +199,8 @@ describe('persistence', () => {
             syncState = loadedSyncState;
         }).then(() => {
             return Promise.all([
-                p.saveDisc(thriller.id, thriller),
-                p.saveDisc(darkSideOfTheMoon.id, darkSideOfTheMoon),
+                p.saveDisc(thriller),
+                p.saveDisc(darkSideOfTheMoon),
                 p.saveCollection(collectionVide),
                 p.saveCollection(collectionComplete)
             ]);
@@ -244,7 +244,7 @@ describe('persistence', () => {
         }).then(() => {
 
             // On pousse Thriller sans le modifier
-            return p.saveDisc(thriller.id, thriller);
+            return p.saveDisc(thriller);
 
         }).then(() => {
 
@@ -269,7 +269,7 @@ describe('persistence', () => {
 
             // On modifie vraiment Thriller
             thriller.files[0].tracks[0].title = 'Bily Gin';
-            return p.saveDisc(thriller.id, thriller);
+            return p.saveDisc(thriller);
 
         }).then(() => {
 
@@ -298,7 +298,7 @@ describe('persistence', () => {
         }).then(() => {
 
             // Ajout du disque Secret World
-            return p.saveDisc(secretWorld.id, secretWorld);
+            return p.saveDisc(secretWorld);
 
         }).then(() => {
 
@@ -335,7 +335,7 @@ describe('persistence', () => {
         }).then(() => {
 
             // Sauvegarde du disque Secret World sans modification
-            return p.saveDisc(secretWorld.id, secretWorld);
+            return p.saveDisc(secretWorld);
 
         }).then(() => {
 
@@ -367,12 +367,12 @@ describe('persistence', () => {
             const premierTitre = 'Premier titre';
             discV1.title = premierTitre;
 
-            const local = new MemoryPersistence(null);
-            const distant = new MemoryPersistence(null);
+            const local = new MemoryPersistence();
+            const distant = new MemoryPersistence();
             const persistence = new LocalAndDistantPersistence<MemoryPersistence, MemoryPersistence>(local, distant);
 
             // Sauvegarde de la V1 du disque
-            const savedDisc = await persistence.saveDisc(discId, discV1);
+            const savedDisc = await persistence.saveDisc(discV1);
             expect(savedDisc.title).toEqual(premierTitre);
 
             // Modif uniquement locale
@@ -380,7 +380,7 @@ describe('persistence', () => {
             discV2.id = discId;
             const deuxiemeTitre = 'Deuxième titre';
             discV2.title = deuxiemeTitre;
-            const localSavedDisc = await local.saveDisc(discId, discV2);
+            const localSavedDisc = await local.saveDisc(discV2);
             expect(localSavedDisc.title).toEqual(deuxiemeTitre);
             const distantDisc = await distant.getDisc(discId);
             expect(distantDisc.title).toEqual(premierTitre);

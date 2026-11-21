@@ -27,7 +27,7 @@ export class GapiClientService {
     }
 
     // TODO : pourquoi on doit rappeler load + init même si on est connecté ?
-    init(params): Promise<void> {
+    init(params?): Promise<void> {
 
         if (!params) {
             params = GOOGLE_AUTH_PARAMS;

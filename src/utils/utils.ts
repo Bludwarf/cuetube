@@ -106,7 +106,7 @@ export function notify(message, options?) {
 
     // TODO : notification.onclick = ...
 
-    console.log(`Notification`, message)
+    console.log(`[Notification]`, message);
 }
 
 /**
@@ -161,14 +161,6 @@ export function pad2(i: number): string {
 
 export function stopPropagation(e: Event): void {
     e.stopPropagation(); // pour ne pas appeler document.onclick
-}
-
-export function stringToBoolean(booleanStringValue: string): boolean {
-    return Boolean(JSON.parse(booleanStringValue));
-}
-
-export function booleanToString(boolean: boolean): string {
-    return JSON.stringify(boolean);
 }
 
 export function remove<I>(item: I, array: I[]): I[] {

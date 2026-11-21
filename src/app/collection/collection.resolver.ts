@@ -4,11 +4,11 @@ import {inject, Signal} from '@angular/core';
 import {injectActivatedRouteData} from '../../utils/angular-utils';
 import {PersistenceService} from '../persistence/persistence.service';
 
-export const collectionResolver: ResolveFn<Collection> = (
+export const collectionResolver: ResolveFn<Collection> = async (
     route: ActivatedRouteSnapshot,
 ) => {
     const persistenceService = inject(PersistenceService);
-    const persistence = persistenceService.getCurrentPersistence();
+    const persistence = await persistenceService.getCurrentPersistenceAndInit();
     const collectionName = route.paramMap.get('name');
     return persistence.getCollection(collectionName);
 };

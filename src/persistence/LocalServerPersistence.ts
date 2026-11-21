@@ -2,13 +2,15 @@ import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
+import {Injectable} from '@angular/core';
 
+@Injectable({providedIn: 'root'})
 export class LocalServerPersistence extends Persistence {
 
     public static readonly TITLE = 'LocalServer';
 
-    constructor($http: HttpClient) {
-        super($http);
+    protected constructor(private readonly $http: HttpClient) {
+        super();
     }
 
     get title(): string {
@@ -86,9 +88,9 @@ export class LocalServerPersistence extends Persistence {
     }
 
     // TODO : renvoyer plutôt le disc que le résultat du post
-    public postDisc(discId: string, disc): Promise<Disc> {
+    public postDisc(disc: Disc): Promise<Disc> {
         return new Promise((resolve, reject) => {
-            this.$http.post(`/${discId}.cue.json`, disc).toPromise().then(resolve, reject);
+            this.$http.post(`/${disc.id}.cue.json`, disc).toPromise().then(resolve, reject);
         });
     }
 
@@ -97,7 +99,7 @@ export class LocalServerPersistence extends Persistence {
         throw new Error('LocalServerPersistence.loadSyncState TO IMPLEMENT');
     }
 
-    saveSyncState(): Promise<SyncState> {
+    saveSyncState(): Promise<void> {
         // FIXME implement
         throw new Error('LocalServerPersistence.saveSyncState TO IMPLEMENT');
     }

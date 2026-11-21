@@ -1,11 +1,11 @@
 import * as _ from 'underscore';
 import {Disc} from './disc';
 import {CuePrinter} from './CuePrinter';
-import {HttpClient} from '@angular/common/http';
 import {Collection} from './Collection';
 import {md5} from './md5';
 import {cloneWithout} from './json-utils';
 import {remove} from './utils/utils';
+import {hideLoader, showLoader} from './app/app.component';
 
 // TODO ce serait mieux d'afficher des notifs quand une action longue est terminée, comme supprimer ou ajouter un disque ou une collection
 
@@ -13,29 +13,24 @@ export abstract class Persistence {
 
     static DEFAULT_COLLECTION = '_default_';
 
-    private _syncState: SyncState;
+    private syncState: SyncState;
 
     private readonly notFoundDiscIds: string[] = [];
 
     public async getSyncState(): Promise<SyncState> {
-        const existingSyncState = this._syncState;
-        if (!existingSyncState) {
+        if (!this.syncState) {
             // Chargement de l'état de synchro si pas encore fait
             try {
+                console.log(`Chargement de l'état de la synchro...`);
                 const loadedSyncState = await this.loadSyncState();
-
-                // Quelqu'un a peut-être déjà initialisé _syncState ?
-                if (!this._syncState) {
-                    this._syncState = loadedSyncState;
-                }
-
-                return this._syncState;
+                console.log(`État de la synchro chargé`, loadedSyncState);
+                this.syncState = loadedSyncState;
             } catch (e) {
-                console.warn('Impossible de charger le syncState : on le reconstruit...', e);
+                console.warn(`Impossible de charger l'état de la synchro : on le reconstruit...`, e);
                 return this.buildSyncState();
             }
         }
-        return existingSyncState;
+        return this.syncState;
     }
 
     /**
@@ -63,9 +58,9 @@ export abstract class Persistence {
         }
     }
 
-    public abstract saveSyncState(): Promise<SyncState>;
+    public abstract saveSyncState(syncState: SyncState): Promise<void>;
 
-    protected constructor(public $http: HttpClient) {
+    constructor() {
     }
 
     /**
@@ -77,7 +72,7 @@ export abstract class Persistence {
     /**
      * @return {Promise<boolean>} true si init OK, false sinon
      */
-    public async init(_params: any): Promise<boolean> {
+    public async init(): Promise<boolean> {
         return true;
     }
 
@@ -110,16 +105,18 @@ export abstract class Persistence {
         }, {});
     }
 
-    public async saveCollection(collection: Collection): Promise<Collection> {
+    public async saveCollection(collection: Collection, saveSyncState = true): Promise<Collection> {
         const savedCollection = await this.postCollection(collection);
         const syncState = await this.getSyncState();
         syncState.collections.push(savedCollection);
-        const savedCollection2 = savedCollection;
-        // TODO ajout d'un débrayage en cas de batch save
-        console.log('Sauvegarde de l\'état de la synchro...');
-        await this.saveSyncState();
-        console.log('Sauvegarde de l\'état de la synchro OK');
-        return savedCollection2;
+
+        if (saveSyncState) {
+            console.log('Sauvegarde de l\'état de la synchro...');
+            await this.saveSyncState(syncState);
+            console.log('Sauvegarde de l\'état de la synchro OK');
+        }
+
+        return savedCollection;
     }
 
     protected abstract postCollection(collection: Collection): Promise<Collection>;
@@ -130,7 +127,7 @@ export abstract class Persistence {
         syncState.collections.removeById(collectionName);
         // TODO ajout d'un débrayage en cas de batch save
         console.log('Sauvegarde de l\'état de la synchro...');
-        await this.saveSyncState();
+        await this.saveSyncState(syncState);
         console.log('Sauvegarde de l\'état de la synchro OK');
     }
 
@@ -189,18 +186,24 @@ export abstract class Persistence {
         return savedCollection;
     }
 
-    /** Préférer {@link #findDisc} pour éviter de lancer une erreur tout en historisant tous les disques introuvables */
+    /**
+     * Préférer {@link #findDisc} pour éviter de lancer une erreur tout en historisant tous les disques introuvables
+     * @throws NotFoundError
+     */
     public abstract getDisc(discId: string): Promise<Disc>;
 
     public async findDisc(discId: string): Promise<Disc | undefined> {
         try {
-            const disc = this.getDisc(discId);
+            const disc = await this.getDisc(discId);
             remove(discId, this.notFoundDiscIds);
             return disc;
         } catch (e) {
-            console.error(`On ignore le disque suivant, car il est introuvable : ${discId} => on l'ajout dans la liste des disques introuvables`);
-            this.notFoundDiscIds.push(discId);
-            return undefined;
+            if (e instanceof NotFoundError) {
+                console.error(`On ignore le disque suivant, car il est introuvable : ${discId} => on l'ajoute dans la liste des disques introuvables`);
+                this.notFoundDiscIds.push(discId);
+                return undefined;
+            }
+            throw e;
         }
     }
 
@@ -221,83 +224,33 @@ export abstract class Persistence {
         );
     }
 
-    public async saveDisc(discId: string, disc: Disc): Promise<Disc> {
-        const savedDisc = await this.postDisc(discId, disc);
+    public async saveDisc(disc: Disc, saveSyncState = true): Promise<Disc> {
+        showLoader();
+        const savedDisc = await this.postDisc(disc);
         const syncState = await this.getSyncState();
         syncState.discs.push(savedDisc);
-        const savedDisc2 = savedDisc;
-        // TODO ajout d'un débrayage en cas de batch save
-        console.log('Sauvegarde de l\'état de la synchro...');
-        await this.saveSyncState();
-        console.log('Sauvegarde de l\'état de la synchro OK');
-        return savedDisc2;
+        remove(savedDisc.id, this.notFoundDiscIds);
+
+        if (saveSyncState) {
+            console.log('Sauvegarde de l\'état de la synchro...', syncState);
+            await this.saveSyncState(syncState);
+            console.log('Sauvegarde de l\'état de la synchro OK');
+        }
+
+        hideLoader();
+        return savedDisc;
     }
 
-    protected abstract postDisc(discId: string, disc: Disc): Promise<Disc>;
-
-    public getVideo(videoId: string, GOOGLE_KEY: string): Promise<GoogleApiYouTubeVideoResource> {
-        return new Promise((resolve, reject) => {
-            // TODO : à mettre dans ytparser plutôt non ?
-            this.$http.get<GoogleApiYouTubePageInfo<GoogleApiYouTubeVideoResource>>('https://www.googleapis.com/youtube/v3/videos', {
-                params: {
-                    key: GOOGLE_KEY,
-                    part: 'snippet,contentDetails', // 'contentDetails', // contentDetails => durée
-                    id: videoId,
-                    maxResults: '1'
-                }
-            }).toPromise()
-                // conversion success(data) -> then(res) {data = res.data}
-                // conversion error(data) -> catch(res) {data = res.data}
-                .then(res => {
-                    // const data = res.data; // AngularJS
-                    const data = res; // Angular5
-                    if (!data.items || data.items.length !== 1) {
-                        return reject(new Error('Items not found for videoId ' + videoId));
-                    }
-                    resolve(data.items[0]);
-                }, resKO => {
-                    reject(resKO.data);
-                });
-        });
-    }
+    protected abstract postDisc(disc: Disc): Promise<Disc>;
 
     /**
+     * @param discId
      * @param jsonCuesheet {*} un objet JSON contenant la cuesheet à créér
      */
     protected createDisc(discId: string, jsonCuesheet: any): Disc {
-        const cue = new cuesheet.CueSheet();
-        _.extend(cue, jsonCuesheet);
-
-        const disc = new Disc(cue);
+        const disc = Disc.fromJSON(jsonCuesheet);
         disc.id = discId;
         return disc;
-    }
-
-    public getPlaylistItems(playlistId: string, GOOGLE_KEY: string): Promise<GoogleApiYouTubePlaylistItemResource[]> {
-        return new Promise((resolve, reject) => {
-            // TODO : à mettre dans ytparser plutôt non ?
-            this.$http.get<GoogleApiYouTubePaginationInfo<GoogleApiYouTubePlaylistItemResource>>(
-                'https://www.googleapis.com/youtube/v3/playlistItems', {
-                    params: {
-                        key: GOOGLE_KEY,
-                        part: 'snippet', // 'contentDetails',
-                        playlistId: playlistId,
-                        maxResults: '50' // TODO : YouTube n'autorise pas plus que 50
-                    }
-                }).toPromise()
-                // conversion success(data) -> then(res) {data = res.data}
-                .then(res => {
-                    // const data: any = res.data; // AngularJS
-                    const data = res; // Angular5
-                    if (data.pageInfo && data.pageInfo.totalResults > data.pageInfo.resultsPerPage) {
-                        return reject(new Error('Too much results (> 50)'));
-                    }
-                    // resolve(data); // AngularJS
-                    resolve(data.items); // Angular5
-                }, res => {
-                    reject(res.data);
-                });
-        });
     }
 
     /**
@@ -409,11 +362,11 @@ export abstract class Persistence {
         }
         // Disques créés dans this
         for (const disc of syncResult.discs.pulled) {
-            await this.saveDisc(disc.id, disc);
+            await this.saveDisc(disc, false);
         }
         // Disques modifiés dans this
         for (const disc of syncResult.discs.common.pulled) {
-            await this.saveDisc(disc.id, disc);
+            await this.saveDisc(disc, false);
         }
 
         // Sauvegardes dans src
@@ -428,16 +381,16 @@ export abstract class Persistence {
         }
         // Disques créés dans src
         for (const disc of syncResult.discs.pushed) {
-            await src.saveDisc(disc.id, disc);
+            await src.saveDisc(disc);
         }
         // Disques modifiés dans src
         for (const disc of syncResult.discs.common.pushed) {
-            await src.saveDisc(disc.id, disc);
+            await src.saveDisc(disc);
         }
 
         console.log('Sauvegarde de l\'état de synchro dans les deux persistances...');
-        await this.saveSyncState();
-        await src.saveSyncState();
+        await this.saveSyncState(thisSyncState);
+        await src.saveSyncState(srcSyncState);
 
         // TODO : post dans les deux persistences
         return syncResult;
@@ -454,9 +407,31 @@ export abstract class Persistence {
         return this.getCollectionByNames(collectionNames);
     }
 
+    public async setAllCollectionsByNames(allCollectionsByNames: Record<string, Collection>, saveSyncState = true): Promise<void> {
+        for (const collectionName in allCollectionsByNames) {
+            await this.saveCollection(allCollectionsByNames[collectionName], false);
+        }
+
+        if (saveSyncState) {
+            const syncState = await this.getSyncState();
+            await this.saveSyncState(syncState);
+        }
+    }
+
     public async getAllDiscs(): Promise<Disc[]> {
         const discIds = await this.getDiscIds();
         return this.getDiscs(discIds);
+    }
+
+    public async setAllDiscs(discs: Disc[], saveSyncState = true): Promise<void> {
+        for (const disc of discs) {
+            await this.saveDisc(disc, false);
+        }
+
+        if (saveSyncState) {
+            const syncState = await this.getSyncState();
+            await this.saveSyncState(syncState);
+        }
     }
 
     abstract get connectedToGoogleDrive(): boolean;
@@ -508,6 +483,10 @@ export class SyncState {
         syncState.discs.load(json.discs);
         return syncState;
     }
+
+    containsDisc(discId: string): boolean {
+        return this.discs.contains(discId);
+    }
 }
 
 export abstract class SyncStateElements<T> {
@@ -551,6 +530,10 @@ export abstract class SyncStateElements<T> {
      * @return {string} l'id dans la map qui stocke l'état de chaque élément
      */
     abstract getId(element: T): string;
+
+    contains(id: string): boolean {
+        return Boolean(this.elementsById[id]);
+    }
 
     abstract getChecksum(element: T): string;
 
@@ -710,4 +693,7 @@ export interface PersistenceWithPublicFields {
     _deleteCollection(collectionName: string): Promise<void>;
 
     postDisc(discId: string, disc: Disc): Promise<Disc>;
+}
+
+export class NotFoundError extends Error {
 }

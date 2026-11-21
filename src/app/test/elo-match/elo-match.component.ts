@@ -1,18 +1,19 @@
-import {Component, computed, input, OnInit, resource, ResourceRef, Signal} from '@angular/core';
+import {Component, computed, inject, input, OnInit, resource, ResourceRef, Signal} from '@angular/core';
 import {pad2} from '../../../utils/utils';
 import {FormsModule} from '@angular/forms';
-import {LocalStoragePersistence} from '../../../persistence/LocalStoragePersistence';
-import {HttpClient} from '@angular/common/http';
 import {Disc} from '../../../disc';
+import {PersistenceService} from '../../persistence/persistence.service';
+import {hideLoader} from '../../app.component';
 import Track = Disc.Track;
 
-function trackResource(persistence: LocalStoragePersistence, discId: Signal<string>, trackNumber: Signal<number>) {
+function trackResource(persistenceService: PersistenceService, discId: Signal<string>, trackNumber: Signal<number>) {
     return resource({
         params: () => ({
             discId: discId(),
             trackNumber: trackNumber(),
         }),
         loader: async ({params}) => {
+            const persistence = await persistenceService.getCurrentPersistenceAndInit();
             const disc = await persistence.getDisc(params.discId);
             return disc.getTrackByNumber(params.trackNumber);
         },
@@ -91,21 +92,14 @@ export class EloMatchComponent implements OnInit {
         }
     ];
 
-    constructor(
-        readonly http: HttpClient,
-    ) {
-        const persistence = new LocalStoragePersistence(http);
-        this.aTrack = trackResource(persistence, this.aDiscId, this.aTrackNumber);
-        this.bTrack = trackResource(persistence, this.bDiscId, this.bTrackNumber);
-    }
-
-    // TODO : remonter dans app
-    get $foreground() {
-        return $('#foreground-overlay');
+    constructor() {
+        const persistenceService = inject(PersistenceService);
+        this.aTrack = trackResource(persistenceService, this.aDiscId, this.aTrackNumber);
+        this.bTrack = trackResource(persistenceService, this.bDiscId, this.bTrackNumber);
     }
 
     ngOnInit() {
-        this.$foreground.hide();
+        hideLoader();
     }
 
     protected clickEloButton(a: Track, button: EloComparisonButton, axis: EloAxis, b: Track): void {

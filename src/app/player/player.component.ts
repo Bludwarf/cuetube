@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, EventEmitter, inject, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, inject, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
 import {Disc} from '../../disc';
@@ -6,7 +6,6 @@ import {Collection} from '../../Collection';
 import {Persistence} from '../../persistence';
 import {CueService} from '../../CueService';
 import * as _ from 'underscore';
-import {GapiClientService} from '../gapi-client.service';
 import {SliderComponent} from '../slider/slider.component';
 import {ytparser} from '../../yt-parser';
 import {HistoryUtils} from '../../HistoryUtils';
@@ -29,8 +28,10 @@ import {RecordingRepository} from '../musicbrainz/recording-repository';
 import {CALME_COLLECTION_MBID, CollectionRepository} from '../musicbrainz/collection-repository';
 import {ReleaseRepository} from '../musicbrainz/release-repository';
 import {PersistenceService} from '../persistence/persistence.service';
-import {GoogleDriveButtonComponent} from '../google-drive/google-drive-button/google-drive-button.component';
+import {YouTubeService} from '../../google/you-tube.service';
+import {hideLoader, showLoader} from '../app.component';
 import Track = Disc.Track;
+import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 
 const YT_STATES = [
     'ENDED',
@@ -72,25 +73,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     private readonly persistenceService = inject(PersistenceService);
+    private readonly youTubeService = inject(YouTubeService);
 
     constructor(
         public http: HttpClient,
-        private gapiClient: GapiClientService,
         private zone: NgZone,
         private location: AngularLocation,
         public prefs: LocalStoragePrefsService,
         public readonly snackBar: MatSnackBar,
     ) {
-    }
-
-    // TODO : remonter dans app
-    get $foreground() {
-        return $('#foreground-overlay');
-    }
-
-    // TODO : remonter dans app
-    get $foregroundIcon() {
-        return $('#foreground-overlay-icon');
     }
 
     get appVersion(): string {
@@ -104,7 +95,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private cueService: CueService;
 
     private get localPersistence(): LocalStoragePersistence {
-        return this.persistenceService.localPersistence;
+        return this.persistenceService.localStoragePersistence;
     }
 
     private get persistence(): Persistence {
@@ -150,6 +141,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private player: YT.Player;
     private isInitYT = false;
 
+    useGoogleDriveV2 = true;
+
     /**
      * Le player YouTube a déjà lu une video après avoir été prêt ?
      */
@@ -186,9 +179,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     /** @see YT_STATES */
     private lastPlayerStates: number[] = [];
-
-    // TODO utiliser plutôt app-google-drive-button
-    public connectedToGoogleDrive = false;
 
     private lastToggledTracklist: HTMLElement;
 
@@ -294,38 +284,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
             this.slider.value = current.time;
         }
 
-        console.log('this.prefs.isConnectedToGoogleDrive()', this.prefs.isConnectedToGoogleDrive());
-        if (this.prefs.isConnectedToGoogleDrive()) {
-            await this.persistenceService.connectToGoogleDrive();
+        console.log('this.prefs.connectedToGoogleDrive', this.prefs.connectedToGoogleDrive);
+        if (this.prefs.connectedToGoogleDrive) {
+            await this.persistenceService.connectToGoogleDrive(this.useGoogleDriveV2);
         }
 
         /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
         const DELETED_VIDEO_TIMEOUT = 60;
-
-
-        const $window = $(window);
-
-        // Ajustement pour le CSS
-        const $fontSize50List = $('.font-size-50p'); // ajuste la taille du texte pour avoir une police qui prend 50% de l'écran
-        // Run the following when the window is resized, and also trigger it once to begin with.
-        $window.resize(() => {
-            // Get the current height of the div and save it as a variable.
-            const height = $window.height() / 2;
-            // Set the font-size and line-height of the text within the div according to the current height.
-            $fontSize50List.css({
-                'font-size': (height / 2) + 'px',
-                'line-height': height + 'px'
-            });
-        }).trigger('resize');
-
-        // const socket = io.connect();
-        // socket.emit('getVideo', this.text);
-
-        /*fetch("/minecraft.json").then((res) => {
-           return res.blob();
-        })*/
-
-        // Playlist jeux vidéos : collection=Jeux%20Vid%C3%A9os
 
         await this.init(); // TODO : on devrait attendre l'authent Google avant d'initialiser
 
@@ -536,7 +501,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const collectionParam = this.getCollectionParam();
 
         // Collections
-        await this.persistence.init({gapiClient: this.gapiClient});
+        const persistence = await this.persistenceService.getCurrentPersistenceAndInit();
+        if (persistence instanceof LocalAndDistantPersistence) {
+            await persistence.setLocalFromDistant();
+        }
         await this.loadCollectionNames();
 
         /** @deprecated TODO à remplacer par discsById */
@@ -681,9 +649,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
         console.log('YouTube initialisé');
 
-        // On cache le masque
-        this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
-        this.$foreground.hide();
+        hideLoader();
 
         // Si chargement
         const current = this.prefs.getCurrentPlayerState();
@@ -958,7 +924,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     /** @return Promise https://developers.google.com/youtube/v3/docs/videos#resource */
     getVideoSnippet(videoId: string, cb: (err: Error, videoSnippet?) => any) {
         // TODO comment recréer une Promise par dessus le promise de getVideo .
-        this.persistence.getVideo(videoId, environment.googleApiKey).then(video => {
+        this.youTubeService.getVideo(videoId, environment.googleApiKey).then(video => {
             cb(null, video.snippet);
         }).catch(err => {
             cb(err);
@@ -1004,22 +970,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
     }
 
-    showPlayer() {
-        this.$foregroundIcon.html('<span class=\'glyphicon glyphicon-play\'></span>');
-        this.$foreground.hide();
-    }
-
-    hidePlayer() {
-        this.$foregroundIcon.html(`<div id="foreground-overlay-icon" class="center font-size-50p"></div>`);
-        this.$foreground.show();
-    }
-
     play() {
         const player = this.player;
         if (!player) {
             return;
         }
-        this.showPlayer();
+        hideLoader();
         player.playVideo();
         this.isPlaying = true;
     }
@@ -1036,7 +992,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
     // TODO : convertir en promise
     getPlaylistItems(playlistId: string, cb: (err: Error, data?: GoogleApiYouTubePlaylistItemResource[]) => any) {
-        this.persistence.getPlaylistItems(playlistId, environment.googleApiKey).then(data => {
+        this.youTubeService.getPlaylistItems(playlistId, environment.googleApiKey).then(data => {
             cb(null, data);
         }).catch(err => {
             cb(err);
@@ -1142,7 +1098,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
         console.log('Création du disc...', disc);
         // TODO : pouvoir passer le disc en JSON -> problème de circular ref
-        this.persistence.saveDisc(disc.id, disc).then(() => {
+        this.persistence.saveDisc(disc).then(() => {
             this.createDisc(disc);
             if (cb) {
                 cb(null, disc);
@@ -1440,7 +1396,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     setCurrentCollectionNames(currentCollectionNames: string[]): Promise<Disc[]> {
-        this.hidePlayer();
+        showLoader();
         this.currentCollectionNames = currentCollectionNames;
         return this.loadDiscsFromCurrentCollections();
     }
@@ -1488,7 +1444,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     async loadDiscs(discIdsToLoad: string[]): Promise<Disc[]> {
 
         console.log('Chargement des disques :', discIdsToLoad);
-        this.hidePlayer();
+        showLoader();
 
         this.discs = [];
         const discLoaders = discIdsToLoad.map(discId => this.loadDisc(discId));
@@ -1504,7 +1460,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
             if (!this.isInitYT) {
                 this.initYT(); // Aucun disque n'est présent ? On charge quand même YouTube pour plus tard
             } else {
-                this.showPlayer();
+                hideLoader();
             }
             return loadedDiscs;
         } catch (e_1) {
@@ -1571,7 +1527,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     loadDiscsFromCurrentCollections(): Promise<Disc[]> {
-        this.hidePlayer();
+        showLoader();
         const currentCollectionNames = this.getCurrentCollectionNames();
 
         // On récupère la liste des disques de toutes les collections actives
@@ -1763,6 +1719,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         });
         window.open(`test/elo-match?${params}`, '_blank');
     }
+
 }
 
 interface State {

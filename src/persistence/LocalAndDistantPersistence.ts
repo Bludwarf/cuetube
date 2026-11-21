@@ -1,4 +1,4 @@
-import {Persistence, PersistenceWithPublicFields, SyncState} from '../persistence';
+import {NotFoundError, Persistence, PersistenceWithPublicFields, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {Collection} from '../Collection';
 
@@ -11,13 +11,13 @@ export class LocalAndDistantPersistence<L extends Persistence,
     D extends Persistence> extends Persistence {
 
     constructor(local: L, distant: D) {
-        super(local.$http);
+        super();
         this.local = local as L & PersistenceWithPublicFields;
         this.distant = distant as D & PersistenceWithPublicFields;
     }
 
     get title(): string {
-        return LocalAndDistantPersistence.TITLE;
+        return `${LocalAndDistantPersistence.TITLE}('${this.local.title}', '${this.distant.title}')`;
     }
 
     get connectedToGoogleDrive(): boolean {
@@ -42,6 +42,26 @@ export class LocalAndDistantPersistence<L extends Persistence,
         }
     }
 
+    async init(): Promise<boolean> {
+        const distantWasInit = await this.distant.init();
+        const localWasInit = await this.local.init();
+        return distantWasInit && localWasInit;
+    }
+
+    /**
+     * Écrase le local avec le distant
+     */
+    async setLocalFromDistant(): Promise<void> {
+        console.group(`Initialisation locale depuis le distant (les données locales seront totalement écrasées)...`);
+        await this.local.setAllCollectionsByNames(await this.distant.getAllCollectionsByNames(), false);
+        await this.local.setAllDiscs(await this.distant.getAllDiscs(), false);
+
+        const syncState = await this.local.getSyncState();
+        await this.local.saveSyncState(syncState);
+        console.log(`Initialisation locale depuis le distant terminée`);
+        console.groupEnd();
+    }
+
     getCollection(collectionName: string): Promise<Collection> {
         return this.local.getCollection(collectionName);
     }
@@ -54,8 +74,34 @@ export class LocalAndDistantPersistence<L extends Persistence,
         return this.local.getDiscIds();
     }
 
-    getDisc(discId: string): Promise<Disc> {
-        return this.local.getDisc(discId);
+    async getDisc(discId: string): Promise<Disc> {
+        const fn = this.bind(p => p.getDisc(discId));
+        try {
+            return await fn.local();
+        } catch (e) {
+            if (e instanceof NotFoundError) {
+                console.warn(`Disque "${discId}" introuvable en local, on le récupère du distant...`);
+
+                const disc = await fn.distant();
+
+                if (disc) {
+                    console.info(`Disque "${discId}" trouvé sur le distant`);
+                    await this.local.saveDisc(disc);
+                    console.info(`Disque "${discId}" sauvegardé en local`);
+                }
+
+                return disc;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private bind<F extends (p: any) => any>(fn: F): { local: () => any, distant: () => any } {
+        return {
+            local: () => fn(this.local),
+            distant: () => fn(this.distant),
+        };
     }
 
     async postCollection(collection: Collection): Promise<Collection> {
@@ -68,9 +114,9 @@ export class LocalAndDistantPersistence<L extends Persistence,
         return this.local._deleteCollection(collectionName);
     }
 
-    async postDisc(discId: string, disc: Disc): Promise<Disc> {
-        await this.distant.postDisc(discId, disc);
-        return this.local.postDisc(discId, disc);
+    async postDisc(disc: Disc): Promise<Disc> {
+        await this.distant.postDisc(disc);
+        return this.local.postDisc(disc);
     }
 
     async setCollectionNames(collectionsNames: string[]): Promise<string[]> {
@@ -79,11 +125,12 @@ export class LocalAndDistantPersistence<L extends Persistence,
     }
 
     protected async loadSyncState(): Promise<SyncState> {
-        await this.distant.loadSyncState();
-        return this.local.loadSyncState();
+        // TODO simplifier la synchro pour ne stocker qu'un lastmod commun à tous les disques, idem pour les collections
+        throw new Error(`Cette persistence ne possède pas d'état de synchro propre`);
     }
 
-    public saveSyncState(): Promise<SyncState> {
-        return this.distant.saveSyncState();
+    public async saveSyncState(): Promise<void> {
+        // TODO simplifier la synchro pour ne stocker qu'un lastmod commun à tous les disques, idem pour les collections
+        console.warn('TODO simplifier la synchro pour ne stocker qu\'un lastmod commun à tous les disques, idem pour les collections');
     }
 }

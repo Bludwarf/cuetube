@@ -1,48 +1,66 @@
 import {inject, Injectable} from '@angular/core';
 import {Persistence} from '../../persistence';
 import {LocalStoragePersistence} from '../../persistence/LocalStoragePersistence';
-import {HttpClient} from '@angular/common/http';
-import {GoogleDrivePersistence} from '../../persistence/GoogleDrivePersistence';
+import {GoogleDrivePersistence} from '../../google/GoogleDrivePersistence';
 import {LocalServerPersistence} from '../../persistence/LocalServerPersistence';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
 import {getParameterByName, notify} from '../../utils/utils';
-import {GapiClientService} from '../gapi-client.service';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
+import {SingleFilesGoogleDrivePersistence} from '../../google/SingleFilesGoogleDrivePersistence';
 
 @Injectable({providedIn: 'root'})
 export class PersistenceService {
-    private readonly httpClient = inject(HttpClient);
-    readonly localPersistence = new LocalStoragePersistence(this.httpClient);
-    private readonly googleDrivePersistence = new GoogleDrivePersistence(this.httpClient);
-    private readonly gapiClient = inject(GapiClientService);
+    readonly localStoragePersistence = inject(LocalStoragePersistence);
+    private readonly googleDrivePersistence = inject(GoogleDrivePersistence);
+    private readonly googleDrivePersistence2 = inject(SingleFilesGoogleDrivePersistence);
+    private readonly localServerPersistence = inject(LocalServerPersistence);
     private readonly prefsService = inject(LocalStoragePrefsService);
 
-    // TODO revoir la gestion du stockage persistenceName, il faudrait supprimer localStorage.setItem('persistence'
-    private persistenceName: string | undefined;
+    get persistenceName(): string {
+        return localStorage.getItem('persistence')
+            ?? getParameterByName('persistence', document.location.search)
+            ?? this.localStoragePersistence.title;
+    }
 
-    // TODO pour l'instant, la reconnexion automatique à GoogleDrive se fait uniquement dans PlayerComponent.ngAfterViewInit
+    set persistenceName(persistence: string) {
+        localStorage.setItem('persistence', persistence);
+    }
 
+    /**
+     * @deprecated Utiliser plutôt {@link #getCurrentPersistenceAndInit}, on conserve cette méthode tant que la migration n'est pas finie,
+     * car la première migration s'est soldée par un blocage au chargement des disques
+     */
     getCurrentPersistence() {
         return this.getPersistence();
     }
 
-    // TODO faire un cache plutôt que de recréer les instances à chaque appel
+    // TODO semble provoque un blocage du chargement des disques : à migrer progressivement
+    async getCurrentPersistenceAndInit(): Promise<Persistence> {
+        const persistence = this.getPersistence();
+        // if (!persistence.wasInit) {
+        await persistence.init();
+        // }
+        return persistence;
+    }
+
+    private get persistences(): Persistence[] {
+        return [
+            this.googleDrivePersistence,
+            this.googleDrivePersistence2,
+            this.localStoragePersistence,
+            this.localServerPersistence,
+        ];
+    }
+
     /**
      *
      * @return {Persistence}
      */
     private getPersistence(persistenceName = this.persistenceName): Persistence {
-        const http = this.httpClient;
-        const localPersistence = this.localPersistence;
-
-        if (persistenceName === GoogleDrivePersistence.TITLE) {
-            return new GoogleDrivePersistence(http);
-        }
-        if (persistenceName === LocalStoragePersistence.TITLE) {
-            return localPersistence;
-        }
-        if (persistenceName === LocalServerPersistence.TITLE) {
-            return new LocalServerPersistence(http);
+        for (const persistence of this.persistences) {
+            if (persistenceName === persistence.title) {
+                return persistence;
+            }
         }
         if (persistenceName && persistenceName.startsWith(LocalAndDistantPersistence.TITLE)) {
             const {localName, distantName} = LocalAndDistantPersistence.persistenceNames(persistenceName);
@@ -55,21 +73,22 @@ export class PersistenceService {
             }
         }
 
-        // Prod
-        if (window.location.host === 'bludwarf.github.io' || window.location.port !== '3000') {
-            return localPersistence;
-        }
-
-        // Cas par défaut
-        const persistenceParam = getParameterByName('persistence', document.location.search);
-        return persistenceParam === LocalServerPersistence.TITLE ? new LocalServerPersistence(http) : localPersistence;
+        throw new Error(`Persistence inconnue : ${persistenceName}`);
     }
 
-    async connectToGoogleDrive(connectingCb?: (connecting: boolean) => any) {
+    connectToGoogleDrive(v2: boolean, connectingCb?: (connecting: boolean) => any) {
+        if (v2) {
+            return this.connectToGoogleDriveV2(connectingCb);
+        } else {
+            return this.connectToGoogleDriveV1(connectingCb);
+        }
+    }
+
+    private async connectToGoogleDriveV1(connectingCb?: (connecting: boolean) => any) {
         notify(`Connexion à Google Drive...`);
         connectingCb?.(true);
         const persistence = this.getCurrentPersistence();
-        const oldPersistence = persistence instanceof GoogleDrivePersistence ? this.localPersistence : persistence;
+        const oldPersistence = persistence instanceof GoogleDrivePersistence ? this.localStoragePersistence : persistence;
         const googleDrivePersistence = this.googleDrivePersistence;
 
         const isInit = await this.tryToInit(googleDrivePersistence, connectingCb);
@@ -87,12 +106,8 @@ export class PersistenceService {
                 console.log(syncResult);
                 notify(message);
 
-                // On ne change pas de persistence pour accélérer les perfs
-                // puisse qu'on synchronise à chaque démarrage
                 const newPersistence = new LocalAndDistantPersistence(oldPersistence, googleDrivePersistence);
-                const newPersistenceName = `${newPersistence.title}('${oldPersistence.title}', '${googleDrivePersistence.title}')`;
-                console.log('PersistenceService:persistence', newPersistenceName);
-                this.persistenceName = newPersistenceName;
+                this.persistenceName = newPersistence.title;
             } catch (err) {
                 console.error(err);
                 alert(`Erreur de synchro entre la persistance actuelle et Google Drive. L'appli va être rechargée pour éviter des appels inutiles à Google Drive.`);
@@ -103,9 +118,25 @@ export class PersistenceService {
         }
     }
 
-    private async tryToInit(googleDrivePersistence: GoogleDrivePersistence, connectingCb?: (connecting: boolean) => any) {
+    private async connectToGoogleDriveV2(connectingCb?: (connecting: boolean) => any) {
+        notify(`Connexion à Google Drive...`);
+        connectingCb?.(true);
+        const googleDrivePersistence = this.googleDrivePersistence2;
+
+        const isInit = await this.tryToInit(googleDrivePersistence, connectingCb);
+
+        if (isInit) {
+            this.prefsService.connectedToGoogleDrive = true;
+            const newPersistence = new LocalAndDistantPersistence(this.localStoragePersistence, googleDrivePersistence);
+            this.persistenceName = newPersistence.title;
+            connectingCb?.(false);
+        }
+    }
+
+    private async tryToInit(googleDrivePersistence: GoogleDrivePersistence | SingleFilesGoogleDrivePersistence,
+                            connectingCb?: (connecting: boolean) => any) {
         try {
-            return await googleDrivePersistence.init({gapiClient: this.gapiClient});
+            return await googleDrivePersistence.init();
         } catch (err) {
             alert('Erreur de connexion à Google Drive');
             console.error(err);
@@ -119,7 +150,6 @@ export class PersistenceService {
         return this.getCurrentPersistence().connectedToGoogleDrive;
     }
 
-    // TODO ajouter un connectingCb comme connectToGoogleDrive
     disconnectFromGoogleDrive() {
         delete this.persistenceName;
         this.prefsService.connectedToGoogleDrive = false;

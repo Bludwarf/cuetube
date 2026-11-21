@@ -8,5 +8,21 @@ import {Component} from '@angular/core';
 })
 export class AppComponent {
     title = 'app';
+}
 
+export function showLoader() {
+    switchLoader(true);
+}
+
+export function hideLoader() {
+    switchLoader(false);
+}
+
+function switchLoader(show: boolean) {
+    const $foreground = $('#foreground-overlay');
+    if (show) {
+        $foreground.show();
+    } else {
+        $foreground.hide();
+    }
 }

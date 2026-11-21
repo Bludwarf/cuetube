@@ -11,7 +11,6 @@ import {imports, providers} from '../app/app.module';
 describe('GoogleDrivePersistence', () => {
     let component: PlayerComponent;
     let fixture: ComponentFixture<PlayerComponent>;
-    let persistence: GoogleDrivePersistence;
 
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
@@ -34,7 +33,6 @@ describe('GoogleDrivePersistence', () => {
         fixture = TestBed.createComponent(PlayerComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
-        persistence = new GoogleDrivePersistence(component.http);
     });
 
     it('should create', () => {

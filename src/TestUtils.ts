@@ -8,7 +8,7 @@ export class TestUtils {
         return new Disc4Test().withId(id).withTitle(title);
     }
 
-    static createLocalAndDistantPersistence(local = new MemoryPersistence(null), distant = new MemoryPersistence(null)) {
+    static createLocalAndDistantPersistence(local = new MemoryPersistence(), distant = new MemoryPersistence()) {
         return new LocalAndDistantPersistence(local, distant);
     }
 }

@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {PlayerCollectionsComponent} from '../../player-collections/player-collections.component';
+import {hideLoader} from '../../app.component';
 
 @Component({
     selector: 'app-collections-menu',
@@ -12,13 +13,8 @@ import {PlayerCollectionsComponent} from '../../player-collections/player-collec
 })
 export class CollectionsMenuComponent implements OnInit {
 
-    // TODO : remonter dans app
-    get $foreground() {
-        return $('#foreground-overlay');
-    }
-
     ngOnInit() {
-        this.$foreground.hide();
+        hideLoader();
     }
 
 }

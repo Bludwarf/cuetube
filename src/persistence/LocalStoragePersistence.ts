@@ -1,13 +1,12 @@
-import {Persistence, SyncState} from '../persistence';
+import {NotFoundError, Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
-import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
+import {Injectable} from '@angular/core';
 
+const COLLECTIONS_NAMES = 'collectionsNames';
+
+@Injectable({providedIn: 'root'})
 export class LocalStoragePersistence extends Persistence {
-
-    constructor($http: HttpClient) {
-        super($http);
-    }
 
     get title(): string {
         return LocalStoragePersistence.TITLE;
@@ -52,7 +51,7 @@ export class LocalStoragePersistence extends Persistence {
     }
 
     public async getCollectionNames(): Promise<string[]> {
-        const knownNames = this.getItem<string[]>('collectionNames');
+        const knownNames = this.getItem<string[]>(COLLECTIONS_NAMES);
         if (knownNames) {
             return knownNames;
         }
@@ -71,7 +70,7 @@ export class LocalStoragePersistence extends Persistence {
         }
 
         try {
-            this.setCollectionNames(names);
+            await this.setCollectionNames(names);
         } catch (e) {
             console.warn('Impossible de sauvegarder la liste des collections. Cause :', e);
         }
@@ -106,7 +105,7 @@ export class LocalStoragePersistence extends Persistence {
     }
 
     public async setCollectionNames(collectionsNames: string[]): Promise<string[]> {
-        this.setItem('collectionsNames', collectionsNames);
+        this.setItem(COLLECTIONS_NAMES, collectionsNames);
         return collectionsNames;
     }
 
@@ -152,14 +151,15 @@ export class LocalStoragePersistence extends Persistence {
     public async getDisc(discId: string): Promise<Disc> {
         const json = localStorage.getItem(`disc.${discId}.cuesheet`);
         if (!json) {
-            throw new Error(`Le disque ${discId} n'a pas été trouvé dans le LocalStorage`);
+            throw new NotFoundError(`Le disque ${discId} n'a pas été trouvé dans le LocalStorage`);
         }
         const data = JSON.parse(json);
         return super.createDisc(discId, data);
     }
 
-    public async postDisc(discId: string, disc): Promise<Disc> {
-        localStorage.setItem(`disc.${discId}.cuesheet`, JSON.stringify(disc.cuesheet));
+    public async postDisc(disc: Disc): Promise<Disc> {
+        const discId = disc.id;
+        localStorage.setItem(`disc.${discId}.cuesheet`, JSON.stringify(disc.cuesheet)); // TODO à mettre dans un service
         const discIds = await this.getDiscIds();
         if (discIds.indexOf(discId) === -1) {
             discIds.push(discId);
@@ -176,9 +176,7 @@ export class LocalStoragePersistence extends Persistence {
         return SyncState.load(localStorage.getItem('syncState'));
     }
 
-    async saveSyncState(): Promise<SyncState> {
-        const syncState = await this.getSyncState();
+    async saveSyncState(syncState: SyncState): Promise<void> {
         localStorage.setItem('syncState', JSON.stringify(syncState));
-        return syncState;
     }
 }

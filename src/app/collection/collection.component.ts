@@ -1,4 +1,4 @@
-import {Component, computed, inject, input, OnInit, Signal} from '@angular/core';
+import {Component, computed, inject, input, Signal} from '@angular/core';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 import Collection from '../../Collection';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -10,6 +10,7 @@ import {GoogleDriveButtonComponent} from '../google-drive/google-drive-button/go
 import {RouterLink} from '@angular/router';
 import {injectCollection} from './collection.resolver';
 import {PersistenceService} from '../persistence/persistence.service';
+import {hideLoader} from '../app.component';
 import Track = Disc.Track;
 
 @Component({
@@ -23,7 +24,7 @@ import Track = Disc.Track;
     templateUrl: './collection.component.html',
     styleUrl: './collection.component.css',
 })
-export class CollectionComponent implements OnInit {
+export class CollectionComponent {
 
     private readonly persistenceService = inject(PersistenceService);
     protected readonly collection = injectCollection();
@@ -37,24 +38,21 @@ export class CollectionComponent implements OnInit {
 
     // private readonly checkboxSelector: CheckboxSelector<Track>;
 
-    // TODO : remonter dans app
-    get $foreground() {
-        return $('#foreground-overlay');
-    }
-
     constructor() {
-        const persistence = this.persistenceService.getCurrentPersistence();
         this.discs = toSignal(
             toObservable(this.collection).pipe(
                 switchMap(collection =>
-                    from(persistence.findDiscs(collection.discIds))
+                    from(this.findDiscs(collection))
                 )
             )
         );
     }
 
-    ngOnInit() {
-        this.$foreground.hide();
+    async findDiscs(collection: Collection): Promise<Disc[]> {
+        const persistence = await this.persistenceService.getCurrentPersistenceAndInit();
+        const discs = await persistence.findDiscs(collection.discIds);
+        hideLoader();
+        return discs;
     }
 
     /**

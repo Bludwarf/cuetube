@@ -1,19 +1,15 @@
-import {Persistence, SyncState} from '../persistence';
+import {NotFoundError, Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
-import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
+import {Injectable} from '@angular/core';
 
+@Injectable({providedIn: 'root'})
 export class MemoryPersistence extends Persistence {
 
     public static readonly TITLE = 'Memory';
 
     collections: { [index: string]: Collection } = {};
     discs: { [index: string]: Disc } = {};
-    private syncState = new SyncState();
-
-    constructor($http: HttpClient) {
-        super($http);
-    }
 
     get title(): string {
         return MemoryPersistence.TITLE;
@@ -32,11 +28,12 @@ export class MemoryPersistence extends Persistence {
         return Promise.resolve(this.collections[collectionName] || new Collection(collectionName));
     }
 
-    setCollectionNames(collectionsNames: string[]): Promise<string[]> {
-        return Promise.all(collectionsNames.map(collectionName => {
+    async setCollectionNames(collectionsNames: string[]): Promise<string[]> {
+        await Promise.all(collectionsNames.map(collectionName => {
             const collection = new Collection(collectionName);
             return this.saveCollection(collection);
-        })).then(res => collectionsNames);
+        }));
+        return collectionsNames;
     }
 
     getCollectionNames(): Promise<string[]> {
@@ -47,22 +44,25 @@ export class MemoryPersistence extends Persistence {
         return Promise.resolve(Object.keys(this.discs));
     }
 
-    postDisc(discId: string, disc): Promise<Disc> {
-        this.discs[discId] = disc;
+    postDisc(disc: Disc): Promise<Disc> {
+        this.discs[disc.id] = disc;
         return Promise.resolve(disc);
     }
 
-    getDisc(discId: string): Promise<Disc> {
-        return Promise.resolve(this.discs[discId]);
+    async getDisc(discId: string): Promise<Disc> {
+        const disc = this.discs[discId];
+        if (!disc) {
+            throw new NotFoundError(`Disque "${discId}" introuvable en mémoire`);
+        }
+        return disc;
     }
 
-    protected loadSyncState(): Promise<SyncState> {
-        return Promise.resolve(this.syncState);
+    protected async loadSyncState(): Promise<SyncState> {
+        return new SyncState();
     }
 
-    public async saveSyncState(): Promise<SyncState> {
-        console.log(`syncState "sauvegardé" : ${JSON.stringify(this.syncState, null, 4)}`);
-        return this.syncState;
+    public async saveSyncState(): Promise<void> {
+        // Rien à faire en mémoire
     }
 
     get connectedToGoogleDrive(): boolean {

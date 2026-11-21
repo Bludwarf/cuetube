@@ -2,6 +2,7 @@ import {TestUtils} from '../TestUtils';
 import Collection from '../Collection';
 import {Disc} from '../disc';
 import {MemoryPersistence} from './MemoryPersistence';
+import {LocalAndDistantPersistence} from './LocalAndDistantPersistence';
 
 describe('LocalAndDistantPersistence', () => {
 
@@ -46,17 +47,29 @@ describe('LocalAndDistantPersistence', () => {
             .catch(done.fail);
     });
 
+    it('should get missing disc from distant', async () => {
+        const local = new MemoryPersistence();
+        const distant = new MemoryPersistence();
+
+        const distantDisc = new Disc();
+        distantDisc.id = 'DISTANT_DISC_ID';
+        distant.discs[distantDisc.id] = distantDisc;
+
+        const persistence = new LocalAndDistantPersistence(local, distant);
+        const disc = await persistence.getDisc(distantDisc.id);
+
+        await expect(disc).toBe(distantDisc);
+
+        const localSyncState = await local.getSyncState();
+        await expect(localSyncState.containsDisc(distantDisc.id)).toBeTruthy('Le disque est contenu dans l\'état de la synchro local');
+    });
+
 });
 
 describe('LocalAndDistantPersistence with broken distant', () => {
 
     it('should not save collections', (done) => {
-        const BrokenPersistence: { new(): MemoryPersistence } = class extends MemoryPersistence {
-            // anonymous class auto inherit its superclass constructor if you don't declare a constructor here.
-            constructor() {
-                super(null);
-            }
-
+        const BrokenPersistence: new() => MemoryPersistence = class extends MemoryPersistence {
             async postCollection(collection2: Collection): Promise<Collection> {
                 throw new Error('postCollection is broken');
             }
@@ -76,12 +89,7 @@ describe('LocalAndDistantPersistence with broken distant', () => {
     });
 
     it('should save collections but not delete them', (done) => {
-        const BrokenPersistence: { new(): MemoryPersistence } = class extends MemoryPersistence {
-            // anonymous class auto inherit its superclass constructor if you don't declare a constructor here.
-            constructor() {
-                super(null);
-            }
-
+        const BrokenPersistence: new() => MemoryPersistence = class extends MemoryPersistence {
             protected async _deleteCollection2(collectionName: string): Promise<void> {
                 throw new Error('_deleteCollection is broken');
             }
@@ -121,3 +129,4 @@ describe('LocalAndDistantPersistence with broken distant', () => {
     });
 
 });
+

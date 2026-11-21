@@ -1,12 +1,15 @@
-///<reference path="../@types/CueParser.d.ts"/>
+///<reference path="../@types/CueParser.d.ts"/> // TODO à remplacer par une ts config plus propre
 import {Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {CuePrinter} from '../CuePrinter';
-import {HttpClient} from '@angular/common/http';
 import {Collection} from '../Collection';
 import {StringUtils} from '../StringUtils';
 import Queue from 'promise-queue';
+import {errorContains, GoogleDriveError} from './google-drive-types';
+import {inject, Injectable} from '@angular/core';
+import {GapiClientService} from '../app/gapi-client.service';
 
+@Injectable({providedIn: 'root'})
 export class GoogleDrivePersistence extends Persistence {
 
     public static readonly TITLE = 'Google Drive';
@@ -32,6 +35,8 @@ export class GoogleDrivePersistence extends Persistence {
             minInterval: localStorage.getItem('googleDrive.minInterval')
         }
     };
+
+    private readonly gapiClient = inject(GapiClientService);
 
     /**
      * Pour éviter de recevoir un 403 pour usage trop intensif de l'API Google Drive
@@ -65,30 +70,20 @@ export class GoogleDrivePersistence extends Persistence {
         })
     };
 
-    constructor($http: HttpClient) {
-        super($http);
-    }
-
     get title(): string {
         return GoogleDrivePersistence.TITLE;
     }
 
     /**
-     * @return {Promise<boolean>} true si init OK, false sinon
+     * @return true si init OK, false sinon
      */
-    public init(params: any): Promise<boolean> {
-        if (!params || !params.gapiClient) {
-            throw new Error('Veuillez appeler init avec {gapiClient}');
+    public async init(): Promise<boolean> {
+        await this.gapiClient.init();
+        if (!gapi.client.drive) {
+            alert('Google Drive non initialisé');
+            return false;
         }
-        return params.gapiClient.init().then(() => {
-
-            if (!gapi.client.drive) {
-                alert('Google Drive non initialisé');
-                return Promise.resolve(false);
-            }
-
-            return Promise.resolve(true);
-        });
+        return true;
     }
 
     private getRootFolder(): Promise<gapi.client.drive.File> {
@@ -511,7 +506,8 @@ export class GoogleDrivePersistence extends Persistence {
         });
     }
 
-    postDisc(discId: string, disc: Disc): Promise<Disc> {
+    postDisc(disc: Disc): Promise<Disc> {
+        const discId = disc.id;
         const content = CuePrinter.print(disc.cuesheet);
         let discFolder: gapi.client.drive.File;
         return this.getDiscFolder(discId)
@@ -549,92 +545,32 @@ export class GoogleDrivePersistence extends Persistence {
             .then(content => SyncState.load(content));
     }
 
-    public saveSyncState(): Promise<SyncState> {
+    public async saveSyncState(syncState: SyncState): Promise<void> {
 
-        let rootFolder, syncState, content;
+        let rootFolder: gapi.client.drive.File, content: string;
         const filename = 'syncState.json';
-        let folder: gapi.client.drive.File;
-        return Promise.all([
-            this.getRootFolder(),
-            this.getSyncState()
-        ]).then(res => {
-            [rootFolder, syncState] = res;
+        let file1: gapi.client.drive.File | null;
+        try {
+            rootFolder = await this.getRootFolder();
             content = JSON.stringify(syncState);
-            return res;
-        })
+
             // Fichier existant ?
-            .then(res => {
-                return this.findGoogleFile(filename, rootFolder.id); // TODO cache comme les collection ou les disques
-            })
-            .catch(err => {
-                // Le fichier n'existe pas encore
-                return null;
-            })
-            .then(file => {
-                return this.gapiCall(this.upload({
-                    id: file ? file.id : undefined,
-                    name: filename,
-                    mimeType: 'text/plain',
-                    parents: [rootFolder.id]
-                }, content), `saveSyncState`);
-            })
-            .then(file => {
-                console.log(`SyncState sauvegardé dans Google Drive`, file);
-                return syncState;
-            });
+            file1 = await this.findGoogleFile(filename, rootFolder.id); // TODO cache comme les collection ou les disques
+        } catch (err) {
+            // Le fichier n'existe pas encore
+            file1 = null;
+        }
+        const file2: gapi.client.Response<gapi.client.drive.File> = await this.gapiCall(this.upload({
+            id: file1 ? file1.id : undefined,
+            name: filename,
+            mimeType: 'text/plain',
+            parents: [rootFolder.id]
+        }, content), `saveSyncState`);
+        console.log(`SyncState sauvegardé dans Google Drive`, file2);
     }
 
     get connectedToGoogleDrive(): boolean {
         return true;
     }
 
-}
-
-interface GoogleDriveError {
-    result: GoogleDriveErrorResult;
-    /** result en string */
-    body: string;
-    /** map : nom du header en minuscule, valeur */
-    'headers': string;
-    /** 404 par exemple */
-    'status': number;
-    'statusText': null;
-}
-
-interface GoogleDriveErrorResult {
-    error: {
-        'errors': GoogleDriveErrorDetail[],
-        'code': number; // 404,
-        'message': string; // "File not found: ."
-    };
-}
-
-interface GoogleDriveErrorDetail {
-    /** par exemple "global" */
-    'domain'?: string;
-    /** par exemple "notFound" */
-    'reason'?: string;
-    /** par exemple "File not found: ." */
-    'message'?: string;
-    /** par exemple "parameter" */
-    'locationType'?: string;
-    /** par exemple "fileId" */
-    'location'?: string;
-}
-
-function errorContains(error: GoogleDriveError, errorDetail: GoogleDriveErrorDetail) {
-    if (!error || !error.result || !error.result.error || !error.result.error.errors) {
-        return false;
-    }
-
-    return error.result.error.errors.find(currentDetail => equalsOnlyDefinedFields(currentDetail, errorDetail));
-}
-
-function equalsOnlyDefinedFields(actual, expected) {
-    for (const key in expected) {
-        if (expected.hasOwnProperty(key) && expected[key] !== undefined && expected[key] !== actual[key]) {
-            return false;
-        }
-    }
-    return true;
 }

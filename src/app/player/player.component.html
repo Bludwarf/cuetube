@@ -29,6 +29,7 @@
                                         (click)="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist
                                 </button>
                                 <app-google-drive-button></app-google-drive-button>
+                                <input type="checkbox" [(ngModel)]="useGoogleDriveV2" title="Utiliser Single File Google Drive" name="useGoogleDriveV2" />
                             </div>
                         </div>
                         <div class="header-line">

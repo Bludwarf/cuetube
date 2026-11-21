@@ -1,4 +1,4 @@
-import {Component, inject, NgZone} from '@angular/core';
+import {Component, inject, input, NgZone} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {PersistenceService} from '../../persistence/persistence.service';
 
@@ -11,6 +11,7 @@ import {PersistenceService} from '../../persistence/persistence.service';
 export class GoogleDriveButtonComponent {
     protected connecting = false;
     private readonly persistenceService = inject(PersistenceService);
+    readonly v2 = input<boolean>();
 
     constructor(
         public http: HttpClient,
@@ -42,7 +43,7 @@ export class GoogleDriveButtonComponent {
     }
 
     private async connectToGoogleDriveV2() {
-        await this.persistenceService.connectToGoogleDrive(connecting => {
+        await this.persistenceService.connectToGoogleDrive(this.v2(), connecting => {
             this.ngZone.run(() => this.connecting = connecting);
         });
     }
