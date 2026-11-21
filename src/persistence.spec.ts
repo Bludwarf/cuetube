@@ -5,7 +5,6 @@ import {TestUtils} from './TestUtils';
 import {SyncResult, SyncState} from './persistence';
 import * as _ from 'underscore';
 import {LocalAndDistantPersistence} from './persistence/LocalAndDistantPersistence';
-//const Queue = require('promise-queue');
 
 describe('persistence', () => {
 
@@ -52,7 +51,7 @@ describe('persistence', () => {
             distant.saveDisc(distantDisc.id, distantDisc),
             distant.saveDisc(distantEqualDisc.id, distantEqualDisc),
             distant.saveDisc(distantDiffDisc.id, distantDiffDisc),
-        ]).then(res => local.sync(distant))
+        ]).then(() => local.sync(distant))
             .then(syncResult => {
 
                 // Assertions sur le rapport de synchro
@@ -93,7 +92,7 @@ describe('persistence', () => {
 
                 return syncResult;
 
-            }).then(res => Promise.all([
+            }).then(() => Promise.all([
             local.getCollectionByNames([localCollection.name, localCommonCollection.name, distantCollection.name]),
             distant.getCollectionByNames([localCollection.name, localCommonCollection.name, distantCollection.name])
         ])).then(res => {
@@ -135,7 +134,7 @@ describe('persistence', () => {
                 distantDiffDisc.id
             ]);
 
-        }).then(res => Promise.all([
+        }).then(() => Promise.all([
             // Récup des disques
             local.getDiscs([localDisc.id, distantDisc.id, localEqualDisc.id, localDiffDisc.id]),
             distant.getDiscs([localDisc.id, distantDisc.id, localEqualDisc.id, localDiffDisc.id])
@@ -159,7 +158,7 @@ describe('persistence', () => {
                 distantDiffDisc
             ]);
 
-        }).then(res => done());
+        }).then(() => done());
     });
 
     /**
@@ -198,14 +197,14 @@ describe('persistence', () => {
         p.getSyncState().then(loadedSyncState => {
             expect(loadedSyncState).not.toBeNull();
             syncState = loadedSyncState;
-        }).then(res => {
+        }).then(() => {
             return Promise.all([
                 p.saveDisc(thriller.id, thriller),
                 p.saveDisc(darkSideOfTheMoon.id, darkSideOfTheMoon),
                 p.saveCollection(collectionVide),
                 p.saveCollection(collectionComplete)
             ]);
-        }).then(res => {
+        }).then(() => {
 
             // Attendus
             expect(syncState).not.toBeNull();
@@ -242,12 +241,12 @@ describe('persistence', () => {
 
             // TODO : collection
 
-        }).then(res => {
+        }).then(() => {
 
             // On pousse Thriller sans le modifier
             return p.saveDisc(thriller.id, thriller);
 
-        }).then(res => {
+        }).then(() => {
 
             const discs = syncState.discs.elementsById;
             expect(_.size(discs)).toBe(2);
@@ -266,13 +265,13 @@ describe('persistence', () => {
             expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
             expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
 
-        }).then(res => {
+        }).then(() => {
 
             // On modifie vraiment Thriller
             thriller.files[0].tracks[0].title = 'Bily Gin';
             return p.saveDisc(thriller.id, thriller);
 
-        }).then(res => {
+        }).then(() => {
 
             const discs = syncState.discs.elementsById;
             expect(_.size(discs)).toBe(2);
@@ -296,12 +295,12 @@ describe('persistence', () => {
             expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
             expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
 
-        }).then(res => {
+        }).then(() => {
 
             // Ajout du disque Secret World
             return p.saveDisc(secretWorld.id, secretWorld);
 
-        }).then(res => {
+        }).then(() => {
 
             const discs = syncState.discs.elementsById;
             expect(_.size(discs)).toBe(3);
@@ -333,12 +332,12 @@ describe('persistence', () => {
             expect(darkSideState.lastmod).toBe(lastState.darkSideOfTheMoon.lastmod);
             expect(darkSideState.checksum).toBe(lastState.darkSideOfTheMoon.checksum);
 
-        }).then(res => {
+        }).then(() => {
 
             // Sauvegarde du disque Secret World sans modification
             return p.saveDisc(secretWorld.id, secretWorld);
 
-        }).then(res => {
+        }).then(() => {
 
             const discs = syncState.discs.elementsById;
             expect(_.size(discs)).toBe(3);
@@ -352,15 +351,15 @@ describe('persistence', () => {
         })
 
             // Assertions sur le JSON
-            .then(res => JSON.stringify(syncState))
+            .then(() => JSON.stringify(syncState))
             .then(json => {
                 const loadedSyncState = SyncState.load(json);
                 expect(loadedSyncState).toEqual(syncState);
             })
-            .then(res => done());
+            .then(() => done());
     });
 
-    function testSync(direction) {
+    function testSync(direction: boolean) {
         return async () => {
             const discV1 = new Disc();
             const discId = 'discId';

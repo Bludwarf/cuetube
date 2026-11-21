@@ -1512,34 +1512,22 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     }
 
-    loadDisc(discId: string): Promise<Disc> {
+    async loadDisc(discId: string): Promise<Disc> {
 
         console.log(`Chargement du disque ${discId}`);
 
         // Recherche d'abord dans la mémoire
-        let continueConfirm = false; // on désactive totalement la confirmation quand il manque une playlist
-        return new Promise<Disc>(resolve => {
-            return resolve(this.persistence.getDisc(discId));
-        })
-            .catch(resKO => {
-                console.error(`Error lors de la récupération du disque ${discId}:`, resKO || resKO.data);
-                if (continueConfirm) {
-                    continueConfirm = prompt('Veuillez ajouter la cuesheet ' + discId, discId) !== null;
-                }
-                return <Disc>null;
-            })
-            .then(disc => {
-                if (disc) {
-                    enrichDisc(disc, this);
+        const disc = await this.persistence.findDisc(discId);
+        if (disc) {
+            enrichDisc(disc, this);
 
-                    // Reprise des paramètres sauvegardés
-                    this.prefs.restoreDisc(disc);
+            // Reprise des paramètres sauvegardés
+            this.prefs.restoreDisc(disc);
 
-                    // Ajout dans le player
-                    this.addDisc(disc);
-                    return disc;
-                }
-            });
+            // Ajout dans le player
+            this.addDisc(disc);
+            return disc;
+        }
     }
 
     /**
