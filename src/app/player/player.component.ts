@@ -49,7 +49,7 @@ const DEFAULT_COLLECTION = '_DEFAULT_';
     styleUrls: ['./player.component.css'],
     standalone: false
 })
-export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
+export class PlayerComponent implements OnInit, OnDestroy {
 
     get collectionNames(): string[] {
         return this._collectionNames;
@@ -177,9 +177,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild(SliderComponent, {static: true})
     slider: SliderComponent;
 
-    @ViewChild(GoogleDriveButtonComponent, {static: true})
-    googleDriveButton: GoogleDriveButtonComponent;
-
     private lastCheckedTime: number;
     private nextCheckCurrentTime: number;
     /** prochain appel */
@@ -295,6 +292,10 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         const current = this.prefs.getCurrentPlayerState();
         if (current) {
             this.slider.value = current.time;
+        }
+
+        if (this.prefs.isConnectedToGoogleDrive()) {
+            await this.persistenceService.connectToGoogleDrive();
         }
 
         /** Temps d'attente avant de déclarer une vidéo supprimée (en secondes) */
@@ -1670,12 +1671,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             d.setTime(d.getTime() + offset * 1000);
         }
         return d.toTimeString().substring(0, 5);
-    }
-
-    async ngAfterViewInit(): Promise<void> {
-        if (this.prefs.isConnectedToGoogleDrive()) {
-            await this.googleDriveButton.connectToGoogleDrive();
-        }
     }
 
     ngOnDestroy(): void {

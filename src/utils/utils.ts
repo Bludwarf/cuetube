@@ -105,6 +105,8 @@ export function notify(message, options?) {
     // il n'y a pas besoin de l'ennuyer à nouveau.
 
     // TODO : notification.onclick = ...
+
+    console.log(`Notification`, message)
 }
 
 /**
