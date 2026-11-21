@@ -110,36 +110,28 @@ export abstract class Persistence {
         }, {});
     }
 
-    public saveCollection(collection: Collection): Promise<Collection> {
-        return this.postCollection(collection).then(savedCollection => {
-            return this.getSyncState().then(syncState => {
-                syncState.collections.push(savedCollection);
-                return savedCollection;
-            }).then(savedCollection2 => {
-                // TODO ajout d'un débrayage en cas de batch save
-                console.log('Sauvegarde de l\'état de la synchro...');
-                return this.saveSyncState().then(() => {
-                    console.log('Sauvegarde de l\'état de la synchro OK');
-                    return savedCollection2;
-                });
-            });
-        });
+    public async saveCollection(collection: Collection): Promise<Collection> {
+        const savedCollection = await this.postCollection(collection);
+        const syncState = await this.getSyncState();
+        syncState.collections.push(savedCollection);
+        const savedCollection2 = savedCollection;
+        // TODO ajout d'un débrayage en cas de batch save
+        console.log('Sauvegarde de l\'état de la synchro...');
+        await this.saveSyncState();
+        console.log('Sauvegarde de l\'état de la synchro OK');
+        return savedCollection2;
     }
 
     protected abstract postCollection(collection: Collection): Promise<Collection>;
 
-    public deleteCollection(collectionName: string): Promise<void> {
-        return this._deleteCollection(collectionName).then(() => {
-            return this.getSyncState().then(syncState => {
-                syncState.collections.removeById(collectionName);
-            }).then(() => {
-                // TODO ajout d'un débrayage en cas de batch save
-                console.log('Sauvegarde de l\'état de la synchro...');
-                return this.saveSyncState().then(() => {
-                    console.log('Sauvegarde de l\'état de la synchro OK');
-                });
-            });
-        });
+    public async deleteCollection(collectionName: string): Promise<void> {
+        await this._deleteCollection(collectionName);
+        const syncState = await this.getSyncState();
+        syncState.collections.removeById(collectionName);
+        // TODO ajout d'un débrayage en cas de batch save
+        console.log('Sauvegarde de l\'état de la synchro...');
+        await this.saveSyncState();
+        console.log('Sauvegarde de l\'état de la synchro OK');
     }
 
     protected abstract _deleteCollection(collectionName: string): Promise<void>;
@@ -171,19 +163,22 @@ export abstract class Persistence {
      * @param {string[]} discIds id des disques présents dans cette collection, annule et remplace les précédents
      * @return {Promise<string[]>}
      */
-    public saveCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
+    public async saveCollectionDiscIds(collectionName: string, discIds: string[]): Promise<string[]> {
         if (!collectionName) {
             collectionName = Persistence.DEFAULT_COLLECTION;
         }
-        return this.getCollection(collectionName).then(collection => {
-            if (!collection) {
-                collection = new Collection(collectionName);
-            }
-            return collection;
-        }).then(collection => {
-            collection.discIds = discIds;
-            return this.saveCollection(collection);
-        }).then(collection => collection.discIds);
+
+        let collection = await this.getCollection(collectionName);
+
+        if (!collection) {
+            collection = new Collection(collectionName);
+        }
+
+        collection.discIds = discIds;
+
+        const savedCollection = await this.saveCollection(collection);
+
+        return savedCollection.discIds;
     }
 
     public async newCollection(collectionName: string): Promise<Collection> {
@@ -226,20 +221,16 @@ export abstract class Persistence {
         );
     }
 
-    public saveDisc(discId: string, disc: Disc): Promise<Disc> {
-        return this.postDisc(discId, disc).then(savedDisc => {
-            return this.getSyncState().then(syncState => {
-                syncState.discs.push(savedDisc);
-                return savedDisc;
-            }).then(savedDisc2 => {
-                // TODO ajout d'un débrayage en cas de batch save
-                console.log('Sauvegarde de l\'état de la synchro...');
-                return this.saveSyncState().then(() => {
-                    console.log('Sauvegarde de l\'état de la synchro OK');
-                    return savedDisc2;
-                });
-            });
-        });
+    public async saveDisc(discId: string, disc: Disc): Promise<Disc> {
+        const savedDisc = await this.postDisc(discId, disc);
+        const syncState = await this.getSyncState();
+        syncState.discs.push(savedDisc);
+        const savedDisc2 = savedDisc;
+        // TODO ajout d'un débrayage en cas de batch save
+        console.log('Sauvegarde de l\'état de la synchro...');
+        await this.saveSyncState();
+        console.log('Sauvegarde de l\'état de la synchro OK');
+        return savedDisc2;
     }
 
     protected abstract postDisc(discId: string, disc: Disc): Promise<Disc>;
@@ -583,7 +574,7 @@ export class SyncStateElement<T> {
 
     public /* readonly */ created = new Date();
     public lastmod = new Date();
-    public checksum;
+    public checksum: string;
 
     constructor(syncedElement: T, public parent: SyncStateElements<T>) {
         if (syncedElement) {
