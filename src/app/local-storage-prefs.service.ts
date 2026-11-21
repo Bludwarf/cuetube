@@ -4,7 +4,6 @@ import {Disc} from '../disc';
 import {PlayerComponent} from './player/player.component';
 import {CurrentPlayerState, SavedDiscPrefs} from '../LocalStorageTypes';
 import {LocalStoragePersistence} from '../persistence/LocalStoragePersistence';
-import {booleanToString, stringToBoolean} from '../utils/utils';
 import Track = Disc.Track;
 
 const KEY_CURRENT = 'current';
@@ -32,11 +31,11 @@ export class LocalStoragePrefsService {
     }
 
     get connectedToGoogleDrive(): boolean {
-        return stringToBoolean(localStorage.getItem('connectedToGoogleDrive'));
+        return this.get('connectedToGoogleDrive', false);
     }
 
     set connectedToGoogleDrive(value: boolean) {
-        localStorage.setItem('connectedToGoogleDrive', booleanToString(value));
+        this.set('connectedToGoogleDrive', value);
     }
 
     /** À la sauvegarde d'un disque */
@@ -159,15 +158,10 @@ export class LocalStoragePrefsService {
             };
             this.set('current', current);
         }
-        this.connectedToGoogleDrive = player.connectedToGoogleDrive;
     }
 
     getCurrentPlayerState(): CurrentPlayerState {
         return this.has(KEY_CURRENT) ? this.get(KEY_CURRENT) : undefined;
-    }
-
-    isConnectedToGoogleDrive(): boolean {
-        return this.get('connectedToGoogleDrive', false);
     }
 
     saveAllPlayer(player: PlayerComponent): void {

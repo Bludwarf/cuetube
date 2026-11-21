@@ -163,14 +163,6 @@ export function stopPropagation(e: Event): void {
     e.stopPropagation(); // pour ne pas appeler document.onclick
 }
 
-export function stringToBoolean(booleanStringValue: string): boolean {
-    return Boolean(JSON.parse(booleanStringValue));
-}
-
-export function booleanToString(boolean: boolean): string {
-    return JSON.stringify(boolean);
-}
-
 export function remove<I>(item: I, array: I[]): I[] {
     const indexOf = array.indexOf(item);
     if (indexOf !== -1) {

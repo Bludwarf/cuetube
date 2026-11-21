@@ -187,9 +187,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     /** @see YT_STATES */
     private lastPlayerStates: number[] = [];
 
-    // TODO utiliser plutôt app-google-drive-button
-    public connectedToGoogleDrive = false;
-
     private lastToggledTracklist: HTMLElement;
 
     // FIXME : à remettre dans le constructeur
@@ -294,8 +291,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
             this.slider.value = current.time;
         }
 
-        console.log('this.prefs.isConnectedToGoogleDrive()', this.prefs.isConnectedToGoogleDrive());
-        if (this.prefs.isConnectedToGoogleDrive()) {
+        console.log('this.prefs.connectedToGoogleDrive', this.prefs.connectedToGoogleDrive);
+        if (this.prefs.connectedToGoogleDrive) {
             await this.persistenceService.connectToGoogleDrive();
         }
 
