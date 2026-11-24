@@ -55,7 +55,7 @@
                         @for (disc of discs; track disc) {
                             <div>
                                 @if (disc) {
-                                    <div class="disc-wrapper" [attr.data-index]="index" [attr.data-discId]="disc.discId"
+                                    <div class="disc-wrapper" [attr.data-index]="$index" [attr.data-discId]="disc.discId"
                                          [class.active]="currentTrack && disc.id === currentTrack.disc.id"
                                          [class.inTracklist]="discInTracklist && disc === discInTracklist">
                                         <div class="disc-thumb" (click)="disc.clickThumb($event)"
@@ -73,7 +73,7 @@
                                         </div>
                                         <div class="tracklist" (click)="stopPropagation($event)">
                                             <h2 class="disc-name"
-                                                [class.active]="currentTrack && disc === discs[currentTrack.disc.index]"
+                                                [class.active]="disc === currentTrack?.disc"
                                                 (click)="disc.load()">{{ disc.title }}</h2>
                                             @if (disc.performer) {
                                                 <h3 class="disc-performer">{{ disc.performer }}</h3>
