@@ -34,7 +34,9 @@ export class PersistenceService {
         return this.getPersistence();
     }
 
-    // TODO semble provoque un blocage du chargement des disques : à migrer progressivement
+    /**
+     * <b>Attention</b> : Ne pas utiliser directement dans un template, même avec le pipe async => sinon blocage de l'UI car boucle infinie
+     */
     async getCurrentPersistenceAndInit(): Promise<Persistence> {
         const persistence = this.getPersistence();
         // if (!persistence.wasInit) {
