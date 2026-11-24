@@ -4,6 +4,7 @@ import {FormsModule} from '@angular/forms';
 import {Disc} from '../../../disc';
 import {PersistenceService} from '../../persistence/persistence.service';
 import {hideLoader} from '../../app.component';
+import {EloAxis, EloAxisId, EloLogLine, EloLogParser, EloOperator, ENERGY, TrackHash, VALENCE} from '../elo/types';
 import Track = Disc.Track;
 
 function trackResource(persistenceService: PersistenceService, discId: Signal<string>, trackNumber: Signal<number>) {
@@ -33,15 +34,15 @@ function reverseOperator(op: EloOperator): EloOperator {
 
 function reverseLine(line: EloLogLine): EloLogLine {
     return {
-        aTrackKey: line.bTrackKey,
+        aTrackHash: line.bTrackHash,
         op: reverseOperator(line.op),
         axisId: line.axisId,
-        bTrackKey: line.aTrackKey,
+        bTrackHash: line.aTrackHash,
     };
 }
 
 function formatLine(line: EloLogLine): string {
-    return `${line.aTrackKey} ${line.op}${line.axisId} ${line.bTrackKey}`;
+    return `${line.aTrackHash} ${line.op}${line.axisId} ${line.bTrackHash}`;
 }
 
 @Component({
@@ -141,17 +142,17 @@ export class EloMatchComponent implements OnInit {
 
     protected export() {
         const opponents = this.tracks();
-        const aKey = this.trackKey(opponents[0]);
-        const bKey = this.trackKey(opponents[1]);
+        const aKey = this.trackHash(opponents[0]);
+        const bKey = this.trackHash(opponents[1]);
         const lines: string[] = [];
         for (const axis of this.eloAxisList) {
             const comparison = this.eloComparisons.get(axis);
             if (comparison) {
                 let line: EloLogLine = {
-                    aTrackKey: aKey,
+                    aTrackHash: aKey,
                     op: comparison.operator,
                     axisId: comparison.axis.id,
-                    bTrackKey: bKey,
+                    bTrackHash: bKey,
                 };
                 if (aKey.toLowerCase() > bKey.toLowerCase()) {
                     line = reverseLine(line);
@@ -162,7 +163,7 @@ export class EloMatchComponent implements OnInit {
         this.eloComparisonsText = lines.join('\r\n');
     }
 
-    protected trackKey(track: Track): TrackKey {
+    protected trackHash(track: Track): TrackHash {
         return `${track.disc.id}:${pad2(track.number)}`;
     }
 
@@ -174,9 +175,9 @@ export class EloMatchComponent implements OnInit {
 
         const opponents = this.tracks();
         const a = opponents[0];
-        const aKey = this.trackKey(a);
+        const aKey = this.trackHash(a);
         const b = opponents[1];
-        const bKey = this.trackKey(b);
+        const bKey = this.trackHash(b);
 
         const comparisons = eloLogLines
             .map(line => this.map(line, aKey, a, bKey, b))
@@ -189,7 +190,7 @@ export class EloMatchComponent implements OnInit {
     }
 
     protected map(line: EloLogLine, aKey: string, a: Track, bKey: string, b: Track): EloComparison | undefined {
-        if (line.aTrackKey === aKey && line.bTrackKey === bKey) {
+        if (line.aTrackHash === aKey && line.bTrackHash === bKey) {
             return {
                 a,
                 operator: line.op,
@@ -197,7 +198,7 @@ export class EloMatchComponent implements OnInit {
                 b,
             };
         }
-        if (line.aTrackKey === bKey && line.bTrackKey === aKey) {
+        if (line.aTrackHash === bKey && line.bTrackHash === aKey) {
             return {
                 a,
                 operator: reverseOperator(line.op),
@@ -218,39 +219,6 @@ export class EloMatchComponent implements OnInit {
 
 }
 
-// TODO à renommer en TrackHash ?
-type TrackKey = `${string}:${string}`;
-
-interface Opponent {
-    discId: string;
-    /** Utilisé pour l'image du disque */
-    fileId: string;
-    trackNumber: number;
-}
-
-interface EloAxis {
-    id: EloAxisId;
-    label: string;
-    minLabel: string; // "Calme"
-    maxLabel: string; // "Énergique"
-}
-
-type EloAxisId = 'E' | 'V';
-
-const ENERGY: EloAxis = {
-    id: 'E',
-    label: 'Énergie',
-    minLabel: 'Calme',
-    maxLabel: 'Énergique',
-};
-
-const VALENCE: EloAxis = {
-    id: 'V',
-    label: 'Valence',
-    minLabel: 'Triste',
-    maxLabel: 'Joyeux',
-};
-
 // TODO dans le contexte de ce composant on pourrait supprimer a et b
 interface EloComparison {
     a: Track;
@@ -259,53 +227,7 @@ interface EloComparison {
     b: Track;
 }
 
-type EloOperator = '<' | '=' | '>';
-
 interface EloComparisonButton {
     label: string;
     operator: EloOperator;
-}
-
-class EloLogParser {
-
-    parse(text: string): EloLogLine[] {
-        const lines = text.split(/\r?\n/)
-            .map(line => line.trim())
-            .filter(line => Boolean(line))
-            .filter(line => line.match(/^[A-Z0-9]/i))
-        ;
-
-        const log: EloLogLine[] = [];
-        for (const line of lines) {
-            const [aTrackKey, opString, bTrackKey] = line.split(/\s+/);
-            const op = this.parseOperatorWithAxis(opString);
-
-            const axisIds: EloAxisId[] = op.axisInitial ? [op.axisInitial] : ['E', 'V'];
-            for (const axisId of axisIds) {
-                // console.log(`${aTrackKey} ${op.operator}${axisIdInitial} ${bTrackKey}`);
-                log.push({
-                    aTrackKey: aTrackKey as TrackKey, // TODO validation réelle
-                    op: op.operator,
-                    axisId,
-                    bTrackKey: bTrackKey as TrackKey, // TODO validation réelle
-                });
-            }
-        }
-
-        return log;
-    }
-
-    private parseOperatorWithAxis(operatorString: string) {
-        return {
-            operator: operatorString[0] as EloOperator, // TODO validation réelle
-            axisInitial: operatorString[1] as EloAxisId, // TODO validatino réelle
-        };
-    }
-}
-
-interface EloLogLine {
-    aTrackKey: TrackKey;
-    op: EloOperator;
-    axisId: EloAxisId;
-    bTrackKey: TrackKey;
 }

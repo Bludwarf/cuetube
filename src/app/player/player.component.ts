@@ -28,6 +28,7 @@ import {PersistenceService} from '../persistence/persistence.service';
 import {YouTubeService} from '../../google/you-tube.service';
 import {hideLoader, showLoader} from '../app.component';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
+import {TrackHash} from '../test/elo/types';
 import Track = Disc.Track;
 
 const YT_STATES = [
@@ -224,6 +225,30 @@ export class PlayerComponent implements OnInit, OnDestroy {
             'RRtlWfi6jiM:02', // Age of Empires 2: Age of Kings - 2. Track 1 : Shamburger
             'RRtlWfi6jiM:04', // Age of Empires 2: Age of Kings - 4. Track 3 : Drizzle (Firelight Smoove Mix)
             'RRtlWfi6jiM:06', // Age of Empires 2: Age of Kings - 6. Track 5 : T Station
+        ]),
+        '😌 Calme (elo Loddlenaut)': new HashTrackFilter([
+            'Bs5QGN-zhwM:04', // The Sims - 4. The Sims Soundtrack: Building Mode 4
+            'Bs5QGN-zhwM:05', // The Sims - 5. The Sims Soundtrack: Building Mode 5
+            'Bs5QGN-zhwM:08', // The Sims - 8. The Sims Soundtrack: Buy Mode 2
+            'Bs5QGN-zhwM:10', // The Sims - 10. The Sims Soundtrack: Buy Mode 4
+            'Bs5QGN-zhwM:11', // The Sims - 11. The Sims Soundtrack: Neighborhood 1
+            'Bs5QGN-zhwM:13', // The Sims - 13. The Sims Soundtrack: Neighborhood 3
+            'Bs5QGN-zhwM:16', // The Sims - 16. The Sims Soundtrack: Neighborhood 6
+            'Bs5QGN-zhwM:17', // The Sims - 17. The Sims Soundtrack: Neighborhood 7
+            'Dg0IjOzopYU:04', // Minecraft FULL SOUNDTRACK - 4. Haggstrom
+            'Dg0IjOzopYU:14', // Minecraft FULL SOUNDTRACK - 14. Blind Spots
+            'Ng-mSbF-kd8:03', // Loddlenaut (Original Game Soundtrack) - 3. A Loddlenaut's Home
+            'Ng-mSbF-kd8:04', // Loddlenaut (Original Game Soundtrack) - 4. Ripple Reef (Polluted)
+            'Ng-mSbF-kd8:05', // Loddlenaut (Original Game Soundtrack) - 5. Ripple Reef (Recovering)
+            'Ng-mSbF-kd8:06', // Loddlenaut (Original Game Soundtrack) - 6. Ripple Reef (Clean)
+            'RRtlWfi6jiM:04', // Age of Empires 2: Age of Kings - 4. Track 3 : Drizzle (Firelight Smoove Mix)
+            'RRtlWfi6jiM:06', // Age of Empires 2: Age of Kings - 6. Track 5 : T Station
+            'zvHQELG1QHE:02', // Démons et Manants - 2. Flow my tears
+            'zvHQELG1QHE:03', // Démons et Manants - 3. null
+            'zvHQELG1QHE:04', // Démons et Manants - 4. null
+            'zvHQELG1QHE:05', // Démons et Manants - 5. null
+            'zvHQELG1QHE:06', // Démons et Manants - 6. (Say Love If Ever Thou Didst Find) ?
+            'zvHQELG1QHE:07', // Démons et Manants - 7. null
         ]),
         // '😌 Calme (MB)': new MusicBrainzTrackFilter(
         //     CALME_COLLECTION_MBID,
@@ -1670,7 +1695,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     protected addCurrentTrackFilter() {
-        const hashes: string[] = [];
+        const hashes: TrackHash[] = [];
         for (const disc of this.discs) {
             for (const track of disc.tracks) {
                 if (track.enabledByUser) {
@@ -1733,6 +1758,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
             bt: String(this.currentTrack.number),
         });
         window.open(`test/elo-match?${params}`, '_blank');
+    }
+
+    protected eloStats(currentTrack: Track) {
+        const params = new URLSearchParams({
+            discId: currentTrack.disc.id,
+            trackNumber: String(this.currentTrack.number),
+        });
+        window.open(`test/track-elo-stats?${params}`, '_blank');
     }
 
     protected readonly isEditableTrackFilter = isEditableTrackFilter;

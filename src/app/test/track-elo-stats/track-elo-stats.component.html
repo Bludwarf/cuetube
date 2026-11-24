@@ -1,0 +1,18 @@
+<h1>{{ track().title }}</h1>
+
+<button class="btn btn-primary" (click)="uploader.click()">Importer</button>
+<input
+    hidden
+    type="file"
+    #uploader
+    (change)="uploadFile($event)"
+/>
+
+@if (scores) {
+    <dl>
+        @for (score of scores; track score) {
+            <dt>{{ score.axisId }}</dt>
+            <dd>{{ Math.round(score.rating) }}</dd>
+        }
+    </dl>
+}

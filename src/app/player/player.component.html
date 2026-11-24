@@ -60,6 +60,11 @@
                                         elo-match
                                     </button>
                                 }
+                                @if (this.currentTrack) {
+                                    <button (click)="eloStats(this.currentTrack)" class="btn">
+                                        elo-stats
+                                    </button>
+                                }
                             </div>
                         </div>
                     </div>

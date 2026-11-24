@@ -1,8 +1,9 @@
 import {Disc} from '../../disc';
-import {copyToClipboard, pad2, remove} from '../../utils/utils';
+import {copyToClipboard, remove} from '../../utils/utils';
 import {CollectionRepository} from '../musicbrainz/collection-repository';
 import {RecordingRepository} from '../musicbrainz/recording-repository';
 import {Persistence} from '../../persistence';
+import {computeHash, TrackHash} from '../test/elo/types';
 import Track = Disc.Track;
 
 export interface TrackFilter {
@@ -101,9 +102,6 @@ export class MusicBrainzTrackFilter implements TrackFilter {
 
 }
 
-// "<videoId>:<trackNumber>"
-type TrackHash = string;
-
 export class HashTrackFilter implements EditableTrackFilter {
     constructor(
         private readonly hashes: TrackHash[],
@@ -111,7 +109,7 @@ export class HashTrackFilter implements EditableTrackFilter {
     }
 
     static computeHash(track: Disc.Track): TrackHash {
-        return track.disc.videoId + ':' + pad2(track.number);
+        return computeHash(track);
     }
 
     static async parseHash(hash: TrackHash, persistence: Persistence): Promise<Disc.Track> {
