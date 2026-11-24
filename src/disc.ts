@@ -317,7 +317,7 @@ export class Disc {
     load() {
         const track = this.nextTrack(this.player.shuffle, this.player.currentTrack);
         if (track) {
-            this.player.loadTrack(track);
+            this.player.loadTrack(track, true);
         } else {
             alert('Plus aucune piste pour ce disque');
         }

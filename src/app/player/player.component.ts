@@ -466,7 +466,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
                     event.preventDefault();
                     break;
                 case 'ArrowUp':
-                    component.previous();
+                    component.previous(false);
                     break;
                 case 'ArrowDown':
                     component.next();
@@ -670,7 +670,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
                 const track = file ? file.tracks[current.trackIndex] : disc.nextTrack(this.shuffle, undefined);
 
                 // loadTrack sorti de apply pour éviter l'erreur "$apply already in progress"
-                this.loadTrack(track, current.time);
+                this.loadTrack(track, true, current.time);
 
                 return;
             }
@@ -720,7 +720,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
      * @param track piste à charger TODO devrait être remplacé par file pour éviter des désynchro
      * @param time temps sur lequel se positionner
      */
-    loadTrack(track: Disc.Track, time?: number) {
+    loadTrack(track: Disc.Track, automatic: boolean, time?: number) {
 
         clearTimeout(this.checkCurrentTimeTimeout); // suppression de tous les timers
 
@@ -787,7 +787,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
                 && getParameterByName('v', player.getVideoUrl()) === track.file.videoId) {
                 this.seekToTrack(track);
             } else {
-                if (!this.isPlaying) {
+                if (!this.isPlaying && automatic) {
                     this.pauseAfterVideoIsLoaded = true;
                 }
                 // FIXME : graphiquement on ne voit plus les bornes start et end
@@ -883,13 +883,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
             if (!automatic && !this.dontDisableSkippedTrack) {
                 this.currentTrack.enabledByUser = false;
             }
-            this.loadTrack(track);
+            this.loadTrack(track, automatic);
         } else {
             alert('Aucun disque à lire !');
         }
     }
 
-    previous() {
+    previous(automatic: boolean) {
 
         const previousEntry = this.history.length >= 2 && this.history[this.history.length - 2];
         if (!previousEntry) {
@@ -906,7 +906,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const track = file.tracks[previousEntry.trackIndex];
 
         this.history.pop(); // suppression du previous
-        this.loadTrack(track);
+        this.loadTrack(track, automatic);
         this.history.pop(); // suppression du previous (ajouté par loadTrack)
     }
 

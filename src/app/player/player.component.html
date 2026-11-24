@@ -99,7 +99,7 @@
                                                             @for (track of file.tracks; track track) {
                                                                 <li class="track" [class.active]="track == currentTrack"
                                                                     [class.disabled]="!track.enabled"
-                                                                    (click)="loadTrack(track)">
+                                                                    (click)="loadTrack(track, false)">
                                                                     <input type="checkbox"
                                                                            [(ngModel)]="track.enabledByUser"
                                                                            (click)="track.afterClickCheckbox($event)"/>
@@ -153,7 +153,7 @@
             <form id="player-controls-form">
                 <div class="track-controls">
                     <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-step-backward active"
-                          (click)="previous()" [class.active]="history.length >= 2"
+                          (click)="previous(false)" [class.active]="history.length >= 2"
                           title="Piste précédente. Raccourci clavier : haut"></span>
                     @if (!isPlaying) {
                         <span style="font-size: 32px;" class="svg-checkbox glyphicon glyphicon-play active"
