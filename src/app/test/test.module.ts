@@ -6,7 +6,7 @@ import {CollectionsMenuComponent} from './collections-menu/collections-menu.comp
 import {EloMatchComponent} from './elo-match/elo-match.component';
 import {TrackEloStatsComponent} from './track-elo-stats/track-elo-stats.component';
 import {collectionResolver} from '../collection/collection.resolver';
-import {TRACK, trackResolver} from './resolvers';
+import {AB_TRACKS, abTracksResolver, TRACK, trackResolver} from './resolvers';
 
 const routes: Routes = [
     {
@@ -20,6 +20,10 @@ const routes: Routes = [
     {
         path: TEST_PATHS_MAP['elo-match'],
         component: EloMatchComponent,
+        resolve: {
+            [AB_TRACKS]: abTracksResolver,
+        },
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange',
     },
     {
         path: TEST_PATHS_MAP['track-elo-stats'],
@@ -27,6 +31,7 @@ const routes: Routes = [
         resolve: {
             [TRACK]: trackResolver,
         },
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange',
     },
 ];
 

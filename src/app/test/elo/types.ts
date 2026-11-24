@@ -1,10 +1,18 @@
 import {Disc} from '../../../disc';
 import {pad2} from '../../../utils/utils';
 
-export type TrackHash = `${string}:${string}`;
+export type TrackHash = `${string}:${number}${number}`;
 
-export function computeHash(track: Disc.Track): TrackHash {
+export function hashTrack(track: Disc.Track): TrackHash {
     return (track.disc.videoId + ':' + pad2(track.number)) as TrackHash;
+}
+
+export function splitTrackHash(trackHash: TrackHash): { videoId: string, trackNumber: number } {
+    const [videoId, trackNumberString] = trackHash.split(':');
+    return {
+        videoId,
+        trackNumber: Number(trackNumberString),
+    };
 }
 
 export interface EloAxis {
@@ -43,7 +51,7 @@ export class EloLogParser {
 
         const log: EloLogLine[] = [];
         for (const line of lines) {
-            const [aTrackHash, opString, bTrackHash] = line.split(/\s+/);
+            const [aTrackHash, opString, bTrackHash, prefixedDate] = line.split(/\s+/);
             const op = this.parseOperatorWithAxis(opString);
 
             const axisIds: EloAxisId[] = op.axisInitial ? [op.axisInitial] : ['E', 'V'];
@@ -54,6 +62,7 @@ export class EloLogParser {
                     op: op.operator,
                     axisId,
                     bTrackHash: bTrackHash as TrackHash, // TODO validation réelle
+                    date: prefixedDate.substring(1) as LocalDate, // TODO validation réelle
                 });
             }
         }
@@ -67,6 +76,55 @@ export class EloLogParser {
             axisInitial: operatorString[1] as EloAxisId, // TODO validatino réelle
         };
     }
+
+    format(lines: EloLogLine[]): string {
+        return lines.map(line => this.formatLine(line)).join('\r\n');
+    }
+
+    private formatLine(line: EloLogLine): string {
+        return `${line.aTrackHash} ${line.op}${line.axisId} ${line.bTrackHash} @${line.date}`;
+    }
+
+}
+
+type Year4D = `${number}${number}${number}${number}`;
+type Month2D = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12';
+type Day2D =
+    '01'
+    | '02'
+    | '03'
+    | '04'
+    | '05'
+    | '06'
+    | '07'
+    | '08'
+    | '09'
+    | '10'
+    | '11'
+    | '12'
+    | '13'
+    | '14'
+    | '15'
+    | '16'
+    | '17'
+    | '18'
+    | '19'
+    | '20'
+    | '21'
+    | '22'
+    | '23'
+    | '24'
+    | '25'
+    | '26'
+    | '27'
+    | '28'
+    | '29'
+    | '30'
+    | '31';
+type LocalDate = `${Year4D}-${Month2D}-${Day2D}`;
+
+export function currentLocalDate(): LocalDate {
+    return new Date().toISOString().substring(0, 10) as LocalDate;
 }
 
 export interface EloLogLine {
@@ -74,6 +132,7 @@ export interface EloLogLine {
     op: EloOperator;
     axisId: EloAxisId;
     bTrackHash: TrackHash;
+    date: LocalDate;
 }
 
 export interface EloScore {
@@ -167,4 +226,8 @@ function updateElo(a: EloScore, operator: EloOperator, b: EloScore, k = 32) {
     b.rating += k * ((1 - scoreA) - (1 - expectedA));
     a.comparisons++;
     b.comparisons++;
+}
+
+export function compareTrackHash(a: TrackHash, b: TrackHash): number {
+    return a.toLowerCase().localeCompare(b.toLowerCase());
 }

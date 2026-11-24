@@ -3,7 +3,7 @@ import {copyToClipboard, remove} from '../../utils/utils';
 import {CollectionRepository} from '../musicbrainz/collection-repository';
 import {RecordingRepository} from '../musicbrainz/recording-repository';
 import {Persistence} from '../../persistence';
-import {computeHash, TrackHash} from '../test/elo/types';
+import {hashTrack, splitTrackHash, TrackHash} from '../test/elo/types';
 import Track = Disc.Track;
 
 export interface TrackFilter {
@@ -109,13 +109,25 @@ export class HashTrackFilter implements EditableTrackFilter {
     }
 
     static computeHash(track: Disc.Track): TrackHash {
-        return computeHash(track);
+        return hashTrack(track);
     }
 
     static async parseHash(hash: TrackHash, persistence: Persistence): Promise<Disc.Track> {
-        const [videoId, trackNumberString] = hash.split(':');
+        const {videoId, trackNumber} = splitTrackHash(hash);
         const disc = await persistence.getDisc(videoId);
-        return disc.getTrackByNumber(+trackNumberString);
+        return disc.getTrackByNumber(trackNumber);
+    }
+
+    static fromJson(json: string): HashTrackFilter {
+        const parsed = JSON.parse(json);
+        const hashes = parsed?.hashes ?? [];
+        return new HashTrackFilter(hashes);
+    }
+
+    static hashesToJson(hashes: TrackHash[]): string {
+        return JSON.stringify({
+            hashes,
+        });
     }
 
     accepts(track: Disc.Track): boolean {

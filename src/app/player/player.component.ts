@@ -10,11 +10,11 @@ import {SliderComponent} from '../slider/slider.component';
 import {ytparser} from '../../yt-parser';
 import {HistoryUtils} from '../../HistoryUtils';
 import {Location as AngularLocation} from '@angular/common';
-import {SubscriptionLike as ISubscription} from 'rxjs';
+import {BehaviorSubject, SubscriptionLike as ISubscription} from 'rxjs';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import $ from 'jquery';
 import {environment} from '../../environments/environment-with-dot-env';
-import {formatHMSS, getParameterByName, notify, stopPropagation, weightedRandom} from '../../utils/utils';
+import {formatHMSS, getParameterByName, notify, pasteFromClipboard, stopPropagation, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {
     AllTracksFilter,
@@ -28,7 +28,8 @@ import {PersistenceService} from '../persistence/persistence.service';
 import {YouTubeService} from '../../google/you-tube.service';
 import {hideLoader, showLoader} from '../app.component';
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
-import {TrackHash} from '../test/elo/types';
+import {hashTrack, splitTrackHash, TrackHash} from '../test/elo/types';
+import {EloLogService} from '../test/elo/elo-log.service';
 import Track = Disc.Track;
 
 const YT_STATES = [
@@ -70,6 +71,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.pushStateOnlyNewOnCurrentCollectionNames();
     }
 
+    private readonly eloLogService = inject(EloLogService);
     private readonly persistenceService = inject(PersistenceService);
     private readonly youTubeService = inject(YouTubeService);
 
@@ -104,6 +106,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private discIds: string[];
     public lastCheckedDisc: Disc;
     public lastCheckedTrack: Disc.Track;
+    protected previousAndCurrentTrackAlreadyEloMatched: boolean;
+    protected baseAndCurrentTrackAlreadyEloMatched: boolean;
+    protected baseTrackHash: TrackHash = 'Ng-mSbF-kd8:05';
+
     /** disque ouvert dans la liste des pistes (tooltip) */
     protected discInTracklist: Disc;
 
@@ -132,6 +138,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     public history = [];
     public previousTrack: Disc.Track = null;
     public currentTrack: Disc.Track = null;
+    public currentTrackSubject = new BehaviorSubject<Disc.Track | undefined>(undefined); // TODO éviter undefined
     public trackIsLoading = false;
     loadingDiscIndex: number;
     loadingFileIndex: number;
@@ -461,6 +468,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
             this.reloadDisc(discId);
         });
 
+        this.currentTrackSubject.subscribe(currentTrack => {
+            if (currentTrack) {
+                this.baseAndCurrentTrackAlreadyEloMatched = this.tracksAlreadyMatchedBased(currentTrack);
+                console.log('this.baseAndCurrentTrackAlreadyEloMatched', this.baseAndCurrentTrackAlreadyEloMatched);
+
+                if (this.previousTrack) {
+                    this.previousAndCurrentTrackAlreadyEloMatched = this.tracksAlreadyMatched(this.previousTrack, currentTrack);
+                }
+            }
+        });
+
     }
 
     protected nonNullTrackTitle(track: Track) {
@@ -529,6 +547,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
             await persistence.setLocalFromDistant();
         }
         await this.loadCollectionNames();
+
+        await this.eloLogService.load();
 
         /** @deprecated TODO à remplacer par discsById */
         this.discs = []; // au cas où personne ne l'initialise
@@ -778,6 +798,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
         this.previousTrack = this.currentTrack;
         this.currentTrack = track;
+        this.currentTrackSubject.next(track);
         this.trackIsLoading = true;
         if (!this.player) {
             const component = this;
@@ -962,6 +983,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         if (track && track !== this.currentTrack) {
             console.log(`On est passé à la piste #${track.number} ${track.title}`);
             this.currentTrack = track;
+            this.currentTrackSubject.next(track);
             this.videoStarted.emit();
         }
     }
@@ -1707,21 +1729,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.addTrackFilter(filter);
     }
 
-    protected importTrackFilter() {
-        const filterJson = prompt(`Copier le JSON du HashTrackFilter`);
+    protected async importTrackFilter() {
+        const filterJson = prompt(`Copier le JSON du HashTrackFilter`, await pasteFromClipboard(false));
         if (!filterJson) {
             return;
         }
 
-        const parsed = JSON.parse(filterJson);
-        const hashes = parsed?.hashes;
-        if (!hashes) {
-            return;
-        }
-
-        const filter = new HashTrackFilter(hashes);
+        const filter = HashTrackFilter.fromJson(filterJson);
         this.addTrackFilter(filter);
-        this.applyTrackFilter(filter);
+        await this.applyTrackFilter(filter);
     }
 
     protected async exportEditableTrackFilters() {
@@ -1750,14 +1766,43 @@ export class PlayerComponent implements OnInit, OnDestroy {
         alert(`Erreur : ${e.message}`);
     }
 
+    private tracksAlreadyMatched(previousTrack: Track, currentTrack: Track): boolean {
+        const previousTrackHash = hashTrack(previousTrack);
+        const currentTrackHash = hashTrack(currentTrack);
+        return this.eloLogService.includes(previousTrackHash, currentTrackHash);
+    }
+
+    private tracksAlreadyMatchedBased(currentTrack: Track): boolean {
+        const currentTrackHash = hashTrack(currentTrack);
+        return this.eloLogService.includes(this.baseTrackHash, currentTrackHash);
+    }
+
     protected eloMatch(previousTrack: Track, currentTrack: Track) {
-        const params = new URLSearchParams({
+        this.openEloMatch({
             ad: previousTrack.disc.id,
             at: String(previousTrack.number),
             bd: currentTrack.disc.id,
             bt: String(this.currentTrack.number),
         });
+    }
+
+    protected openEloMatch(init: { ad: string, at: string, bd: string, bt: string }) {
+        const params = new URLSearchParams(init);
         window.open(`test/elo-match?${params}`, '_blank');
+    }
+
+    protected setEloMatchBase(currentTrack: Track) {
+        this.baseTrackHash = hashTrack(currentTrack);
+    }
+
+    protected eloMatchBased(currentTrack: Track) {
+        const {videoId: ad, trackNumber: at} = splitTrackHash(this.baseTrackHash);
+        this.openEloMatch({
+            ad,
+            at: String(at),
+            bd: currentTrack.disc.id,
+            bt: String(this.currentTrack.number),
+        });
     }
 
     protected eloStats(currentTrack: Track) {
@@ -1769,6 +1814,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     protected readonly isEditableTrackFilter = isEditableTrackFilter;
+    protected readonly Track = Track;
+    protected readonly hashTrack = hashTrack;
 }
 
 interface State {

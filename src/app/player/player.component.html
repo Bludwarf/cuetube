@@ -29,13 +29,15 @@
                                         (click)="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist
                                 </button>
                                 <app-google-drive-button></app-google-drive-button>
-                                <input type="checkbox" [(ngModel)]="useGoogleDriveV2" title="Utiliser Single File Google Drive" name="useGoogleDriveV2" />
+                                <input type="checkbox" [(ngModel)]="useGoogleDriveV2"
+                                       title="Utiliser Single File Google Drive" name="useGoogleDriveV2"/>
                             </div>
                         </div>
                         <div class="header-line">
                             <div class="buttons">
                                 @let trackFiltersEditModeDescription = this.trackFiltersEditMode ? "modifier : cliquer sur un filtre ajoute ou supprime la piste courante au filtre" : "appliquer : cliquer sur un filtre l'applique aux pistes chargées";
-                                <button class="btn btn-default" (click)="this.trackFiltersEditMode = !this.trackFiltersEditMode"
+                                <button class="btn btn-default"
+                                        (click)="this.trackFiltersEditMode = !this.trackFiltersEditMode"
                                         [class.btn-danger]="this.trackFiltersEditMode"
                                         title="Mode des boutons de filtre = {{trackFiltersEditModeDescription}}">
                                     ✎
@@ -44,24 +46,38 @@
                                     @let trackFilter = trackFilters[filterTitle];
                                     @let isEditable = isEditableTrackFilter(trackFilter);
                                     @if (!(this.trackFiltersEditMode && !isEditable)) {
-                                        <button (click)="this.trackFiltersEditMode && isEditable ? toggleCurrentTrackFromFilter(trackFilter) : applyTrackFilter(trackFilter)"
-                                                [disabled]="trackFiltersDisabled" class="btn btn-default"
-                                                [class.active]="this.currentTrack && trackFilter.accepts(this.currentTrack)"
+                                        <button
+                                            (click)="this.trackFiltersEditMode && isEditable ? toggleCurrentTrackFromFilter(trackFilter) : applyTrackFilter(trackFilter)"
+                                            [disabled]="trackFiltersDisabled" class="btn btn-default"
+                                            [class.active]="this.currentTrack && trackFilter.accepts(this.currentTrack)"
                                         >
                                             {{ filterTitle }}
                                         </button>
                                     }
                                 }
-                                <button (click)="addCurrentTrackFilter()" class="btn">Ajouter filtre actuel</button>
-                                <button (click)="importTrackFilter()" class="btn">Importer</button>
-                                <button (click)="exportEditableTrackFilters()" class="btn">Exporter</button>
-                                @if (this.currentTrack && this.previousTrack) {
-                                    <button (click)="eloMatch(this.previousTrack,this.currentTrack)" class="btn">
-                                        elo-match
-                                    </button>
-                                }
+                                <button (click)="addCurrentTrackFilter()" class="btn btn-default">Ajouter filtre
+                                    actuel
+                                </button>
+                                <button (click)="importTrackFilter()" class="btn btn-default">Importer</button>
+                                <button (click)="exportEditableTrackFilters()" class="btn btn-default">Exporter</button>
                                 @if (this.currentTrack) {
-                                    <button (click)="eloStats(this.currentTrack)" class="btn">
+                                    @if (this.previousTrack && this.previousTrack != this.currentTrack) {
+                                        <button (click)="eloMatch(this.previousTrack, this.currentTrack)" class="btn"
+                                                [class.btn-default]="!this.previousAndCurrentTrackAlreadyEloMatched">
+                                            elo-match
+                                        </button>
+                                    }
+                                    @let currentTrackHash = hashTrack(this.currentTrack);
+                                    @if (currentTrackHash != baseTrackHash) {
+                                        <button (click)="setEloMatchBase(this.currentTrack)" class="btn">
+                                            Baser
+                                        </button>
+                                        <button (click)="eloMatchBased(this.currentTrack)" class="btn"
+                                                [class.btn-default]="!this.baseAndCurrentTrackAlreadyEloMatched">
+                                            elo-match-based
+                                        </button>
+                                    }
+                                    <button (click)="eloStats(this.currentTrack)" class="btn btn-default">
                                         elo-stats
                                     </button>
                                 }
@@ -74,7 +90,8 @@
                         @for (disc of discs; track disc) {
                             <div>
                                 @if (disc) {
-                                    <div class="disc-wrapper" [attr.data-index]="$index" [attr.data-discId]="disc.discId"
+                                    <div class="disc-wrapper" [attr.data-index]="$index"
+                                         [attr.data-discId]="disc.discId"
                                          [class.active]="currentTrack && disc.id === currentTrack.disc.id"
                                          [class.inTracklist]="discInTracklist && disc === discInTracklist">
                                         <div class="disc-thumb" (click)="disc.clickThumb($event)"

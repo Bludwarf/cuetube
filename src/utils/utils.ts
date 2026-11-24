@@ -181,3 +181,13 @@ export async function copyToClipboard(text: string): Promise<void> {
         alert(message + ' : ' + text);
     }
 }
+
+export async function pasteFromClipboard(showError: boolean): Promise<string> {
+    try {
+        return await navigator.clipboard.readText();
+    } catch (err) {
+        const message = 'Échec du collage depuis le presse-papier';
+        console.error(message, err);
+        alert(message);
+    }
+}

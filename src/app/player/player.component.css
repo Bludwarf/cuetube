@@ -301,6 +301,7 @@ body {
     display: flex;
     gap: 1em;
     align-items: flex-start;
+    flex-wrap: wrap;
 }
 
 .track-controls {

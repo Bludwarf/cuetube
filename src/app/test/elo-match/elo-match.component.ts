@@ -1,25 +1,12 @@
-import {Component, computed, inject, input, OnInit, resource, ResourceRef, Signal} from '@angular/core';
+import {Component, computed, inject, OnInit} from '@angular/core';
 import {pad2} from '../../../utils/utils';
 import {FormsModule} from '@angular/forms';
 import {Disc} from '../../../disc';
-import {PersistenceService} from '../../persistence/persistence.service';
 import {hideLoader} from '../../app.component';
-import {EloAxis, EloAxisId, EloLogLine, EloLogParser, EloOperator, ENERGY, TrackHash, VALENCE} from '../elo/types';
+import {compareTrackHash, currentLocalDate, EloAxis, EloAxisId, EloLogLine, EloOperator, ENERGY, TrackHash, VALENCE} from '../elo/types';
+import {EloLogService} from '../elo/elo-log.service';
+import {injectABTracks} from '../resolvers';
 import Track = Disc.Track;
-
-function trackResource(persistenceService: PersistenceService, discId: Signal<string>, trackNumber: Signal<number>) {
-    return resource({
-        params: () => ({
-            discId: discId(),
-            trackNumber: trackNumber(),
-        }),
-        loader: async ({params}) => {
-            const persistence = await persistenceService.getCurrentPersistenceAndInit();
-            const disc = await persistence.getDisc(params.discId);
-            return disc.getTrackByNumber(params.trackNumber);
-        },
-    });
-}
 
 function reverseOperator(op: EloOperator): EloOperator {
     switch (op) {
@@ -32,19 +19,6 @@ function reverseOperator(op: EloOperator): EloOperator {
     }
 }
 
-function reverseLine(line: EloLogLine): EloLogLine {
-    return {
-        aTrackHash: line.bTrackHash,
-        op: reverseOperator(line.op),
-        axisId: line.axisId,
-        bTrackHash: line.aTrackHash,
-    };
-}
-
-function formatLine(line: EloLogLine): string {
-    return `${line.aTrackHash} ${line.op}${line.axisId} ${line.bTrackHash}`;
-}
-
 @Component({
     selector: 'app-elo-match',
     imports: [
@@ -55,19 +29,21 @@ function formatLine(line: EloLogLine): string {
 })
 export class EloMatchComponent implements OnInit {
 
-    aDiscId = input<string>(undefined, {alias: 'ad'});
-    aTrackNumber = input<number, string>(0, {alias: 'at', transform: Number});
-    aTrack: ResourceRef<Track>;
+    tracks = injectABTracks();
 
-    bDiscId = input<string>(undefined, {alias: 'bd'});
-    bTrackNumber = input<number, string>(0, {alias: 'bt', transform: Number});
-    bTrack: ResourceRef<Track>;
+    sortedTrackHashes = computed<{ aTrackHash: TrackHash, bTrackHash: TrackHash, reversed: boolean } | undefined>(() => {
+        const opponents = this.tracks();
+        const a = opponents[0];
+        const aKey = this.trackHash(a);
+        const b = opponents[1];
+        const bKey = this.trackHash(b);
 
-    tracks = computed<Track[]>(() => {
-        if (!this.aTrack.hasValue() || !this.bTrack.hasValue()) {
-            return [];
-        }
-        return [this.aTrack.value(), this.bTrack.value()];
+        const reversed = compareTrackHash(aKey, bKey) > 0;
+        return {
+            aTrackHash: reversed ? bKey : aKey,
+            bTrackHash: reversed ? aKey : bKey,
+            reversed,
+        };
     });
 
     eloAxisList: EloAxis[] = [
@@ -76,6 +52,7 @@ export class EloMatchComponent implements OnInit {
     ];
 
     eloComparisons: Map<EloAxis, EloComparison> = new Map();
+    alreadyAdded = false;
     eloComparisonsText = '';
 
     eloComparisonButtons: EloComparisonButton[] = [
@@ -93,13 +70,13 @@ export class EloMatchComponent implements OnInit {
         }
     ];
 
+    protected readonly eloLogService = inject(EloLogService);
+
     constructor() {
-        const persistenceService = inject(PersistenceService);
-        this.aTrack = trackResource(persistenceService, this.aDiscId, this.aTrackNumber);
-        this.bTrack = trackResource(persistenceService, this.bDiscId, this.bTrackNumber);
     }
 
-    ngOnInit() {
+    async ngOnInit() {
+        await this.load();
         hideLoader();
     }
 
@@ -116,6 +93,7 @@ export class EloMatchComponent implements OnInit {
             };
             this.addComparison(comparison);
         }
+        this.alreadyAdded = false;
     }
 
     private addComparison(comparison: EloComparison) {
@@ -141,52 +119,76 @@ export class EloMatchComponent implements OnInit {
     }
 
     protected export() {
-        const opponents = this.tracks();
-        const aKey = this.trackHash(opponents[0]);
-        const bKey = this.trackHash(opponents[1]);
-        const lines: string[] = [];
-        for (const axis of this.eloAxisList) {
-            const comparison = this.eloComparisons.get(axis);
-            if (comparison) {
-                let line: EloLogLine = {
-                    aTrackHash: aKey,
-                    op: comparison.operator,
-                    axisId: comparison.axis.id,
-                    bTrackHash: bKey,
-                };
-                if (aKey.toLowerCase() > bKey.toLowerCase()) {
-                    line = reverseLine(line);
-                }
-                lines.push(formatLine(line));
-            }
-        }
-        this.eloComparisonsText = lines.join('\r\n');
+        this.eloComparisonsText = this.exportLines();
+    }
+
+    private exportLines() {
+        return this.eloLogService.export();
     }
 
     protected trackHash(track: Track): TrackHash {
-        return `${track.disc.id}:${pad2(track.number)}`;
+        return `${track.disc.id}:${pad2(track.number)}` as TrackHash;
     }
 
     protected async uploadFile(event) {
         const files = event.target.files as FileList;
-        const parser = new EloLogParser();
-        const eloLogLines = parser.parse(await files.item(0).text());
-        console.log(eloLogLines);
+        const fileContent = await files.item(0).text();
+        this.eloLogService.import(fileContent);
 
+        this.addComparisonsFromLines();
+    }
+
+    private addComparisonsFromLines() {
         const opponents = this.tracks();
         const a = opponents[0];
         const aKey = this.trackHash(a);
         const b = opponents[1];
         const bKey = this.trackHash(b);
 
-        const comparisons = eloLogLines
+        const comparisons = this.eloLogService.getLines()
             .map(line => this.map(line, aKey, a, bKey, b))
             .filter(comparison => Boolean(comparison));
-        console.log(comparisons);
 
         for (const comparison of comparisons) {
             this.addComparison(comparison);
+            this.alreadyAdded = true;
         }
+    }
+
+    protected async load(): Promise<void> {
+        await this.eloLogService.load();
+        this.addComparisonsFromLines();
+    }
+
+    protected addLinesFromComparisons(): void {
+        this.eloLogService.addAll(this.getLines());
+    }
+
+    getLines(): EloLogLine[] {
+        const {aTrackHash, bTrackHash, reversed} = this.sortedTrackHashes();
+        const lines: EloLogLine[] = [];
+        const date = currentLocalDate();
+        for (const axis of this.eloAxisList) {
+            const comparison = this.eloComparisons.get(axis);
+            if (comparison) {
+                const line: EloLogLine = {
+                    aTrackHash,
+                    op: comparison.operator,
+                    axisId: comparison.axis.id,
+                    bTrackHash,
+                    date,
+                };
+                if (reversed) {
+                    line.op = reverseOperator(line.op);
+                }
+                lines.push(line);
+            }
+        }
+        return lines;
+    }
+
+    protected async save(): Promise<void> {
+        await this.eloLogService.save();
     }
 
     protected map(line: EloLogLine, aKey: string, a: Track, bKey: string, b: Track): EloComparison | undefined {
@@ -217,10 +219,11 @@ export class EloMatchComponent implements OnInit {
         return eloAxis;
     }
 
+    protected readonly Object = Object;
 }
 
 // TODO dans le contexte de ce composant on pourrait supprimer a et b
-interface EloComparison {
+export interface EloComparison {
     a: Track;
     operator: EloOperator;
     axis: EloAxis;

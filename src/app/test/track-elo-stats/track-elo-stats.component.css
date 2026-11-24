@@ -1,0 +1,14 @@
+.current-track, .current.track {
+    font-weight: bold;
+}
+
+.all-scores {
+
+    .track {
+        color: grey;
+
+        &.near {
+            color: revert;
+        }
+    }
+}

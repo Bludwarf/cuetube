@@ -1,18 +1,35 @@
-<h1>{{ track().title }}</h1>
+@let track = this.track();
+<h1>{{ track.disc.title }} {{ track.number }}. {{ track.nonNullTrackTitle }}</h1>
 
-<button class="btn btn-primary" (click)="uploader.click()">Importer</button>
-<input
-    hidden
-    type="file"
-    #uploader
-    (change)="uploadFile($event)"
-/>
 
-@if (scores) {
-    <dl>
-        @for (score of scores; track score) {
-            <dt>{{ score.axisId }}</dt>
-            <dd>{{ Math.round(score.rating) }}</dd>
-        }
-    </dl>
+@if (trackScores?.length) {
+    <button class="btn btn-primary" (click)="copyHashTrackFilter()">Copier le HashTrackFilter</button>
+    <button class="btn btn-primary" (click)="copyHashTrackFilterJson()">Copier au format JSON</button>
+} @else {
+    <p>Aucune donnée pour cette piste !</p>
+}
+
+@let trackHash = hashTrack(track);
+@for (trackScore of trackScores; track trackScore) {
+    @let axisId = trackScore.axisId;
+    @let axisSd = Math.round(this.sd.get(axisId));
+    <h2>{{ axisId }} proche de {{ Math.round(trackScore.rating) }} +/- {{ axisSd }}</h2>
+
+    @let allAxisScores = allScores.get(axisId);
+    @for (score of allAxisScores; track score) {
+        <ul class="all-scores">
+            @let currentTrack = hashTrack(score.track) === trackHash;
+            <li class="track" [class.current]="currentTrack" [class.near]="isNear(score, axisId, trackScore)">
+                {{ Math.round(score.rating) }} (c={{ score.comparisons }}) :
+                @if (currentTrack) {
+                    &lt;- CETTE PISTE
+                } @else {
+                    <a [routerLink]="[]"
+                       [queryParams]="{ discId: score.track.disc.id, trackNumber: score.track.number }">
+                        {{ score.track.disc.title }} : {{ score.track.number }}. {{ score.track.title }}
+                    </a>
+                }
+            </li>
+        </ul>
+    }
 }

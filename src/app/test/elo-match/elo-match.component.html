@@ -1,4 +1,17 @@
 <div id="lines">
+
+    <div class="buttons-line">
+        <button class="btn btn-primary" (click)="uploader.click()">Importer</button>
+        <input
+            hidden
+            type="file"
+            #uploader
+            (change)="uploadFile($event)"
+        />
+    </div>
+
+    {{ eloLogService.getLines().length }} ligne(s) chargées.
+
     <div id="columns">
         @for (track of tracks(); track track) {
             <div class="opponent">
@@ -34,18 +47,15 @@
     }
 
     <hr>
-    <div id="bottom-buttons">
-        <button class="btn btn-primary" (click)="uploader.click()">Importer</button>
-        <input
-            hidden
-            type="file"
-            #uploader
-            (change)="uploadFile($event)"
-        />
+    <div class="buttons-line">
+        @if (!alreadyAdded) {
+            <button class="btn btn-primary" (click)="addLinesFromComparisons()">Ajouter</button>
+        }
+        <button class="btn btn-primary" (click)="save()">Sauvegarder</button>
         <button class="btn btn-primary" (click)="export()">Exporter</button>
     </div>
 
     @if (eloComparisonsText) {
-        <textarea [rows]="eloComparisons.size + 1" [(ngModel)]="eloComparisonsText"></textarea>
+        <textarea [rows]="eloComparisonsText.split('\n').length + 1" [(ngModel)]="eloComparisonsText"></textarea>
     }
 </div>

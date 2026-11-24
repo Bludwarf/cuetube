@@ -48,7 +48,7 @@
     }
 }
 
-#bottom-buttons {
+.buttons-line {
     display: flex;
     gap: 1em;
 
