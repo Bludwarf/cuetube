@@ -148,6 +148,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
      */
     private videoPlayingAfterPlayerReady = false;
 
+    /** On souhaite arrêter la vidéo juste après l'avoir chargée ? */
+    private pauseAfterVideoIsLoaded = false;
+
     /** latence si on passe par this.player.getPlayerStat() */
     isPlaying: boolean = undefined;
 
@@ -343,7 +346,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
             this.loadingFileIndex = null;
             this.trackIsLoading = false;
 
-            this.trackPlaying.emit();
+            if (this.pauseAfterVideoIsLoaded) {
+                this.pauseAfterVideoIsLoaded = false;
+                player.pauseVideo();
+            } else {
+                this.trackPlaying.emit();
+            }
         });
 
         this.trackPlaying.subscribe(() => {
@@ -785,6 +793,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
                 && getParameterByName('v', player.getVideoUrl()) === track.file.videoId) {
                 this.seekToTrack(track);
             } else {
+                if (!this.isPlaying) {
+                    this.pauseAfterVideoIsLoaded = true;
+                }
                 // FIXME : graphiquement on ne voit plus les bornes start et end
                 player.loadVideoById({
                     videoId: track.file.videoId,
