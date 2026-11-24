@@ -202,7 +202,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private readonly recordingRepository = new RecordingRepository(this.releaseIdRepository, this.releaseRepository);
     private readonly collectionRepository = new CollectionRepository();
 
-    protected readonly trackFilters = {
+    protected readonly trackFilters: Record<string, TrackFilter> = {
         '(tout)': new AllTracksFilter(),
         '😌 Calme (local)': new HashTrackFilter([
             // Loddlenaut
