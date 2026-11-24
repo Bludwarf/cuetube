@@ -1,11 +1,11 @@
 import {Disc} from '../../disc';
-import {RecordingRepository} from '../musicbrainz/recording-repository';
-import {CollectionRepository} from '../musicbrainz/collection-repository';
 import {pad2} from '../../utils/utils';
+import {CollectionRepository} from '../musicbrainz/collection-repository';
+import {RecordingRepository} from '../musicbrainz/recording-repository';
 import Track = Disc.Track;
 
 export interface TrackFilter {
-    accepts(track: Track): Promise<boolean>;
+    accepts(track: Track): boolean;
 }
 
 export class TrackTitleContainingFilter implements TrackFilter {
@@ -15,7 +15,7 @@ export class TrackTitleContainingFilter implements TrackFilter {
     ) {
     }
 
-    async accepts(track: Track): Promise<boolean> {
+    accepts(track: Track): boolean {
         if (!track.title) {
             return false;
         }
@@ -30,14 +30,14 @@ export class DiscTitleCFilter implements TrackFilter {
     ) {
     }
 
-    async accepts(track: Track): Promise<boolean> {
+    accepts(track: Track): boolean {
         const discTitle = track.disc.title;
         return this.titles.some(title => discTitle === title);
     }
 }
 
 export class AllTracksFilter implements TrackFilter {
-    async accepts(_track: Disc.Track): Promise<boolean> {
+    accepts(_track: Disc.Track): boolean {
         return true;
     }
 }
@@ -51,7 +51,7 @@ export class OrTrackFilter implements TrackFilter {
         this.filters = filters;
     }
 
-    async accepts(track: Disc.Track): Promise<boolean> {
+    accepts(track: Disc.Track): boolean {
         return this.filters.some(filter => filter.accepts(track));
     }
 }
@@ -66,18 +66,20 @@ export class MusicBrainzTrackFilter implements TrackFilter {
     ) {
     }
 
-    async accepts(track: Disc.Track): Promise<boolean> {
-        const tracksMbids = await this.collectionRepository.get(this);
-        if (!tracksMbids) {
-            return false;
-        }
-
-        const trackMbid = await this.getTrackMbid(track);
-        if (!trackMbid) {
-            return false;
-        }
-
-        return tracksMbids.includes(trackMbid);
+    accepts(track: Disc.Track): boolean {
+        // TODO charger les données à la création, plutôt qu'à chaque appel à accepts()
+        // const tracksMbids = await this.collectionRepository.get(this);
+        // if (!tracksMbids) {
+        //     return false;
+        // }
+        //
+        // const trackMbid = await this.getTrackMbid(track);
+        // if (!trackMbid) {
+        //     return false;
+        // }
+        //
+        // return tracksMbids.includes(trackMbid);
+        return false;
     }
 
     private getTrackMbid(track: Disc.Track): Promise<string | undefined> {
@@ -100,7 +102,7 @@ export class HashTrackFilter implements TrackFilter {
         return track.disc.videoId + ':' + pad2(track.number);
     }
 
-    async accepts(track: Disc.Track): Promise<boolean> {
+    accepts(track: Disc.Track): boolean {
         const trackHash = HashTrackFilter.computeHash(track);
         return this.hashes.includes(trackHash);
     }

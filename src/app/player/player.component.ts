@@ -16,22 +16,16 @@ import $ from 'jquery';
 import {environment} from '../../environments/environment-with-dot-env';
 import {formatHMSS, getParameterByName, notify, stopPropagation, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {
-    AllTracksFilter,
-    HashTrackFilter,
-    MusicBrainzTrackFilter,
-    TrackFilter,
-    TrackTitleContainingFilter
-} from '../track-filter/track-filter';
+import {AllTracksFilter, HashTrackFilter, TrackFilter, TrackTitleContainingFilter} from '../track-filter/track-filter';
 import {ReleaseIdRepository} from '../musicbrainz/release-id-repository';
 import {RecordingRepository} from '../musicbrainz/recording-repository';
-import {CALME_COLLECTION_MBID, CollectionRepository} from '../musicbrainz/collection-repository';
+import {CollectionRepository} from '../musicbrainz/collection-repository';
 import {ReleaseRepository} from '../musicbrainz/release-repository';
 import {PersistenceService} from '../persistence/persistence.service';
 import {YouTubeService} from '../../google/you-tube.service';
 import {hideLoader, showLoader} from '../app.component';
-import Track = Disc.Track;
 import {LocalAndDistantPersistence} from '../../persistence/LocalAndDistantPersistence';
+import Track = Disc.Track;
 
 const YT_STATES = [
     'ENDED',
@@ -107,7 +101,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     public lastCheckedDisc: Disc;
     public lastCheckedTrack: Disc.Track;
     /** disque ouvert dans la liste des pistes (tooltip) */
-    private discInTracklist: Disc;
+    protected discInTracklist: Disc;
 
     /** Toutes les collections indexées par nom de collection */
     private discIdsByCollection: { [key: string]: string[] } = {};
@@ -235,12 +229,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
             'Bs5QGN-zhwM:16',
             'Bs5QGN-zhwM:17',
         ]),
-        '😌 Calme (MB)': new MusicBrainzTrackFilter(
-            CALME_COLLECTION_MBID,
-            '😌 Calme',
-            this.collectionRepository,
-            this.recordingRepository,
-        ),
+        // '😌 Calme (MB)': new MusicBrainzTrackFilter(
+        //     CALME_COLLECTION_MBID,
+        //     '😌 Calme',
+        //     this.collectionRepository,
+        //     this.recordingRepository,
+        // ),
         '🏇 Épique': new TrackTitleContainingFilter([
             'Main',
         ]),
