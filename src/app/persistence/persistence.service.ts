@@ -8,6 +8,8 @@ import {getParameterByName, notify} from '../../utils/utils';
 import {LocalStoragePrefsService} from '../local-storage-prefs.service';
 import {SingleFilesGoogleDrivePersistence} from '../../google/SingleFilesGoogleDrivePersistence';
 
+const PERSISTENCE = 'persistence';
+
 @Injectable({providedIn: 'root'})
 export class PersistenceService {
     readonly localStoragePersistence = inject(LocalStoragePersistence);
@@ -17,13 +19,17 @@ export class PersistenceService {
     private readonly prefsService = inject(LocalStoragePrefsService);
 
     get persistenceName(): string {
-        return localStorage.getItem('persistence')
-            ?? getParameterByName('persistence', document.location.search)
+        return localStorage.getItem(PERSISTENCE)
+            ?? getParameterByName(PERSISTENCE, document.location.search)
             ?? this.localStoragePersistence.title;
     }
 
-    set persistenceName(persistence: string) {
-        localStorage.setItem('persistence', persistence);
+    set persistenceName(persistence: string | undefined) {
+        if (persistence) {
+            localStorage.setItem(PERSISTENCE, persistence);
+        } else {
+            localStorage.removeItem(PERSISTENCE);
+        }
     }
 
     /**
@@ -153,7 +159,7 @@ export class PersistenceService {
     }
 
     disconnectFromGoogleDrive() {
-        delete this.persistenceName;
+        this.persistenceName = undefined;
         this.prefsService.connectedToGoogleDrive = false;
     }
 }
