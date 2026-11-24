@@ -16,11 +16,14 @@ import $ from 'jquery';
 import {environment} from '../../environments/environment-with-dot-env';
 import {formatHMSS, getParameterByName, notify, stopPropagation, weightedRandom} from '../../utils/utils';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {AllTracksFilter, HashTrackFilter, TrackFilter, TrackTitleContainingFilter} from '../track-filter/track-filter';
-import {ReleaseIdRepository} from '../musicbrainz/release-id-repository';
-import {RecordingRepository} from '../musicbrainz/recording-repository';
-import {CollectionRepository} from '../musicbrainz/collection-repository';
-import {ReleaseRepository} from '../musicbrainz/release-repository';
+import {
+    AllTracksFilter,
+    EditableTrackFilter,
+    HashTrackFilter,
+    isEditableTrackFilter,
+    TrackFilter,
+    TrackTitleContainingFilter
+} from '../track-filter/track-filter';
 import {PersistenceService} from '../persistence/persistence.service';
 import {YouTubeService} from '../../google/you-tube.service';
 import {hideLoader, showLoader} from '../app.component';
@@ -191,43 +194,36 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     protected readonly formatHMSS = formatHMSS;
 
-    private readonly releaseIdRepository = new ReleaseIdRepository();
-    private readonly releaseRepository = new ReleaseRepository();
-    private readonly recordingRepository = new RecordingRepository(this.releaseIdRepository, this.releaseRepository);
-    private readonly collectionRepository = new CollectionRepository();
-
+    protected trackFiltersEditMode = false;
     protected readonly trackFilters: Record<string, TrackFilter> = {
         '(tout)': new AllTracksFilter(),
-        '😌 Calme (local)': new HashTrackFilter([
-            // Loddlenaut
-            'Ng-mSbF-kd8:01',
-            'Ng-mSbF-kd8:02',
-            'Ng-mSbF-kd8:03',
-            'Ng-mSbF-kd8:04',
-            'Ng-mSbF-kd8:05',
-            'Ng-mSbF-kd8:06',
-            // Age2
-            'RRtlWfi6jiM:02',
-            'RRtlWfi6jiM:04',
-            'RRtlWfi6jiM:06',
-            // Sims
-            'Bs5QGN-zhwM:01',
-            'Bs5QGN-zhwM:02',
-            'Bs5QGN-zhwM:03',
-            'Bs5QGN-zhwM:04',
-            'Bs5QGN-zhwM:05',
-            'Bs5QGN-zhwM:06',
-            'Bs5QGN-zhwM:07',
-            'Bs5QGN-zhwM:08',
-            'Bs5QGN-zhwM:09',
-            'Bs5QGN-zhwM:10',
-            'Bs5QGN-zhwM:11',
-            'Bs5QGN-zhwM:12',
-            'Bs5QGN-zhwM:13',
-            'Bs5QGN-zhwM:14',
-            'Bs5QGN-zhwM:15',
-            'Bs5QGN-zhwM:16',
-            'Bs5QGN-zhwM:17',
+        '😌 Calme': new HashTrackFilter([
+            'Bs5QGN-zhwM:01', // The Sims - 1. The Sims Soundtrack: Building Mode 1
+            'Bs5QGN-zhwM:02', // The Sims - 2. The Sims Soundtrack: Building Mode 2
+            'Bs5QGN-zhwM:03', // The Sims - 3. The Sims Soundtrack: Building Mode 3
+            'Bs5QGN-zhwM:04', // The Sims - 4. The Sims Soundtrack: Building Mode 4
+            'Bs5QGN-zhwM:05', // The Sims - 5. The Sims Soundtrack: Building Mode 5
+            'Bs5QGN-zhwM:06', // The Sims - 6. The Sims Soundtrack: Building Mode 6
+            'Bs5QGN-zhwM:07', // The Sims - 7. The Sims Soundtrack: Buy Mode 1
+            'Bs5QGN-zhwM:08', // The Sims - 8. The Sims Soundtrack: Buy Mode 2
+            'Bs5QGN-zhwM:09', // The Sims - 9. The Sims Soundtrack: Buy Mode 3
+            'Bs5QGN-zhwM:10', // The Sims - 10. The Sims Soundtrack: Buy Mode 4
+            'Bs5QGN-zhwM:11', // The Sims - 11. The Sims Soundtrack: Neighborhood 1
+            'Bs5QGN-zhwM:12', // The Sims - 12. The Sims Soundtrack: Neighborhood 2
+            'Bs5QGN-zhwM:13', // The Sims - 13. The Sims Soundtrack: Neighborhood 3
+            'Bs5QGN-zhwM:14', // The Sims - 14. The Sims Soundtrack: Neighborhood 4
+            'Bs5QGN-zhwM:15', // The Sims - 15. The Sims Soundtrack: Neighborhood 5
+            'Bs5QGN-zhwM:16', // The Sims - 16. The Sims Soundtrack: Neighborhood 6
+            'Bs5QGN-zhwM:17', // The Sims - 17. The Sims Soundtrack: Neighborhood 7
+            'Ng-mSbF-kd8:01', // Loddlenaut (Original Game Soundtrack) - 1. Menu Theme
+            'Ng-mSbF-kd8:02', // Loddlenaut (Original Game Soundtrack) - 2. Entering GUP-14...
+            'Ng-mSbF-kd8:03', // Loddlenaut (Original Game Soundtrack) - 3. A Loddlenaut's Home
+            'Ng-mSbF-kd8:04', // Loddlenaut (Original Game Soundtrack) - 4. Ripple Reef (Polluted)
+            'Ng-mSbF-kd8:05', // Loddlenaut (Original Game Soundtrack) - 5. Ripple Reef (Recovering)
+            'Ng-mSbF-kd8:06', // Loddlenaut (Original Game Soundtrack) - 6. Ripple Reef (Clean)
+            'RRtlWfi6jiM:02', // Age of Empires 2: Age of Kings - 2. Track 1 : Shamburger
+            'RRtlWfi6jiM:04', // Age of Empires 2: Age of Kings - 4. Track 3 : Drizzle (Firelight Smoove Mix)
+            'RRtlWfi6jiM:06', // Age of Empires 2: Age of Kings - 6. Track 5 : T Station
         ]),
         // '😌 Calme (MB)': new MusicBrainzTrackFilter(
         //     CALME_COLLECTION_MBID,
@@ -1657,7 +1653,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         try {
             for (const disc of this.discs) {
                 for (const track of disc.tracks) {
-                    track.enabledByUser = await filter.accepts(track);
+                    track.enabledByUser = filter.accepts(track);
                 }
             }
         } catch (e) {
@@ -1667,6 +1663,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
 
         this.checkIfCurrentTrackIsEnabled();
+    }
+
+    protected async toggleCurrentTrackFromFilter(filter: EditableTrackFilter) {
+        filter.toggle(this.currentTrack);
     }
 
     protected addCurrentTrackFilter() {
@@ -1699,6 +1699,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.applyTrackFilter(filter);
     }
 
+    protected async exportEditableTrackFilters() {
+        const persistence = await this.persistenceService.getCurrentPersistenceAndInit();
+        for (const title in this.trackFilters) {
+            const trackFilter = this.trackFilters[title];
+            if (isEditableTrackFilter(trackFilter)) {
+                trackFilter.export(persistence);
+            }
+        }
+    }
+
     protected addTrackFilter(filter: TrackFilter) {
         const filterName = `#${Object.keys(this.trackFilters).length + 1}`;
         this.trackFilters[filterName] = filter;
@@ -1725,6 +1735,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         window.open(`test/elo-match?${params}`, '_blank');
     }
 
+    protected readonly isEditableTrackFilter = isEditableTrackFilter;
 }
 
 interface State {

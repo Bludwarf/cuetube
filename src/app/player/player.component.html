@@ -34,16 +34,27 @@
                         </div>
                         <div class="header-line">
                             <div class="buttons">
+                                @let trackFiltersEditModeDescription = this.trackFiltersEditMode ? "modifier : cliquer sur un filtre ajoute ou supprime la piste courante au filtre" : "appliquer : cliquer sur un filtre l'applique aux pistes chargées";
+                                <button class="btn btn-default" (click)="this.trackFiltersEditMode = !this.trackFiltersEditMode"
+                                        [class.btn-danger]="this.trackFiltersEditMode"
+                                        title="Mode des boutons de filtre = {{trackFiltersEditModeDescription}}">
+                                    ✎
+                                </button>
                                 @for (filterTitle of Object.keys(trackFilters); track filterTitle) {
                                     @let trackFilter = trackFilters[filterTitle];
-                                    <button (click)="applyTrackFilter(trackFilter)"
-                                            [disabled]="trackFiltersDisabled" class="btn btn-default"
-                                            [class.active]="this.currentTrack && trackFilter.accepts(this.currentTrack)"
-                                    >{{ filterTitle }}
-                                    </button>
+                                    @let isEditable = isEditableTrackFilter(trackFilter);
+                                    @if (!(this.trackFiltersEditMode && !isEditable)) {
+                                        <button (click)="this.trackFiltersEditMode && isEditable ? toggleCurrentTrackFromFilter(trackFilter) : applyTrackFilter(trackFilter)"
+                                                [disabled]="trackFiltersDisabled" class="btn btn-default"
+                                                [class.active]="this.currentTrack && trackFilter.accepts(this.currentTrack)"
+                                        >
+                                            {{ filterTitle }}
+                                        </button>
+                                    }
                                 }
                                 <button (click)="addCurrentTrackFilter()" class="btn">Ajouter filtre actuel</button>
                                 <button (click)="importTrackFilter()" class="btn">Importer</button>
+                                <button (click)="exportEditableTrackFilters()" class="btn">Exporter</button>
                                 @if (this.currentTrack && this.previousTrack) {
                                     <button (click)="eloMatch(this.previousTrack,this.currentTrack)" class="btn">
                                         elo-match

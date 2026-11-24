@@ -170,3 +170,14 @@ export function remove<I>(item: I, array: I[]): I[] {
     }
     return array.splice(indexOf, 1);
 }
+
+export async function copyToClipboard(text: string): Promise<void> {
+    try {
+        await navigator.clipboard.writeText(text);
+        alert('Copié !');
+    } catch (err) {
+        const message = 'Échec de la copie';
+        console.error(message, err);
+        alert(message + ' : ' + text);
+    }
+}

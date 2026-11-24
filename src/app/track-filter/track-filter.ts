@@ -1,11 +1,24 @@
 import {Disc} from '../../disc';
-import {pad2} from '../../utils/utils';
+import {copyToClipboard, pad2, remove} from '../../utils/utils';
 import {CollectionRepository} from '../musicbrainz/collection-repository';
 import {RecordingRepository} from '../musicbrainz/recording-repository';
+import {Persistence} from '../../persistence';
 import Track = Disc.Track;
 
 export interface TrackFilter {
+    // On évite de renvoyer undefined, car ça perturbe le filtrage des pistes dans le lecteur
     accepts(track: Track): boolean;
+}
+
+export interface EditableTrackFilter extends TrackFilter {
+    toggle(track: Track): void;
+
+    export(persistence: Persistence): Promise<void>;
+}
+
+export function isEditableTrackFilter(trackFilter: TrackFilter): trackFilter is EditableTrackFilter {
+    const key: keyof EditableTrackFilter = 'toggle';
+    return key in trackFilter;
 }
 
 export class TrackTitleContainingFilter implements TrackFilter {
@@ -91,8 +104,7 @@ export class MusicBrainzTrackFilter implements TrackFilter {
 // "<videoId>:<trackNumber>"
 type TrackHash = string;
 
-export class HashTrackFilter implements TrackFilter {
-
+export class HashTrackFilter implements EditableTrackFilter {
     constructor(
         private readonly hashes: TrackHash[],
     ) {
@@ -102,8 +114,37 @@ export class HashTrackFilter implements TrackFilter {
         return track.disc.videoId + ':' + pad2(track.number);
     }
 
+    static async parseHash(hash: TrackHash, persistence: Persistence): Promise<Disc.Track> {
+        const [videoId, trackNumberString] = hash.split(':');
+        const disc = await persistence.getDisc(videoId);
+        return disc.getTrackByNumber(+trackNumberString);
+    }
+
     accepts(track: Disc.Track): boolean {
         const trackHash = HashTrackFilter.computeHash(track);
         return this.hashes.includes(trackHash);
+    }
+
+    toggle(track: Disc.Track) {
+        const trackHash = HashTrackFilter.computeHash(track);
+        if (this.hashes.includes(trackHash)) {
+            remove(trackHash, this.hashes);
+        } else {
+            this.hashes.push(trackHash);
+        }
+    }
+
+    async export(persistence: Persistence): Promise<void> {
+        const lines: string[] = [];
+
+        const sortedHashes = [...this.hashes];
+        sortedHashes.sort();
+
+        for (const hash of sortedHashes) {
+            const track = await HashTrackFilter.parseHash(hash, persistence);
+            lines.push(`'${hash}', // ${track.disc.title} - ${track.number}. ${track.title}`);
+        }
+
+        await copyToClipboard(lines.join('\r\n'));
     }
 }
