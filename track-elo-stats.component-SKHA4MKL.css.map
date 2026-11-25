@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/test/track-elo-stats/track-elo-stats.component.css"],
+  "sourcesContent": [".current-track, .current.track {\n    font-weight: bold;\n}\n\n.all-scores {\n\n    .track {\n        color: grey;\n\n        &.near {\n            color: revert;\n        }\n    }\n}\n"],
+  "mappings": "AAAA,CAAC,cAAe,CAAC,OAAO,CAAC,MACrB,YAAa,GACjB,CAEA,CAAC,WAEG,CANqB,MAOjB,MAAO,IAKX,CARJ,CAAC,WAEG,CANqB,KAShB,CAAC,KACE,MAAO,MACX",
+  "names": []
+}
