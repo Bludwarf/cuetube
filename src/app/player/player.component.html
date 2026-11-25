@@ -105,7 +105,7 @@
                                                      [class.disabled-by-youtube-video-cache]="disc.disabledByYouTube"></div>
                                             }
                                             <img class=""
-                                                 [src]="'https://img.youtube.com/vi/'+disc.videoId+'/default.jpg'"/>
+                                                 src="{{disc.icon}}"/>
                                         </div>
                                         <div class="tracklist" (click)="stopPropagation($event)">
                                             <h2 class="disc-name"

@@ -126,19 +126,11 @@ export class Disc {
             }
         }
 
-        return this._id ? this._id : this.videoId;
+        throw new Error(`Impossible de retrouver l'id du disque`);
     }
 
     set id(value: string) {
         this._id = value;
-    }
-
-    /** @return l'id de la 1ère vidéo */
-    get videoId(): string {
-        if (!this.files || !this.files.length) {
-            return undefined;
-        }
-        return this.files[0].videoId;
     }
 
     get tracks(): Disc.Track[] {
@@ -602,7 +594,7 @@ export module Disc {
         }
 
         get icon(): string {
-            return 'https://img.youtube.com/vi/' + this.videoId + '/default.jpg';
+            return this.getImgUrl('default');
         }
 
         /**
@@ -610,7 +602,11 @@ export module Disc {
          * @return {string}
          */
         get background(): string {
-            return 'https://img.youtube.com/vi/' + this.videoId + '/hqdefault.jpg';
+            return this.getImgUrl('hqdefault');
+        }
+
+        private getImgUrl(name: string): string {
+            return `https://img.youtube.com/vi/${this.videoId}/${name}.jpg`;
         }
     }
 
