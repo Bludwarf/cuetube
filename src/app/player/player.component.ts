@@ -1796,7 +1796,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     protected eloMatchBased(currentTrack: Track) {
-        const {videoId: ad, trackNumber: at} = splitTrackHash(this.baseTrackHash);
+        const {discId: ad, trackNumber: at} = splitTrackHash(this.baseTrackHash);
         this.openEloMatch({
             ad,
             at: String(at),

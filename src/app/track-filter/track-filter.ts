@@ -113,8 +113,8 @@ export class HashTrackFilter implements EditableTrackFilter {
     }
 
     static async parseHash(hash: TrackHash, persistence: Persistence): Promise<Disc.Track> {
-        const {videoId, trackNumber} = splitTrackHash(hash);
-        const disc = await persistence.getDisc(videoId);
+        const {discId, trackNumber} = splitTrackHash(hash);
+        const disc = await persistence.getDisc(discId);
         return disc.getTrackByNumber(trackNumber);
     }
 

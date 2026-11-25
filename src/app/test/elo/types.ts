@@ -4,13 +4,13 @@ import {pad2} from '../../../utils/utils';
 export type TrackHash = `${string}:${number}${number}`;
 
 export function hashTrack(track: Disc.Track): TrackHash {
-    return (track.disc.videoId + ':' + pad2(track.number)) as TrackHash;
+    return (track.disc.id + ':' + pad2(track.number)) as TrackHash;
 }
 
-export function splitTrackHash(trackHash: TrackHash): { videoId: string, trackNumber: number } {
-    const [videoId, trackNumberString] = trackHash.split(':');
+export function splitTrackHash(trackHash: TrackHash): { discId: string, trackNumber: number } {
+    const [discId, trackNumberString] = trackHash.split(':');
     return {
-        videoId,
+        discId,
         trackNumber: Number(trackNumberString),
     };
 }
