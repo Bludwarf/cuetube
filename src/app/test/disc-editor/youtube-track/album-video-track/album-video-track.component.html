@@ -1,0 +1,7 @@
+@let track = this.track();
+
+
+<a [href]="track.url">?t=</a>
+<input type="number" name="title" class="form-control title"
+       placeholder="title"
+       [(ngModel)]="track.time" size="4"/>

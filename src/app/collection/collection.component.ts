@@ -1,4 +1,4 @@
-import {Component, computed, inject, input, Signal} from '@angular/core';
+import {Component, computed, inject, input, OnInit, Signal} from '@angular/core';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 import Collection from '../../Collection';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -11,7 +11,11 @@ import {RouterLink} from '@angular/router';
 import {injectCollection} from './collection.resolver';
 import {PersistenceService} from '../persistence/persistence.service';
 import {hideLoader} from '../app.component';
+import {DiscService} from '../../refacto-2026/disc.service';
+import {MappedDiscService} from '../../refacto-2026/mapped-disc.service';
+import {MappedDisc} from '../../refacto-2026/mapped-disc';
 import Track = Disc.Track;
+import {YouTubeMappedDiscService} from '../../refacto-2026/you-tube-mapped-disc.service';
 
 @Component({
     selector: 'app-collection',
@@ -24,9 +28,11 @@ import Track = Disc.Track;
     templateUrl: './collection.component.html',
     styleUrl: './collection.component.css',
 })
-export class CollectionComponent {
+export class CollectionComponent implements OnInit {
 
     private readonly persistenceService = inject(PersistenceService);
+    private readonly discService = inject(DiscService);
+    private readonly mappedDiscService = inject(YouTubeMappedDiscService);
     protected readonly collection = injectCollection();
     discs: Signal<Disc[]>;
     currentTrackInput = input<Track>();
@@ -34,9 +40,12 @@ export class CollectionComponent {
     /** disque ouvert dans la liste des pistes (tooltip) */
     discInTracklist: Disc;
 
+    protected discIds: string[];
+
     protected readonly Object = Object;
 
     // private readonly checkboxSelector: CheckboxSelector<Track>;
+    protected mappedDiscsById: Map<string, MappedDisc>;
 
     constructor() {
         this.discs = toSignal(
@@ -46,6 +55,23 @@ export class CollectionComponent {
                 )
             )
         );
+
+        this.discIds = this.discService.getDiscIds();
+    }
+
+    async ngOnInit() {
+        // TODO juste pour tester
+        await this.initMappedDiscs();
+    }
+
+    private async initMappedDiscs() {
+        const mappedDiscsById = new Map<string, MappedDisc>();
+        for (const discId of this.discIds) {
+            const disc = this.discService.getDisc(discId);
+            const mappedDisc = this.mappedDiscService.getMappedDisc(discId, disc);
+            mappedDiscsById.set(discId, mappedDisc);
+        }
+        this.mappedDiscsById = mappedDiscsById;
     }
 
     async findDiscs(collection: Collection): Promise<Disc[]> {
@@ -72,6 +98,13 @@ export class CollectionComponent {
 
     protected loadTrack(track: Disc.Track) {
         // TODO
+    }
+
+    // TODO attention on mélange discId ancienne et nouvelle version (2026)
+    protected getDiscIcon(discId: string): URL {
+        // const mappedDisc = this.mappedDiscService.getMappedDisc(discId);
+        // return mappedDisc.icon;
+        return undefined;
     }
 
 }

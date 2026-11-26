@@ -1,0 +1,85 @@
+@let mappedDisc = this.mappedDisc();
+@let disc = this.disc();
+
+<div id="ctrl">
+    <form class="form-horizontal">
+        <h1>{{ disc.title }}</h1>
+        <div class="form-group">
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="title">Titre</label>
+                <div class="col-sm-10">
+                    <input id="title" type="text" name="title" class="title form-control" [(ngModel)]="disc.title"
+                           placeholder="Titre du disque"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="performer">performer</label>
+                <div class="col-sm-10">
+                    <input id="performer" type="text" name="performer" class="form-control" [(ngModel)]="disc.performer"
+                           placeholder="Interprète du disque"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="date">date</label>
+                <div class="col-sm-10">
+                    <input id="date" type="text" name="date" class="date form-control" [(ngModel)]="disc.date"
+                           placeholder="Année du parution du disque" size="4"/>
+                </div>
+            </div>
+        </div>
+        <button class="save btn btn-primary" type="submit" style="margin-bottom: 1em;" (click)="save()">
+            Sauvegarder
+        </button>
+    </form>
+    <form class="form-inline tracks">
+        @for (track of disc; track track; let trackIndex = $index) {
+            <fieldset class="track">
+                <mat-icon>audiotrack</mat-icon>
+
+                {{ track.number }}.
+                <!-- FIXME on est obligé d'ajouter un attribut name car [(ngModel)] ne fonctionne pas avec les primitives -->
+                <input type="text" [name]="'trackTitle'+trackIndex" class="form-control title"
+                       placeholder="Titre de la piste"
+                       [(ngModel)]="track.title"/>
+                <button mat-icon-button color="warn"
+                        title="Supprimer cette piste">
+                    <mat-icon aria-label="Delete">delete</mat-icon>
+                </button>
+
+                @let extTracks = mappedDisc.mappedTracksByTrackIndex[trackIndex];
+                @if (extTracks?.length) {
+                    @for (extTrack of extTracks; track extTrack) {
+                        @if (this.isYouTubeTrack(extTrack)) {
+                            <app-youtube-track [track]="extTrack"></app-youtube-track>
+                        }
+                    }
+                } @else {
+                    <button class="btn btn-default" (click)="mapToSingleVideoTrack(trackIndex, mappedDisc)">Ajouter
+                        vidéo
+                    </button>
+                    <button class="btn btn-default" (click)="mapToAlbumVideoTrack(trackIndex, mappedDisc)">Ajouter
+                        vidéo
+                    </button>
+                }
+
+            </fieldset>
+        }
+
+        <!-- TODO : pouvoir insérer une piste après n'importe quelle piste (et pas seulement la dernière -->
+        <!-- TODO : demander le titre de la piste à ajouter -->
+        <button mat-icon-button color="primary" (click)="disc.newTrack('TODO titre de la piste')"
+                title="Ajouter une piste">
+            <mat-icon aria-label="Add">library_add</mat-icon>
+        </button>
+
+    </form>
+
+    <form class="form-horizontal">
+        <button class="save btn btn-primary" type="submit" style="margin-top: 1em;" (click)="save()">
+            Sauvegarder
+        </button>
+        <button class="btn btn-primary" type="submit" (click)="export()">
+            Exporter
+        </button>
+    </form>
+</div>

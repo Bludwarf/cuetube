@@ -236,10 +236,6 @@ describe('Disc mono vidéo', function () {
         expect(discs.minecraft.files.length).toBe(1);
     });
 
-    it('has videoId', function () {
-        expect(discs.minecraft.videoId).toBe('Dg0IjOzopYU');
-    });
-
     it('has tracks', function () {
         expect(discs.minecraft.tracks.length).toBe(28);
     });
@@ -321,10 +317,6 @@ describe('Disc multi vidéo', function () {
 
     it('has files', function () {
         expect(discs.age2.files.length).toBe(15);
-    });
-
-    it('has videoId', function () {
-        expect(discs.age2.videoId).toBe('RRtlWfi6jiM');
     });
 
     it('has tracks', function () {

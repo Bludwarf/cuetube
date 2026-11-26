@@ -3,6 +3,17 @@
 <a routerLink="../Test">Test</a>
 <br>
 
+@if (mappedDiscsById) {
+    @for (discId of discIds; track discId) {
+        <a href="../../discs/{{discId}}/edit">
+            <div class="disc-thumb">
+                <img [src]="mappedDiscsById.get(discId).icon"
+                     alt="Miniature de la vidéo YouTube"/> edit
+            </div>
+        </a>
+    }
+}
+
 <div id="header">
     <div class="header-line">
         <h1>{{ collection().name }}</h1>
@@ -49,7 +60,7 @@
                                  [class.disabled-by-youtube-video-cache]="disc.disabledByYouTube"></div>
                         }
                         <img class=""
-                             [src]="'https://img.youtube.com/vi/'+disc.videoId+'/default.jpg'"
+                             [src]="'https://img.youtube.com/vi/'+disc.id+'/default.jpg'"
                              alt="Miniature de la vidéo YouTube"/>
                     </div>
                     <div class="tracklist" (click)="stopPropagation($event)">

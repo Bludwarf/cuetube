@@ -1,6 +1,8 @@
 import {NotFoundError, Persistence, PersistenceWithPublicFields, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {Collection} from '../Collection';
+import {DiscDto} from '../refacto-2026/disc.service';
+import {JsonDiscMapping} from '../refacto-2026/you-tube-mapped-disc.service';
 
 /**
  * Persistance pour augmenter largement les perfs d'une persistance distante avec une persistance locale.
@@ -53,11 +55,16 @@ export class LocalAndDistantPersistence<L extends Persistence,
      */
     async setLocalFromDistant(): Promise<void> {
         console.group(`Initialisation locale depuis le distant (les données locales seront totalement écrasées)...`);
+
         await this.local.setAllCollectionsByNames(await this.distant.getAllCollectionsByNames(), false);
         await this.local.setAllDiscs(await this.distant.getAllDiscs(), false);
 
+        await this.local.postDiscs2026(await this.distant.getDiscs2026());
+        await this.local.postYouTubeDiscMappings(await this.distant.getYouTubeDiscMappings());
+
         const syncState = await this.local.getSyncState();
         await this.local.saveSyncState(syncState);
+
         console.log(`Initialisation locale depuis le distant terminée`);
         console.groupEnd();
     }
@@ -132,5 +139,23 @@ export class LocalAndDistantPersistence<L extends Persistence,
     public async saveSyncState(): Promise<void> {
         // TODO simplifier la synchro pour ne stocker qu'un lastmod commun à tous les disques, idem pour les collections
         console.warn('TODO simplifier la synchro pour ne stocker qu\'un lastmod commun à tous les disques, idem pour les collections');
+    }
+
+    getDiscs2026(): Promise<Record<string, DiscDto>> {
+        return this.local.getDiscs2026();
+    }
+
+    async postDiscs2026(jsonDiscs: Record<string, DiscDto>): Promise<void> {
+        await this.distant.postDiscs2026(jsonDiscs);
+        await this.local.postDiscs2026(jsonDiscs);
+    }
+
+    getYouTubeDiscMappings(): Promise<Record<string, JsonDiscMapping>> {
+        return this.local.getYouTubeDiscMappings();
+    }
+
+    async postYouTubeDiscMappings(youTubeDiscMappings: Record<string, JsonDiscMapping>): Promise<void> {
+        await this.distant.postYouTubeDiscMappings(youTubeDiscMappings);
+        await this.local.postYouTubeDiscMappings(youTubeDiscMappings);
     }
 }

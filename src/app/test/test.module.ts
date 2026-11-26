@@ -5,8 +5,10 @@ import {TEST_PATHS_MAP} from './test-paths';
 import {CollectionsMenuComponent} from './collections-menu/collections-menu.component';
 import {EloMatchComponent} from './elo-match/elo-match.component';
 import {TrackEloStatsComponent} from './track-elo-stats/track-elo-stats.component';
-import {collectionResolver} from '../collection/collection.resolver';
-import {AB_TRACKS, abTracksResolver, TRACK, trackResolver} from './resolvers';
+import {AB_TRACKS, abTracksResolver, DISC, discResolver, MAPPED_DISC, mappedDiscResolver, TRACK, trackResolver} from './resolvers';
+import {DiscEditorComponent} from './disc-editor/disc-editor.component';
+import {CUE, cueResolver} from './cue.resolver';
+import {ConvertCueComponent} from './convert-cue/convert-cue.component';
 
 const routes: Routes = [
     {

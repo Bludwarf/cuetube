@@ -1,6 +1,6 @@
 import {BrowserModule} from '@angular/platform-browser';
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
+import {inject, NgModule, provideAppInitializer} from '@angular/core';
+import {RouterLink, RouterModule, Routes} from '@angular/router';
 import {AppComponent} from './app.component';
 import {PlayerComponent} from './player/player.component';
 import {GapiClientService} from './gapi-client.service';
@@ -19,6 +19,15 @@ import {provideHttpClient} from '@angular/common/http';
 import {CollectionComponent} from './collection/collection.component';
 import {collectionResolver} from './collection/collection.resolver';
 import {GoogleDriveButtonComponent} from './google-drive/google-drive-button/google-drive-button.component';
+import {DiscListComponent} from './disc/list/disc-list.component';
+import {DiscEditorComponent} from './test/disc-editor/disc-editor.component';
+import {DISC, discResolver, MAPPED_DISC, mappedDiscResolver} from './test/resolvers';
+import {CUE, cueResolver} from './test/cue.resolver';
+import {ConvertCueComponent} from './test/convert-cue/convert-cue.component';
+import {DiscService} from '../refacto-2026/disc.service';
+import {YouTubeMappedDiscService} from '../refacto-2026/you-tube-mapped-disc.service';
+import {PersistenceService} from './persistence/persistence.service';
+import {ConvertAllCuesComponent} from './convert-all-cues/convert-all-cues.component';
 
 const appRoutes: Routes = [
     {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
@@ -30,6 +39,31 @@ const appRoutes: Routes = [
         resolve: {
             collection: collectionResolver,
         },
+    },
+    {
+        path: 'convert-cue',
+        component: ConvertCueComponent,
+        resolve: {
+            [CUE]: cueResolver,
+        },
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange',
+    },
+    {
+        path: 'convert-all-cues',
+        component: ConvertAllCuesComponent,
+    },
+    {
+        path: 'discs',
+        component: DiscListComponent,
+    },
+    {
+        path: 'discs/:id/edit',
+        component: DiscEditorComponent,
+        resolve: {
+            [DISC]: discResolver,
+            [MAPPED_DISC]: mappedDiscResolver,
+        },
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange',
     },
     {
         path: 'test',
@@ -51,6 +85,15 @@ export const providers = [
     GapiClientService,
     LocalStoragePrefsService,
     provideHttpClient(),
+    provideAppInitializer(async () => {
+        const persistenceService = inject(PersistenceService);
+        const discService = inject(DiscService);
+        const youTubeMappedDiscService = inject(YouTubeMappedDiscService);
+
+        await persistenceService.getCurrentPersistenceAndInit();
+        await discService.load();
+        await youTubeMappedDiscService.load();
+    })
 ];
 
 @NgModule({
@@ -71,7 +114,8 @@ export const providers = [
             bindToComponentInputs: true,
         }),
         ...imports,
-        GoogleDriveButtonComponent
+        GoogleDriveButtonComponent,
+        RouterLink
     ],
     providers,
     bootstrap: [AppComponent]

@@ -1,0 +1,12 @@
+@let track = this.track();
+
+<input type="text" name="title" class="form-control title"
+       placeholder="v=?"
+       [(ngModel)]="track.video.id"/>
+<a [href]="track.video.url">
+    <img src="{{track.icon}}" alt="Pochette de l'album"/>
+</a>
+
+@if (isAlbumVideoTrack(track)) {
+    <app-album-video-track [track]="track"></app-album-video-track>
+}

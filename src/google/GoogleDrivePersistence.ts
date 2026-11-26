@@ -8,7 +8,12 @@ import Queue from 'promise-queue';
 import {errorContains, GoogleDriveError} from './google-drive-types';
 import {inject, Injectable} from '@angular/core';
 import {GapiClientService} from '../app/gapi-client.service';
+import {DiscDto} from '../refacto-2026/disc.service';
+import {JsonDiscMapping} from '../refacto-2026/you-tube-mapped-disc.service';
 
+/**
+ * @deprecated Préférer SingleFilesGoogleDrivePersistence
+ */
 @Injectable({providedIn: 'root'})
 export class GoogleDrivePersistence extends Persistence {
 

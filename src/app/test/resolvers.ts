@@ -1,9 +1,14 @@
 import {ActivatedRouteSnapshot, ResolveFn} from '@angular/router';
 import {inject, Signal} from '@angular/core';
 import {PersistenceService} from '../persistence/persistence.service';
-import {injectActivatedRouteData} from '../../utils/angular-utils';
+import {getRouteOrQueryParam, injectActivatedRouteData} from '../../utils/angular-utils';
 import {Disc} from '../../disc';
+import {Disc as Disc2026} from '../../refacto-2026/disc';
 import {Persistence} from '../../persistence';
+import {DiscService} from '../../refacto-2026/disc.service';
+import {YouTubeMappedDiscService} from '../../refacto-2026/you-tube-mapped-disc.service';
+import {MappedDisc} from '../../refacto-2026/mapped-disc';
+import {ExternalTrack} from '../../refacto-2026/external-track';
 import Track = Disc.Track;
 
 export const trackResolver: ResolveFn<Track> = async (
@@ -23,10 +28,6 @@ export const TRACK = 'track';
 // Alternative sans injection de provider à injectCollection()
 export function injectTrack(): Signal<Track> {
     return injectActivatedRouteData(TRACK);
-}
-
-function getRouteOrQueryParam(name: string, route: ActivatedRouteSnapshot): string | undefined {
-    return route.paramMap.get(name) ?? route.queryParamMap.get(name);
 }
 
 async function getABTrack(ab: 'a' | 'b', persistence: Persistence, route: ActivatedRouteSnapshot) {
@@ -54,4 +55,39 @@ export const AB_TRACKS = 'abTracks';
 // Alternative sans injection de provider à injectCollection()
 export function injectABTracks(): Signal<ABTracks> {
     return injectActivatedRouteData(AB_TRACKS);
+}
+
+
+export const DISC = 'disc';
+
+export const discResolver: ResolveFn<Disc2026> = async (
+    route: ActivatedRouteSnapshot,
+): Promise<Disc2026> => {
+    const discService = inject(DiscService);
+    const discId = getRouteOrQueryParam('id', route);
+    return discService.getDisc(discId);
+};
+
+// Alternative sans injection de provider à injectCollection()
+export function injectDisc(): Signal<Disc2026> {
+    return injectActivatedRouteData(DISC);
+}
+
+
+export const MAPPED_DISC = 'mappedDisc';
+
+export const mappedDiscResolver: ResolveFn<MappedDisc> = (
+    route: ActivatedRouteSnapshot,
+): MappedDisc => {
+    const discService = inject(DiscService);
+    const mappedDiscService = inject(YouTubeMappedDiscService);
+
+    const discId = getRouteOrQueryParam('id', route);
+    const disc = discService.getDisc(discId);
+    return mappedDiscService.getMappedDisc(discId, disc);
+};
+
+// Alternative sans injection de provider à injectCollection()
+export function injectMappedDisc<I extends ExternalTrack>(): Signal<MappedDisc> {
+    return injectActivatedRouteData(MAPPED_DISC);
 }

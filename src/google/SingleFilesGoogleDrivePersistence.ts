@@ -7,6 +7,8 @@ import Queue from 'promise-queue';
 import {errorContains, GoogleDriveError} from './google-drive-types';
 import {inject, Injectable} from '@angular/core';
 import {GapiClientService} from '../app/gapi-client.service';
+import {DiscDto} from '../refacto-2026/disc.service';
+import {JsonDiscMapping} from '../refacto-2026/you-tube-mapped-disc.service';
 
 /**
  * Stockage Google Files, mais avec un seul fichier par type d'objets
@@ -371,6 +373,9 @@ export class SingleFilesGoogleDrivePersistence extends Persistence {
             return file;
         } else {
             file = await this.findGoogleFile(name, parentId, true);
+            if (!file) {
+                throw new Error(`Fichier vide reçu après la recherche de fichier Google Drive`);
+            }
             this.googleFiles[field] = file;
             return file;
         }
@@ -386,7 +391,27 @@ export class SingleFilesGoogleDrivePersistence extends Persistence {
     }
 
     private async setFileContent(file: gapi.client.drive.File, content: string): Promise<void> {
+        if (!file.name) {
+            // FIXME quand on appelle cette méthode pour sauvegarder un fichier pas encore existant, un DOSSIER vide est créé à la place (contournement : créer le FICHIER manuellement)
+            throw new Error(`Ce n'est pas normal de créer un fichier Google qui n'a pas de nom. On n'a peut-être créé par erreur un dossier plutôt qu'un fichier`);
+        }
         await this.gapiCall(this.upload(file, content), `setFileContent("${file.name}")"`);
+    }
+
+    getDiscs2026(): Promise<Record<string, DiscDto>> {
+        return this.getDataFromGoogleFile('Disques-2026.json', 'discsFile');
+    }
+
+    postDiscs2026(jsonDiscs: Record<string, DiscDto>): Promise<void> {
+        return this.saveGoogleFileData('Disques-2026.json', 'discsFile', jsonDiscs);
+    }
+
+    getYouTubeDiscMappings(): Promise<Record<string, JsonDiscMapping>> {
+        return this.getDataFromGoogleFile('YouTube.mappings.json', 'youTubeDiscMappings');
+    }
+
+    postYouTubeDiscMappings(youTubeDiscMappings: Record<string, JsonDiscMapping>): Promise<void> {
+        return this.saveGoogleFileData('YouTube.mappings.json', 'YouTube.mappings.json', youTubeDiscMappings);
     }
 
 }

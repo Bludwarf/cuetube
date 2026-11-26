@@ -29,6 +29,9 @@
             <button class="save btn btn-primary" type="submit" (click)="save()" style="margin-bottom: 1em;">
                 Sauvegarder
             </button>
+            <button class="save btn btn-primary" routerLink="../convert-cue" [queryParams]="{id: disc.id}">
+                Convertir en Disc2026
+            </button>
         </form>
         <form>
             <div class="form-group" style="margin-bottom: 1em;">

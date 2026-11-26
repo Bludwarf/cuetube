@@ -1,0 +1,17 @@
+<p>convert-all-cues works!</p>
+<button (click)="loadAllCues()">Charger tous les CUE</button>
+
+@if (allMappedDiscs) {
+    <ol>
+        @for (mappedDisc of allMappedDiscs; track mappedDisc) {
+            <li>
+                {{ mappedDisc.disc.title }}
+                @if (!mappedDisc.playable) {
+                    <b style="color: red">NON JOUABLE !</b>
+                }
+            </li>
+        }
+    </ol>
+}
+
+<button (click)="saveAllDiscs()">Sauvegarder tous les disques</button>

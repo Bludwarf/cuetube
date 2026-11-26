@@ -30,3 +30,19 @@ function createAssetFileRequest(filePath: string): XMLHttpRequest {
     request.responseType = 'arraybuffer'; // maybe also 'text'
     return request;
 }
+
+export function downloadFile(name: string, content: string) {
+    // Create a Blob object with the file content
+    const blob = new Blob([content], {type: 'text/plain'});
+
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = name;
+
+    // Programmatically click the link to trigger the download
+    link.click();
+
+    // Clean up the URL object
+    URL.revokeObjectURL(link.href);
+}

@@ -2,6 +2,8 @@ import {NotFoundError, Persistence, SyncState} from '../persistence';
 import {Disc} from '../disc';
 import {Collection} from '../Collection';
 import {Injectable} from '@angular/core';
+import {DiscDto} from '../refacto-2026/disc.service';
+import {JsonDiscMapping} from '../refacto-2026/you-tube-mapped-disc.service';
 
 const COLLECTIONS_NAMES = 'collectionsNames';
 
@@ -178,5 +180,22 @@ export class LocalStoragePersistence extends Persistence {
 
     async saveSyncState(syncState: SyncState): Promise<void> {
         localStorage.setItem('syncState', JSON.stringify(syncState));
+    }
+
+    getDiscs2026(): Promise<Record<string, DiscDto>> {
+        return this.getItem('discs2026');
+    }
+
+    async postDiscs2026(jsonDiscs: Record<string, DiscDto>): Promise<void> {
+        return this.setItem('discs2026', jsonDiscs);
+    }
+
+    async getYouTubeDiscMappings(): Promise<Record<string, JsonDiscMapping>> {
+        return this.getItem('youTubeDiscMappings');
+    }
+
+    async postYouTubeDiscMappings(youTubeDiscMappings: Record<string, JsonDiscMapping>): Promise<void> {
+        console.log("youTubeDiscMappings", youTubeDiscMappings)
+        return this.setItem('youTubeDiscMappings', youTubeDiscMappings);
     }
 }

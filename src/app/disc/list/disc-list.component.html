@@ -1,0 +1,20 @@
+@if (discsIds) {
+    <ol>
+        @for (discId of discsIds; track discId) {
+            <li>
+                <a routerLink="{{discId}}/edit">
+                    {{ discId }}
+                </a>
+                <a class="small" (click)="changeDiscId(discId)" style="margin-bottom: 1em;">
+                    (changer)
+                </a>
+                <a class="small" (click)="removeDisc(discId)" style="margin-bottom: 1em;">
+                    (supprimer)
+                </a>
+            </li>
+        }
+    </ol>
+    <button class="save btn btn-primary" type="submit" (click)="save()" style="margin-bottom: 1em;">
+        Sauvegarder
+    </button>
+}

@@ -1,0 +1,16 @@
+@let cue = this.cue();
+
+<button class="btn btn-default" (click)="convert(cue)">Convertir</button>
+
+@if (mappedDisc) {
+    <h2>{{ mappedDisc.disc.title }}</h2>
+    <ol>
+        @for (trackIndex of mappedDisc.mappedTracksByTrackIndex; track trackIndex) {
+            <li>{{ trackIndex }}</li>
+        }
+    </ol>
+    <button class="btn btn-default" (click)="save(mappedDisc)">Sauvegarder</button>
+    @if (discId) {
+        <button class="btn btn-default" routerLink="../discs/{{discId}}/edit">Éditer</button>
+    }
+}

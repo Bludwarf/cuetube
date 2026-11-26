@@ -1,0 +1,28 @@
+{
+    "Age2": {
+        "title": "Age of Empires II: Age of Kings",
+        "tracks": [
+            "Main Theme",
+            "Shamburger"
+        ]
+    },
+    "Démons_et_Manants": {
+        "title": "Démons et Manants",
+        "tracks": [
+            "Menu Song",
+            "Flow my tears",
+            null,
+            null,
+            null,
+            "(Say Love If Ever Thou Didst Find) ?",
+            null
+        ]
+    },
+    "Minecraft": {
+        "title": "Minecraft",
+        "tracks": [
+            "Key",
+            "Subwoofer Lullaby"
+        ]
+    }
+}

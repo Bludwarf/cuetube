@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, OnInit} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {TEST_PATHS} from './test-paths';
 import {hideLoader} from '../app.component';
+import {DiscService} from '../../refacto-2026/disc.service';
 
 @Component({
     selector: 'app-test',
@@ -15,6 +16,14 @@ import {hideLoader} from '../app.component';
 })
 export class TestComponent implements OnInit {
     protected readonly testRoutes: readonly string[] = TEST_PATHS;
+    protected discIds: string[];
+
+    constructor() {
+        const discService = inject(DiscService);
+        discService.load().then(() => {
+            this.discIds = discService.getDiscIds();
+        });
+    }
 
     ngOnInit() {
         hideLoader();
