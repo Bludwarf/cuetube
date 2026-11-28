@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/page-with-player/page-with-player.component.css"],
+  "sourcesContent": [":host {\n    display: flex;\n    height: 100vh;\n    flex-direction: column;\n    overflow: auto;\n    padding-block: 0.5em;  /* cf. /src/styles.css:body:padding-inline */\n    gap: 0.5em; /* cf. /src/styles.css:body:padding-inline */\n}\n\nheader {\n    display: flex;\n    align-items: center;\n\n    & > div {\n        flex: 1;\n        overflow: hidden;\n\n        h1 {\n            font-size: 1.5em;\n            margin: 0;\n            white-space: nowrap;\n            overflow: hidden;\n            text-overflow: ellipsis;\n        }\n    }\n}\n\nmain {\n    flex: 1;\n    overflow: auto;\n}\n\n.foo-youtube-player {\n    background: black;\n    width: 320px;\n    height: 180px;\n}\n"],
+  "mappings": "AAAA,MACI,QAAS,KACT,OAAQ,MACR,eAAgB,OAChB,SAAU,KACV,cAAe,KACf,IAAK,IACT,CAEA,OACI,QAAS,KACT,YAAa,MAcjB,CAhBA,MAIM,CAAE,IACA,KAAM,EACN,SAAU,MASd,CAfJ,MAIM,CAAE,IAIA,GACI,UAAW,MAlBvB,OAmBoB,EACR,YAAa,OACb,SAAU,OACV,cAAe,QACnB,CAIR,KACI,KAAM,EACN,SAAU,IACd,CAEA,CAAC,mBACG,WAAY,KACZ,MAAO,MACP,OAAQ,KACZ",
+  "names": []
+}
