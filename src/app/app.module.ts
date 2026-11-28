@@ -30,6 +30,9 @@ import {PersistenceService} from './persistence/persistence.service';
 import {ConvertAllCuesComponent} from './convert-all-cues/convert-all-cues.component';
 import {PageWithPlayerComponent} from './page-with-player/page-with-player.component';
 import {DiscComponent} from './disc/disc/disc.component';
+import {ConvertAllCollectionsComponent} from './convert-all-collections/convert-all-collections.component';
+import {CollectionService} from './collection/collection.service';
+import {CollectionListComponent} from './collection/collection-list/collection-list.component';
 
 const appRoutes: Routes = [
     {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
@@ -78,6 +81,14 @@ const appRoutes: Routes = [
         component: ConvertAllCuesComponent,
     },
     {
+        path: 'convert-all-collections',
+        component: ConvertAllCollectionsComponent,
+    },
+    {
+        path: 'collections',
+        component: CollectionListComponent,
+    },
+    {
         path: 'discs',
         component: DiscListComponent,
     },
@@ -112,10 +123,13 @@ export const providers = [
     provideHttpClient(),
     provideAppInitializer(async () => {
         const persistenceService = inject(PersistenceService);
+        const collectionService = inject(CollectionService);
         const discService = inject(DiscService);
         const youTubeMappedDiscService = inject(YouTubeMappedDiscService);
 
         await persistenceService.getCurrentPersistenceAndInit();
+
+        await collectionService.load();
         await discService.load();
         await youTubeMappedDiscService.load();
     })

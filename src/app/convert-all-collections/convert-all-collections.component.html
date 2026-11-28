@@ -1,0 +1,22 @@
+<button (click)="loadAllOldCollections()">Charger tous les anciennes collections</button>
+
+@if (allNewCollections) {
+    <ol>
+        @for (newCollection of allNewCollections; track $index) {
+            <li>
+                {{ newCollection.name }} :
+
+                <ol>
+                    @for (discId of newCollection.discIds; track discId) {
+                        <li>
+                            {{ discId }}
+                        </li>
+                    }
+                </ol>
+
+            </li>
+        }
+    </ol>
+}
+
+<button (click)="saveAllNewCollections()">Sauvegarder tous les nouvelles collections</button>

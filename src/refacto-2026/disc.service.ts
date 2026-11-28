@@ -4,9 +4,10 @@ import {NotFoundError} from '../persistence';
 import {downloadFile} from '../utils/file-utils';
 import {mapToJson, mapValues} from '../utils/map-utils';
 import {PersistenceService} from '../app/persistence/persistence.service';
+import {PersistedService} from './persisted-service';
 
 @Injectable({providedIn: 'root'})
-export class DiscService {
+export class DiscService implements PersistedService {
 
     private discsById: Map<string, Disc>;
     private persistenceService = inject(PersistenceService);

@@ -1,0 +1,16 @@
+@if (collections) {
+    <ol>
+        @for (collection of collections; track collection.name) {
+            <li>
+                <a routerLink="../play/collection/{{ collection.name }}">{{ collection.name }} :</a>
+                <ol>
+                    @for (discId of collection.discIds; track discId) {
+                        <li>
+                            <a routerLink="../discs/{{ discId }}/edit">{{ discId }}</a>
+                        </li>
+                    }
+                </ol>
+            </li>
+        }
+    </ol>
+}

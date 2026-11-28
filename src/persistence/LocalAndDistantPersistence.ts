@@ -3,6 +3,7 @@ import {Disc} from '../disc';
 import {Collection} from '../Collection';
 import {DiscDto} from '../refacto-2026/disc.service';
 import {JsonDiscMapping} from '../refacto-2026/you-tube-mapped-disc.service';
+import {CollectionDto} from '../app/collection/collection.service';
 
 /**
  * Persistance pour augmenter largement les perfs d'une persistance distante avec une persistance locale.
@@ -47,13 +48,14 @@ export class LocalAndDistantPersistence<L extends Persistence,
     async init(): Promise<boolean> {
         const distantWasInit = await this.distant.init();
         const localWasInit = await this.local.init();
+        await this.setLocalFromDistant();
         return distantWasInit && localWasInit;
     }
 
     /**
      * Écrase le local avec le distant
      */
-    async setLocalFromDistant(): Promise<void> {
+    private async setLocalFromDistant(): Promise<void> {
         console.group(`Initialisation locale depuis le distant (les données locales seront totalement écrasées)...`);
 
         await this.local.setAllCollectionsByNames(await this.distant.getAllCollectionsByNames(), false);
@@ -82,7 +84,7 @@ export class LocalAndDistantPersistence<L extends Persistence,
     }
 
     async getDisc(discId: string): Promise<Disc> {
-        const fn = this.bind(p => p.getDisc(discId));
+        const fn = this.bind<Disc>(p => p.getDisc(discId));
         try {
             return await fn.local();
         } catch (e) {
@@ -104,7 +106,34 @@ export class LocalAndDistantPersistence<L extends Persistence,
         }
     }
 
-    private bind<F extends (p: any) => any>(fn: F): { local: () => any, distant: () => any } {
+    async tryLocalOrDistantIfNotFound<T>(fn: Bind<T>, localNotFoundCb: (data: T) => Promise<any>): Promise<T> {
+        try {
+            return await fn.local();
+        } catch (e) {
+            if (e instanceof NotFoundError) {
+                console.warn(`Donnée introuvable en local, on la récupère du distant...`);
+
+                const data = await fn.distant();
+
+                if (data) {
+                    console.info(`Donnée trouvée sur le distant`);
+                    await localNotFoundCb(data);
+                    console.info(`Donnée sauvegardée en local`);
+                }
+
+                return data;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    async distantAndLocal(fn: Bind<void>): Promise<void> {
+        await fn.distant();
+        await fn.local();
+    }
+
+    private bind<T>(fn: (p: any) => Promise<T>): Bind<T> {
         return {
             local: () => fn(this.local),
             distant: () => fn(this.distant),
@@ -158,4 +187,20 @@ export class LocalAndDistantPersistence<L extends Persistence,
         await this.distant.postYouTubeDiscMappings(youTubeDiscMappings);
         await this.local.postYouTubeDiscMappings(youTubeDiscMappings);
     }
+
+    async getCollections2026(): Promise<CollectionDto[]> {
+        const fn = this.bind<CollectionDto[]>(p => p.getCollections2026());
+        return await this.tryLocalOrDistantIfNotFound(fn, distantCollection => this.local.postCollections2026(distantCollection));
+    }
+
+    async postCollections2026(collections: CollectionDto[]): Promise<void> {
+        const fn = this.bind<void>(p => p.postCollections2026(collections));
+        return await this.distantAndLocal(fn);
+    }
+
+}
+
+interface Bind<T> {
+    local: () => Promise<T>;
+    distant: () => Promise<T>;
 }

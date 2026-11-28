@@ -108,6 +108,21 @@ export class YouTubeMappedDiscService extends MappedDiscService<YouTubeTrack, Js
         await persistence.postYouTubeDiscMappings(allJsonDiscMappings);
     }
 
+    /**
+     * TODO Attention : ne prend en compte que les mappings chargés, pas ceux modifiés après chargement
+     * @param searchedCueDiscId id d'un disque avant refacto 2026 (CUE Sheet avec Disc.File.Track)
+     */
+    getFirstDiscIdMappedToVideoId(searchedCueDiscId: string): string | undefined {
+        for (const discId in this.jsonDiscMappings) {
+            const externalTracks = this.getExternalTracks(discId);
+            for (const externalTrack of externalTracks) {
+                if (externalTrack.video.id === searchedCueDiscId) {
+                    return discId;
+                }
+            }
+        }
+        return undefined;
+    }
 }
 
 export type JsonDiscMapping = Array<string | number>;

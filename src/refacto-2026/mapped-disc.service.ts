@@ -6,8 +6,9 @@ import {Disc} from './disc';
 import {inject} from '@angular/core';
 import {PersistenceService} from '../app/persistence/persistence.service';
 import {Persistence} from '../persistence';
+import {PersistedService} from './persisted-service';
 
-export abstract class MappedDiscService<E extends ExternalTrack, J> {
+export abstract class MappedDiscService<E extends ExternalTrack, J> implements PersistedService {
 
     private readonly mappedDiscsByIdCache: Map<string, MappedDisc> = new Map();
     protected readonly persistenceService = inject(PersistenceService);
@@ -41,7 +42,7 @@ export abstract class MappedDiscService<E extends ExternalTrack, J> {
     protected abstract toJson(mappedDisc: MappedDisc): J;
 
     async save(): Promise<void> {
-        console.log("super.mappedDiscsByIdCache", this.mappedDiscsByIdCache);
+        console.log('super.mappedDiscsByIdCache', this.mappedDiscsByIdCache);
         const persistence = await this.persistenceService.getCurrentPersistenceAndInit();
         const jsonValues = mapValues(this.mappedDiscsByIdCache, mappedDisc => this.toJson(mappedDisc));
         await this.saveValues(jsonValues, persistence);

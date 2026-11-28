@@ -9,6 +9,21 @@ import {inject, Injectable} from '@angular/core';
 import {GapiClientService} from '../app/gapi-client.service';
 import {DiscDto} from '../refacto-2026/disc.service';
 import {JsonDiscMapping} from '../refacto-2026/you-tube-mapped-disc.service';
+import {CollectionDto} from '../app/collection/collection.service';
+
+/**
+ * Fichier dans le Google Drive placé dans le dossier CueTube
+ */
+interface GoogleFile {
+    name: string;
+    /** Champ pour le cache de Persistence */
+    field: string;
+}
+
+const COLLECTIONS_2026: GoogleFile = {
+    name: 'Collections-2026.json',
+    field: 'collections2026File',
+};
 
 /**
  * Stockage Google Files, mais avec un seul fichier par type d'objets
@@ -333,10 +348,10 @@ export class SingleFilesGoogleDrivePersistence extends Persistence {
         return this.getGoogleFile('CueTube', null, 'rootFolder');
     }
 
-    private async getDataFromGoogleFile<I, T extends Record<string, I>>(name: string, field: string): Promise<T> {
+    private async getDataFromGoogleFile<T>(name: string, field: string): Promise<T> {
         if (!(field in this.googleFilesDataPromises)) {
             // On stocke la Promise et pas la donnée, pour éviter des races conditions (à cause d'un Promise.all, par exemple)
-            this.googleFilesDataPromises[field] = this.loadGoogleFileData<I, T>(name, field)
+            this.googleFilesDataPromises[field] = this.loadGoogleFileData<T>(name, field)
                 .catch(e => {
                     // Ne pas garder une promesse en échec dans le cache
                     delete this.googleFilesDataPromises[field];
@@ -346,14 +361,14 @@ export class SingleFilesGoogleDrivePersistence extends Persistence {
         return this.googleFilesDataPromises[field];
     }
 
-    private async loadGoogleFileData<I, T extends Record<string, I>>(name: string, field: string): Promise<T> {
+    private async loadGoogleFileData<T>(name: string, field: string): Promise<T> {
         const rootFolder = await this.tryToGetRootFolder();
         const googleFile = await this.getGoogleFile(name, rootFolder.id, field);
         const content = await this.getFileContent(googleFile.id);
         return (content ? JSON.parse(content) : {}) as T;
     }
 
-    private async saveGoogleFileData<I, T extends Record<string, I>>(name: string, field: string, data: T): Promise<void> {
+    private async saveGoogleFileData<T>(name: string, field: string, data: T): Promise<void> {
         const rootFolder = await this.tryToGetRootFolder();
         const googleFile = await this.getGoogleFile(name, rootFolder.id, field);
         const content = JSON.stringify(data);
@@ -412,6 +427,14 @@ export class SingleFilesGoogleDrivePersistence extends Persistence {
 
     postYouTubeDiscMappings(youTubeDiscMappings: Record<string, JsonDiscMapping>): Promise<void> {
         return this.saveGoogleFileData('YouTube.mappings.json', 'YouTube.mappings.json', youTubeDiscMappings);
+    }
+
+    async getCollections2026(): Promise<CollectionDto[]> {
+        return this.getDataFromGoogleFile(COLLECTIONS_2026.name, COLLECTIONS_2026.field);
+    }
+
+    async postCollections2026(collections: CollectionDto[]): Promise<void> {
+        return this.saveGoogleFileData(COLLECTIONS_2026.name, COLLECTIONS_2026.field, collections);
     }
 
 }

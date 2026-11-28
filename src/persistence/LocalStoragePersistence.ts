@@ -4,6 +4,7 @@ import {Collection} from '../Collection';
 import {Injectable} from '@angular/core';
 import {DiscDto} from '../refacto-2026/disc.service';
 import {JsonDiscMapping} from '../refacto-2026/you-tube-mapped-disc.service';
+import {CollectionDto} from '../app/collection/collection.service';
 
 const COLLECTIONS_NAMES = 'collectionsNames';
 
@@ -195,7 +196,15 @@ export class LocalStoragePersistence extends Persistence {
     }
 
     async postYouTubeDiscMappings(youTubeDiscMappings: Record<string, JsonDiscMapping>): Promise<void> {
-        console.log("youTubeDiscMappings", youTubeDiscMappings)
         return this.setItem('youTubeDiscMappings', youTubeDiscMappings);
     }
+
+    async getCollections2026(): Promise<CollectionDto[]> {
+        return this.getItem('collections2026') ?? [];
+    }
+
+    async postCollections2026(collections: CollectionDto[]): Promise<void> {
+        return this.setItem('collections2026', collections);
+    }
+
 }

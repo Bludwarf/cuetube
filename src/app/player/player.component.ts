@@ -543,9 +543,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
         // Collections
         const persistence = await this.persistenceService.getCurrentPersistenceAndInit();
-        if (persistence instanceof LocalAndDistantPersistence) {
-            await persistence.setLocalFromDistant();
-        }
         await this.loadCollectionNames();
 
         await this.eloLogService.load();

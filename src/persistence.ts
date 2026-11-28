@@ -8,6 +8,7 @@ import {remove} from './utils/utils';
 import {hideLoader, showLoader} from './app/app.component';
 import {DiscDto} from './refacto-2026/disc.service';
 import {JsonDiscMapping} from './refacto-2026/you-tube-mapped-disc.service';
+import {CollectionDto} from './app/collection/collection.service';
 
 // TODO ce serait mieux d'afficher des notifs quand une action longue est terminée, comme supprimer ou ajouter un disque ou une collection
 
@@ -437,6 +438,15 @@ export abstract class Persistence {
     }
 
     abstract get connectedToGoogleDrive(): boolean;
+
+    async getCollections2026(): Promise<CollectionDto[]> {
+        console.error(`Pas encore implémenté`);
+        return [];
+    }
+
+    async postCollections2026(collections: CollectionDto[]): Promise<void> {
+        throw new Error(`non implémenté`);
+    }
 
     async getDiscs2026(): Promise<Record<string, DiscDto>> {
         console.error(`Pas encore implémenté`);
