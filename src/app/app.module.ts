@@ -28,10 +28,35 @@ import {DiscService} from '../refacto-2026/disc.service';
 import {YouTubeMappedDiscService} from '../refacto-2026/you-tube-mapped-disc.service';
 import {PersistenceService} from './persistence/persistence.service';
 import {ConvertAllCuesComponent} from './convert-all-cues/convert-all-cues.component';
+import {PageWithPlayerComponent} from './page-with-player/page-with-player.component';
+import {DiscComponent} from './disc/disc/disc.component';
 
 const appRoutes: Routes = [
     {path: '', component: PlayerComponent}, // redirectTo: 'player', pathMatch: 'full' },
     {path: 'player', component: PlayerComponent},
+    {
+        path: 'play',
+        component: PageWithPlayerComponent,
+        children: [
+            {
+                path: 'collection/:name',
+                component: CollectionComponent,
+                resolve: {
+                    collection: collectionResolver,
+                },
+                runGuardsAndResolvers: 'paramsOrQueryParamsChange',
+            },
+            {
+                path: 'disc/:id',
+                component: DiscComponent,
+                resolve: {
+                    [DISC]: discResolver,
+                    [MAPPED_DISC]: mappedDiscResolver,
+                },
+                runGuardsAndResolvers: 'paramsOrQueryParamsChange',
+            },
+        ],
+    },
     {path: 'edit-cue', component: EditCueComponent},
     {
         path: 'collection/:name',

@@ -1,4 +1,4 @@
-import {Component, computed, inject, input, OnInit, Signal} from '@angular/core';
+import {Component, computed, effect, ElementRef, inject, input, OnInit, Signal, TemplateRef, ViewChild} from '@angular/core';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 import Collection from '../../Collection';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -6,33 +6,32 @@ import {Disc} from '../../disc';
 import {from} from 'rxjs';
 import {stopPropagation} from '../../utils/utils';
 import {switchMap} from 'rxjs/internal/operators';
-import {GoogleDriveButtonComponent} from '../google-drive/google-drive-button/google-drive-button.component';
-import {RouterLink} from '@angular/router';
 import {injectCollection} from './collection.resolver';
 import {PersistenceService} from '../persistence/persistence.service';
 import {hideLoader} from '../app.component';
 import {DiscService} from '../../refacto-2026/disc.service';
-import {MappedDiscService} from '../../refacto-2026/mapped-disc.service';
 import {MappedDisc} from '../../refacto-2026/mapped-disc';
-import Track = Disc.Track;
 import {YouTubeMappedDiscService} from '../../refacto-2026/you-tube-mapped-disc.service';
+import {Title} from '@angular/platform-browser';
+import Track = Disc.Track;
+import {SliderComponent} from '../slider/slider.component';
 
 @Component({
     selector: 'app-collection',
     imports: [
         ReactiveFormsModule,
-        FormsModule,
-        GoogleDriveButtonComponent,
-        RouterLink
+        FormsModule
     ],
     templateUrl: './collection.component.html',
     styleUrl: './collection.component.css',
+    standalone: true,
 })
 export class CollectionComponent implements OnInit {
 
     private readonly persistenceService = inject(PersistenceService);
     private readonly discService = inject(DiscService);
     private readonly mappedDiscService = inject(YouTubeMappedDiscService);
+    private readonly title = inject(Title);
     protected readonly collection = injectCollection();
     discs: Signal<Disc[]>;
     currentTrackInput = input<Track>();
@@ -40,12 +39,16 @@ export class CollectionComponent implements OnInit {
     /** disque ouvert dans la liste des pistes (tooltip) */
     discInTracklist: Disc;
 
+    @ViewChild('selectedDiscPanel')
+    selectedDiscPanelRef: ElementRef<HTMLDivElement>;
+
     protected discIds: string[];
 
     protected readonly Object = Object;
 
     // private readonly checkboxSelector: CheckboxSelector<Track>;
     protected mappedDiscsById: Map<string, MappedDisc>;
+    protected selectedDisc: Disc;
 
     constructor() {
         this.discs = toSignal(
@@ -57,21 +60,13 @@ export class CollectionComponent implements OnInit {
         );
 
         this.discIds = this.discService.getDiscIds();
+
+        effect(() => {
+            this.title.setTitle(this.collection().name);
+        });
     }
 
     async ngOnInit() {
-        // TODO juste pour tester
-        await this.initMappedDiscs();
-    }
-
-    private async initMappedDiscs() {
-        const mappedDiscsById = new Map<string, MappedDisc>();
-        for (const discId of this.discIds) {
-            const disc = this.discService.getDisc(discId);
-            const mappedDisc = this.mappedDiscService.getMappedDisc(discId, disc);
-            mappedDiscsById.set(discId, mappedDisc);
-        }
-        this.mappedDiscsById = mappedDiscsById;
     }
 
     async findDiscs(collection: Collection): Promise<Disc[]> {
@@ -107,4 +102,8 @@ export class CollectionComponent implements OnInit {
         return undefined;
     }
 
+    protected selectDisc(disc: Disc) {
+        this.selectedDisc = disc;
+        this.selectedDiscPanelRef.nativeElement.scrollTop = 0;
+    }
 }

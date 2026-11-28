@@ -1,0 +1,101 @@
+:host {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    & > * {
+        flex: 1;
+        overflow: auto;
+    }
+}
+
+.discs-container {
+    flex-wrap: wrap;
+    gap: 0.25em;
+    justify-content: center;
+}
+
+
+/** DÉBUT Tentatives d'affichage mural : */
+
+/** Tentative #1 : inline-flex */
+.discs-container {
+    display: inline-flex;
+
+    & > * {
+        aspect-ratio: 1;
+        height: 90px;
+
+        img {
+            border-radius: 0.5em;
+            object-fit: cover;
+            height: 100%;
+            width: 100%;
+        }
+    }
+}
+
+/** Tentative #2 : auto-fill */
+/*.discs-container {*/
+/*    display: grid;*/
+/*    grid-template-columns: repeat(auto-fill, minmax(80px, 120px));*/
+/*    & > * {*/
+/*        border-radius: 0.5em;*/
+/*        aspect-ratio: 1;*/
+/*        display: block;*/
+/*        !*max-height: 90px;*!*/
+
+/*        img {*/
+/*            height: 100%;*/
+/*            width: 100%;*/
+/*            object-fit: cover;*/
+/*        }*/
+/*    }*/
+/*}*/
+
+/** Tentative #3 : auto-fit */
+/*.discs-container {*/
+/*    display: grid;*/
+/*    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));*/
+/*    & > img {*/
+/*        border-radius: 0.5em;*/
+/*        aspect-ratio: 1;*/
+/*        object-fit: cover;*/
+/*        display: block;*/
+/*        max-height: 90px;*/
+/*    }*/
+/*}*/
+
+/** Tentative #4 : Nombre de colonne fixe = 10 */
+/*.discs-container {*/
+/*    display: grid;*/
+/*    grid-template-columns: repeat(10, minmax(90px, 180px));*/
+
+/*    & > * {*/
+/*        img {*/
+/*            border-radius: 0.5em;*/
+/*            aspect-ratio: 1;*/
+/*            object-fit: cover;*/
+/*            width: 100%;*/
+/*            height: 100%;*/
+/*        }*/
+/*    }*/
+/*}*/
+
+/** FIN   Tentatives d'affichage mural : */
+
+.selected-disc-panel {
+
+    & > * {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    img {
+        aspect-ratio: 1;
+        flex: 1;
+        border-radius: 0.5em;
+        object-fit: cover;
+    }
+}

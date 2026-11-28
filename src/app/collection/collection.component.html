@@ -1,116 +1,37 @@
-<a routerLink="../Age2">Age2</a>
-<br>
-<a routerLink="../Test">Test</a>
-<br>
-
-@if (mappedDiscsById) {
-    @for (discId of discIds; track discId) {
-        <a href="../../discs/{{discId}}/edit">
-            <div class="disc-thumb">
-                <img [src]="mappedDiscsById.get(discId).icon"
-                     alt="Miniature de la vidéo YouTube"/> edit
-            </div>
-        </a>
-    }
-}
-
-<div id="header">
-    <div class="header-line">
-        <h1>{{ collection().name }}</h1>
-        <div class="buttons">
-            <!--<button (click)="createNewDiscFromVideo()">Ajouter une vidéo multipiste</button>
-            <button (click)="createNewDiscFromPlaylist()">Ajouter une playlist</button></a>-->
-            <button id="createNewDisc" class="btn btn-default"
-                    (click)="createNewDiscFromVideoOrPlaylist()">Ajouter une vidéo/playlist
-            </button>
-            <app-google-drive-button></app-google-drive-button>
-        </div>
-    </div>
-    <div class="header-line">
-        <div class="buttons">
-            <!--            @for (filterTitle of Object.keys(trackFilters); track filterTitle) {-->
-            <!--                <button (click)="applyTrackFilter(trackFilters[filterTitle])" [disabled]="trackFiltersDisabled" class="btn btn-default">{{filterTitle}}</button>-->
-            <!--            }-->
-            <!--            <button (click)="addCurrentTrackFilter()" class="btn">Ajouter filtre actuel</button>-->
-            <!--            <button (click)="importTrackFilter()" class="btn">Importer</button>-->
-            <!--            @if (this.currentTrack && this.previousTrack) {-->
-            <!--                <button (click)="eloMatch(this.previousTrack,this.currentTrack)" class="btn">elo-match</button>-->
-            <!--            }-->
-        </div>
+<div class="discs-panel">
+    <div class="discs-container">
+        @for (disc of discs(); track disc) {
+            @if (disc && !disc.disabledByYouTube) {
+                <div (click)="selectDisc(disc)">
+                    <img [src]="disc.icon"
+                         alt="Miniature de la vidéo YouTube"/>
+                </div>
+            }
+        }
     </div>
 </div>
 
-<div class="discs">
-
+@if (selectedDisc) {
     @let currentTrack = currentTrackInput();
-    @for (disc of discs(); track disc; let discIndex = $index) {
+    <div class="selected-disc-panel" #selectedDiscPanel>
         <div>
-            @if (disc) {
-                <div class="disc-wrapper" [attr.data-index]="discIndex" [attr.data-discId]="disc.discId"
-                     [class.active]="currentTrack && disc.id === currentTrack.disc.id"
-                     [class.inTracklist]="discInTracklist && disc === discInTracklist">
-                    <div class="disc-thumb" (click)="disc.clickThumb($event)"
-                         (dblclick)="disc.doubleClickThumb($event)"
-                         title="{{disc.title}}. Cliquer pour ouvrir la liste des pistes de l'album">
-                        <input type="checkbox" [(ngModel)]="disc.enabledByUser" CHECKED
-                               (click)="disc.afterClickThumbCheckbox($event)"
-                               title="Cocher cette case pour activer/désactiver ce disque. 'Alt' pour inverser la sélection des autres disques. 'Shift' pour sélectionner un ensemble de disques qui se suivent."/>
-                        @if (!disc.enabled) {
-                            <div class="disabled-video-cache"
-                                 [class.disabled-by-youtube-video-cache]="disc.disabledByYouTube"></div>
-                        }
-                        <img class=""
-                             [src]="'https://img.youtube.com/vi/'+disc.id+'/default.jpg'"
-                             alt="Miniature de la vidéo YouTube"/>
-                    </div>
-                    <div class="tracklist" (click)="stopPropagation($event)">
-                        <h2 class="disc-name"
-                            [class.active]="disc === currentDisc()"
-                            (click)="disc.load()">{{ disc.title }}</h2>
-                        @if (disc.performer) {
-                            <h3 class="disc-performer">{{ disc.performer }}</h3>
-                        }
-                        <a href="edit-cue?id={{disc.id}}" target="_blank">Éditer</a>
-                        <a class="hover-red" (click)="removeDisc(disc)"
-                           title="Retirer le disque de cette collection"><span
-                            class="glyphter-bin"></span></a>
-                        &nbsp;
-                        @if (disc.src) {
-                            <a [href]="disc.src" title="Voir sur YouTube"><span
-                                class="monochrome youtube-color-hover glyphter-YouTube_Play_Button"
-                                style="font-size: 16px;"></span></a>
-                        }
-                        <div class="columns">
-                            <ol class="disc-list">
-                                <!-- TODO : *ngFor sans créer d'élément div dans un li ? -->
-                                @for (file of disc.files; track file) {
-                                    <div>
-                                        @for (track of file.tracks; track track) {
-                                            <li class="track" [class.active]="track == currentTrack"
-                                                [class.disabled]="!track.enabled"
-                                                (click)="loadTrack(track)">
-                                                <input type="checkbox"
-                                                       [(ngModel)]="track.enabledByUser"
-                                                       (click)="track.afterClickCheckbox($event)"/>
-                                                <span>{{ track.nonNullTrackTitle }}</span>
-                                            </li>
-                                        }
-                                    </div>
-                                }
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-            }
-            @if (!disc) {
-                <div class="disc-wrapper">
-                    <div class="disc-thumb">
-                        <div class="disabled-video-cache"></div>
-                        <img src="'https://img.youtube.com/vi/default.jpg'" alt="Miniature de la vidéo YouTube"/>
-                    </div>
+            <h3>{{ selectedDisc.title }}</h3>
+            <img [src]="selectedDisc.files[0].background"
+                 alt="Miniature de la vidéo YouTube"/>
+            @for (file of selectedDisc.files; track file) {
+                <div>
+                    @for (track of file.tracks; track track) {
+                        <li class="track" [class.active]="track == currentTrack"
+                            [class.disabled]="!track.enabled"
+                            (click)="loadTrack(track)">
+                            <input type="checkbox"
+                                   [(ngModel)]="track.enabledByUser"
+                                   (click)="track.afterClickCheckbox($event)"/>
+                            <span>{{ track.nonNullTrackTitle }}</span>
+                        </li>
+                    }
                 </div>
             }
         </div>
-    }
-
-</div>
+    </div>
+}

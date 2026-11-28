@@ -33,3 +33,7 @@ a {
   right: 4px;
   vertical-align: middle;
 }
+
+body {
+    padding-inline: 0.5em; /* surcharge de bootstrap */
+}
